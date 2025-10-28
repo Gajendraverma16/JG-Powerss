@@ -631,7 +631,7 @@ const Dashboard = () => {
         </div> */}
 
         {/* Lead List Cards for Mobile */}
-        <div className="md:hidden w-full space-y-4 sm:space-y-6 pb-20 sm:pb-24 flex-grow overflow-x-auto">
+        {/* <div className="md:hidden w-full space-y-4 sm:space-y-6 pb-20 sm:pb-24 flex-grow overflow-x-auto">
           {currentLeads.length === 0 ? (
             <div className="py-12 px-6 text-center">
               <div className="w-16 h-16 mx-auto mb-4  rounded-full flex items-center justify-center">
@@ -662,7 +662,7 @@ const Dashboard = () => {
                 className="bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-all duration-300 hover:shadow-lg p-2 sm:p-4 "
               >
                 {/* Header Section */}
-                <div className="p-4 sm:p-6 border-b border-gray-50">
+                {/* <div className="p-4 sm:p-6 border-b border-gray-50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2 sm:space-x-4">
                       <div className="flex items-center space-x-3 ">
@@ -686,9 +686,9 @@ const Dashboard = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
                 {/* Details Section */}
-                <div className="p-3 sm:p-4 space-y-3">
+                {/* <div className="p-3 sm:p-4 space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 ">
                       <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
@@ -987,7 +987,7 @@ const Dashboard = () => {
               </div>
             ))
           )}
-        </div>
+        </div> */} 
         {/* Pagination Controls */}
         {/* {filteredLeads.length > 0 && (
           <div className="flex justify-center pt-4 sm:pt-7 mt-auto">

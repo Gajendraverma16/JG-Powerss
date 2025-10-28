@@ -1605,7 +1605,8 @@ const handleProductSelect = (product, rowIndex) => {
           {/* Profile Picture and Organization Name */}
           <div className="flex items-start flex-col lg:mr-8">
             <div
-              className=" w-[65px] h-[28px]  md:w-[80px] md:h-[35px]  lg:w-[120px] lg:h-[50px] bg-cover bg-center"
+            className="w-[65px] h-[28px] md:w-[90px] md:h-[40px] lg:w-[130px] lg:h-[55px] bg-contain bg-center bg-no-repeat"
+
               style={{
                 backgroundImage: `url(${
                   organisationInfo?.profile_image ||
