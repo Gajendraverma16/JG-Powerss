@@ -860,7 +860,7 @@ switch (filters.contact) {
       className={`min-h-[797px] p-4 md:p-6 relative bg-gradient-to-br from-white to-[#E7F4FF] rounded-[10px] shadow-[2px_2px_6px_rgba(24,95,235,0.1)] flex flex-col w-full   ${
         isCollapsed ? "lg:max-w-[85vw] md:w-[85vw]" : "lg:max-w-[75vw] md:w-[80vw]"
       } md:mx-auto`}
-    >
+    >  
       {/* Header Section */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         {/* Title */}
@@ -1796,7 +1796,7 @@ switch (filters.contact) {
                                 />
                               </svg>
                               <span className="group-hover:text-white transition-colors">
-                                Edit
+                                Edit 
                               </span>
                             </button>
                             <svg

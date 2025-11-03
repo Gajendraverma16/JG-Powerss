@@ -26,6 +26,7 @@ import CreateInvoice from "../pages/invoice/CreateInvoice";
 import ViewPage from "../pages/Orders/order"
 import SalesmanOrderFlow from "@/pages/Orders/neworder";
 import Website from "@/Website/website";  
+import TestOrder from "@/pages/Orders/TestOrder";
 
 function PrivateRoute({ children, roles }) {
   const { user, loading, rolePermissions } = useAuth();
@@ -192,6 +193,17 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
+ <Route
+          path="Order/testorder"
+          element={
+            <PrivateRoute>
+              <PermissionRoute>
+                <TestOrder/>
+              </PermissionRoute>
+            </PrivateRoute>
+          }
+        />
+
          <Route
           path="Order/new"
           element={

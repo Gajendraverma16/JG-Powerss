@@ -80,10 +80,14 @@ const initialMenu = [
         />
       </div>
     ),
-    children: [
-      { label: "All Orders", path: "/Order/view" },
-      { label: "New Orders", path: "/Order/new" },
-      { label: "Return Orders", path: "/Order/return" },
+    // children: [
+    //   { label: "All Orders", path: "/Order/view" },
+    //   { label: "New Orders", path: "/Order/new" },
+    //   { label: "Return Orders", path: "/Order/return" },
+    // ],
+     children: [
+      { label: "All Orders", path: "/Order/testorder" },
+      
     ],
   },
   // {

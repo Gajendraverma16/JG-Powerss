@@ -17,7 +17,6 @@ import "../../styles/scrollbar.css";
 import { SidebarContext } from "../../components/Layout";
 
 const CreateLeads = () => {
-  // Mobile detection and search state
 
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
@@ -31,68 +30,61 @@ const CreateLeads = () => {
   const [bulkDeleteMessage, setBulkDeleteMessage] = useState(false);
   const [bulkDeleteFollowUp, setBulkDeleteFollowUp] = useState(false);
 
-  // New state variables for bulk edit checkboxes
   const [bulkAssignUser, setBulkAssignUser] = useState(false);
   const [bulkChangeStatus, setBulkChangeStatus] = useState(false);
 
-  //New import, export handlers
-  // Add these states for import/export file type selection
-  const [importFileType, setImportFileType] = useState("csv"); // "csv" or "xls"
-  const [exportFileType, setExportFileType] = useState("csv"); // "csv" or "xls"
+  const [importFileType, setImportFileType] = useState("csv"); 
+  const [exportFileType, setExportFileType] = useState("csv"); 
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
-  // Add new state for status dropdown
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const statusDropdownRef = useRef(null);
   const [isEditStatusDropdownOpen, setIsEditStatusDropdownOpen] =
     useState(false);
   const editStatusDropdownRef = useRef(null);
-  // Add new state for assign to dropdown
   const [isAssignToDropdownOpen, setIsAssignToDropdownOpen] = useState(false);
   const assignToDropdownRef = useRef(null);
-  // Add new state for CSV dropdown
   const [isCsvDropdownOpen, setIsCsvDropdownOpen] = useState(false);
   const csvDropdownRef = useRef(null);
-  // New state for follow up date range filter
   const [dateRangeDropdownOpen, setDateRangeDropdownOpen] = useState(false);
   const dateRangeDropdownRef = useRef(null);
-  const [timeRange, setTimeRange] = useState("all"); // "all", "7days", "30days", "90days", "custom"
+  const [timeRange, setTimeRange] = useState("all");
   const [customDateRange, setCustomDateRange] = useState({
     fromDate: new Date(),
     toDate: new Date(),
   });
 
-  // New state for created date range filter
+ 
   const [createdDateRangeDropdownOpen, setCreatedDateRangeDropdownOpen] =
     useState(false);
   const createdDateRangeDropdownRef = useRef(null);
-  const [createdTimeRange, setCreatedTimeRange] = useState("all"); // "all", "7days", "30days", "90days", "custom"
+  const [createdTimeRange, setCreatedTimeRange] = useState("all"); 
   const [customCreatedDateRange, setCustomCreatedDateRange] = useState({
     fromDate: new Date(),
     toDate: new Date(),
   });
   
 
-  // New state for Bulk Assign Modal
+
   const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] = useState(false);
   const [selectedAssignee, setSelectedAssignee] = useState("");
   const [assigneeSearchTerm, setAssigneeSearchTerm] = useState("");
   const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
   const assigneeDropdownRef = useRef(null);
 
-  // Add state for custom pagination dropdown
+
   const [isItemsPerPageDropdownOpen, setIsItemsPerPageDropdownOpen] =
     useState(false);
   const itemsPerPageDropdownRef = useRef(null);
 
-  // Helper function to format date for display
+
   const formatDateForDisplay = (date) => {
     if (!date) return "";
     const d = new Date(date);
-    return d.toLocaleDateString("en-GB"); // Adjust locale as needed
+    return d.toLocaleDateString("en-GB");
   };
 
-  // Helper function to format date in "Jun 23, 2025" format
+
   const formatDateForTable = (date) => {
     if (!date) return "";
     const d = new Date(date);
@@ -103,7 +95,7 @@ const CreateLeads = () => {
     });
   };
 
-  // New helper function to format date and time for table display (time above, date below)
+
   const formatDateTimeForTable = (dateString) => {
     if (!dateString) return "";
     const d = new Date(dateString);
@@ -128,14 +120,12 @@ const CreateLeads = () => {
   const { user, rolePermissions } = useAuth();
   const location = useLocation();
 
-  // Extract module name from URL (e.g., 'leads' from '/leads/all')
   const pathParts = location.pathname.split("/").filter(Boolean);
   const moduleNameFromUrl = pathParts[0] ? pathParts[0].toLowerCase() : null;
 
-  // Find permissions for the module from rolePermissions
+
   const permissionsForLeadsModule = useMemo(() => {
     if (rolePermissions === "ALL") {
-      // Grant all positive permissions, do NOT include any inverse permissions
       return ["create", "edit", "delete", "view"];
     }
     if (!moduleNameFromUrl || !Array.isArray(rolePermissions)) return [];
@@ -145,13 +135,13 @@ const CreateLeads = () => {
     return found ? found.permissions : [];
   }, [rolePermissions, moduleNameFromUrl]);
 
-  // Permission checks for bulk assign and CSV
+
   const hasBulkAssignPermission =
     rolePermissions === "ALL" || !rolePermissions?.includes("noBulkAssign");
   const hasCsvPermission =
     rolePermissions === "ALL" || !rolePermissions?.includes("noCsv");
 
-  // Handler to apply custom date range
+
   const applyCustomDateRange = () => {
     if (customDateRange.fromDate && customDateRange.toDate) {
       setTimeRange("custom");
@@ -192,7 +182,7 @@ const CreateLeads = () => {
       return;
     }
 
-    // Validate required selections for each action
+
     if (bulkAssignUser && !selectedAssignee) {
       Swal.fire({
         icon: "error",
@@ -227,7 +217,7 @@ const CreateLeads = () => {
       const successfulUpdates = [];
       const failedUpdates = [];
 
-      // Use the current state, but don't rely on it changing mid-function
+ 
       const currentLeadsState = [...leads];
 
       for (const leadId of selectedLeads) {
@@ -453,6 +443,8 @@ const CreateLeads = () => {
   branch_code: "",
   area: "",
   village: "",
+  customer_relationship:"",
+  source_column:"",
   latitude: "",
   longitude: "",
   Join_date: "",
@@ -488,6 +480,8 @@ const CreateLeads = () => {
     branch_code:"",
     area:"",
     village:"",
+    customer_relationship:"",
+    source_column:"",
     latitude:"",
     longitude:"",
     Join_date:"",
@@ -508,7 +502,8 @@ const CreateLeads = () => {
     
   });
   const [createImagePreview, setCreateImagePreview] = useState(null);
-  
+  const [shopImageFile, setShopImageFile] = useState(null);
+
 
   // Add state for users
   const [users, setUsers] = useState([]);
@@ -587,7 +582,7 @@ const CreateLeads = () => {
 
   // Add refs for filter dropdowns
   const customerNameDropdownRef = useRef(null);
-  const cityFilterDropdownRef = useRef(null); // renamed to avoid conflict
+  const cityFilterDropdownRef = useRef(null); 
   const assignedToDropdownRef = useRef(null);
 
   // Add function to fetch users
@@ -611,14 +606,13 @@ const CreateLeads = () => {
     try {
       const response = await api.get("/showleadstatus");
       if (response.data.success) {
-        setStatuses(response.data.data); // Corrected to use response.data.data
+        setStatuses(response.data.data); 
       }
     } catch (err) {
       console.error("Error fetching statuses:", err);
     }
   };
 
-  // Expose fetchLeads for use elsewhere
   const fetchLeads = async () => {
     try {
       setLoading(true);
@@ -1192,6 +1186,8 @@ const CreateLeads = () => {
     branch_code:"",
     area:"",
     village:"",
+    customer_relationship:"",
+    source_column:"",
     latitude:"",
     longitude:"",
     Join_date:"",
@@ -1330,6 +1326,8 @@ const CreateLeads = () => {
     branch_code:createFormData.branch_code,
     area:createFormData.area,
     village:createFormData.village,
+    customer_relationship:createFormData.customer_relationship,
+    source_column:createFormData.source_column,
     latitude:createFormData.latitude,
     longitude:createFormData.longitude,
     Join_date:createFormData.Join_date,
@@ -1339,6 +1337,7 @@ const CreateLeads = () => {
         status_id: selectedStatus ? selectedStatus.status_id : "",
         message: createFormData.message,
         profile_image: createFormData.profile_pic,
+        shop_image:createFormData.profile_pic,
         city: isAddressEmpty ? "" : JSON.stringify(addressObject), // Send empty string if address is empty
       };
 
@@ -1374,7 +1373,7 @@ const CreateLeads = () => {
         },
       });
 
-      const response = await api.post("/addlead", formData, {
+      const response = await api.post("/addcustomer", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -1411,6 +1410,8 @@ const CreateLeads = () => {
     branch_code:"",
     area:"",
     village:"",
+    customer_relationship:"",
+    source_column:"",
     latitude:"",
     longitude:"",
     Join_date:"",
@@ -2002,6 +2003,8 @@ if (lead.Join_date && !isNaN(new Date(lead.Join_date))) {
     branch_code:lead.branch_code|| "",
     area:lead. area|| "",
     village:lead.village|| "",
+    customer_relationship:lead.customer_relationship||"",
+    source_column:lead.source_column||"",
     latitude:lead.latitude|| "",
     longitude:lead.longitude|| "",
     Join_date:lead.Join_date || "",
@@ -2092,6 +2095,22 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
       setCreateImagePreview(URL.createObjectURL(file));
     }
   };
+const handleShopImageChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setCreateFormData((prev) => ({
+      ...prev,
+      shop_image: file, // this key will go to backend
+    }));
+
+    if (ShopImagePreview) {
+      URL.revokeObjectURL(ShopImagePreview);
+    }
+
+    setShopImagePreview(URL.createObjectURL(file));
+    setShopImageFile(file);
+  }
+};
 
   // Handlers for Country, State, City pickers
   const handleCountrySearchChange = (e) => {
@@ -2332,6 +2351,8 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
           safeAppend(formDataToSend, "branch_code", leadToUpdate.branch_code);
           safeAppend(formDataToSend, "area", leadToUpdate.area);
           safeAppend(formDataToSend, "village", leadToUpdate.village);
+          safeAppend(formDataToSend, "customer_relationship", leadToUpdate.customer_relationship);
+               safeAppend(formDataToSend, "source_column", leadToUpdate.source_column);
           safeAppend(formDataToSend, "latitude", leadToUpdate.latitude);
           safeAppend(formDataToSend, "longitude", leadToUpdate.longitude);
           safeAppend(formDataToSend, "shop_image", leadToUpdate.shop_image);
@@ -2555,6 +2576,8 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
     branch_code:formData.branch_code|| "",
     area:formData.area|| "",
     village:formData.village|| "",
+    customer_relationship:formData.customer_relationship||"",
+    source_column:formData.source_column||"",
     latitude:formData.latitude|| "",
     longitude:formData.longitude || "",
     Join_date:formData.Join_date || "",
@@ -2621,6 +2644,8 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
     branch_code:response.data.lead.branch_code|| "",
     area:response.data.lead. area|| "",
     village:response.data.lead.village|| "",
+     customer_relationship:response.data.lead.createFormData|| "",
+          source_column:response.data.lead.createFormData|| "",
     latitude:response.data.lead.latitude|| "",
     longitude:response.data.lead.longitude|| "",
     shop_image:response.data.lead.shop_image|| "",
@@ -2853,6 +2878,7 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
       }
     };
   }, [createImagePreview, imagePreview]);
+  
 
   // 2. Add state to track the index of the currently edited lead in filteredLeads
   const [editingLeadIndex, setEditingLeadIndex] = useState(null);
@@ -4382,8 +4408,8 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
               <th className="py-4 px-6 font-medium text-sm">Contact</th>
               <th className="py-4 px-6 font-medium text-sm">City</th>
               <th className="py-4 px-6 font-medium text-sm">WhatsApp</th>
-              <th className="py-4 px-6 font-medium text-sm">Shop Name</th>
-              <th className="py-4 px-6 font-medium text-sm">Categories</th>
+              {/* <th className="py-4 px-6 font-medium text-sm">Shop Name</th> */}
+              {/* <th className="py-4 px-6 font-medium text-sm">Categories</th> */}
               <th className="py-4 px-6 font-medium text-sm whitespace-nowrap">
                 Assigned Member
               </th>
@@ -4391,9 +4417,9 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
                 <th className="py-4 px-6 font-medium text-sm">Created</th>
               )}
               <th className="py-4 px-6 font-medium text-sm">Updated</th>
-              <th className="py-4 px-6 font-medium text-sm whitespace-nowrap">
+              {/* <th className="py-4 px-6 font-medium text-sm whitespace-nowrap">
                 Follow Up
-              </th>
+              </th> */}
               {(permissionsForLeadsModule.includes("edit") ||
                 permissionsForLeadsModule.includes("delete")) && (
                 <th className="py-4 px-6 font-medium text-sm">Action</th>
@@ -4506,13 +4532,13 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
                         return "";
                       })()}
                     </td>
-                    <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
+                    {/* <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {lead.whatsapp_number}
-                    </td>
+                    </td> */}
                     <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {lead.requirements}
                     </td>
-                    <td className="py-4 px-6 max-w-xs overflow-hidden truncate">
+                    {/* <td className="py-4 px-6 max-w-xs overflow-hidden truncate">
                       <div className="relative inline-block">
                         <span
                           className={`
@@ -4552,7 +4578,7 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
                           {lead.status_name}
                         </span>
                       </div>
-                    </td>
+                    </td> */}
                 
                     <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {lead.assigned_to}
@@ -4565,9 +4591,9 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
                     <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {formatDateTimeForTable(lead.updated)}
                     </td>
-                    <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
+                    {/* <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {formatDateTimeForTable(lead.follow_up_date)}
-                    </td>
+                    </td> */}
                     {(permissionsForLeadsModule.includes("edit") ||
                       permissionsForLeadsModule.includes("delete")) && (
                       <td className="py-4 px-6 relative">
@@ -4646,7 +4672,7 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
      Exchange
   </span>
 </button> */}
-                                {permissionsForLeadsModule.includes("edit") && (
+                                {/* {permissionsForLeadsModule.includes("edit") && (
                                   <button
                                     onClick={() => handleEdit(lead)}
                                     className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md cursor-pointer"
@@ -4667,7 +4693,7 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
                                       Edit
                                     </span>
                                   </button>
-                                )}
+                                )} */}
 
                                 <svg
                                   className="w-full h-[1px]"
@@ -5447,6 +5473,7 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
                       )}
                     </div>
                   </div>
+                  
                   {/* Assign To */}
                   {user?.role === "admin" && (
                     <div className="space-y-2 md:col-span-2 md:row-start-5">
@@ -5690,6 +5717,8 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
     <option value="5">5</option>
     <option value="6">6</option>
     <option value="7">7</option>
+     <option value="8">8</option>
+     <option value="9">9</option>
     <option value="Other">Other</option>
   </select>
 </div>
@@ -5719,7 +5748,7 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
     value={formData.branch_code}
     onChange={handleInputChange}
     className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-               focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
+    focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
   >
     <option value="">Select Branch Code</option>
     <option value="Mushkabad">Mushkabad</option>
@@ -6051,18 +6080,23 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
                   </div>
 
                   {/* Source */}
-                  <div className="space-y-2 md:col-start-1 md:row-start-3">
-                    <label className="block text-[#4B5563] text-[16px] mb-2">
-                      Source
-                    </label>
-                    <input
-                      type="text"
-                      name="source"
-                      value={createFormData.source}
-                      onChange={handleCreateInputChange}
-                      className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
-                    />
-                  </div>
+ <div className="space-y-2 md:col-start-1 md:row-start-3"> 
+                 <label className="block text-[#4B5563] text-[16px] mb-2"> Source </label>
+           <select
+  name="source"
+  value={createFormData.source}
+  onChange={handleCreateInputChange}
+  className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+>
+  <option value="">Select...</option>
+  <option value="LIKE">LIKE</option>
+  <option value="NOCALL">NO CALL</option>
+  <option value="VISIT">VISIT</option>
+  <option value="REFRENCE">REFERENCE</option>
+  <option value="OTHER">OTHER</option>
+</select>
+ </div>
+
                   {/* Follow Up */}
                   <div className="space-y-2 md:col-start-1 md:row-start-4">
                     <label className="block text-[#4B5563] text-[16px] mb-2">
@@ -6186,10 +6220,45 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
                         className="w-full h-[44px] px-3 flex items-center text-[#545454] border-b  bg-[#E7EFF8]/60 border border-white/20 outline-none rounded-t-[12px]"
                         placeholder="Block/Unit/Street Name"
                       />
-
-                      {/* State and City Dropdowns */}
+    {/* Pincode and Country */}
                       <div className="grid grid-cols-2  w-full">
-                        {/* State Dropdown */}
+                      
+                        {/* Country Dropdown */}
+                        <div className="relative" ref={countryDropdownRef}>
+                          <input
+                            type="text"
+                            name="countrySearch"
+                            value={createFormData.country || countrySearchTerm}
+                            onChange={handleCountrySearchChange}
+                            onFocus={() => setCountryDropdownOpen(true)}
+                            onBlur={() => setCountryDropdownOpen(false)}
+                            className="w-full h-[44px] px-4 bg-[#E7EFF8]/60 border border-white/20  outline-none text-[#545454] placeholder-[#545454] rounded-br-[12px] text-[16px]"
+                            placeholder="Select Country"
+                            autoComplete="off"
+                          />
+                          {countryDropdownOpen && (
+                            <div className="absolute z-10 custom-scrollbar w-full mt-1 bg-white rounded-[12px] shadow-lg max-h-60 overflow-y-auto border border-gray-200">
+                              {filteredCountries.length > 0 ? (
+                                filteredCountries.map((country) => (
+                                  <div
+                                    key={country.isoCode}
+                                    className="p-3 hover:bg-[#E7EFF8]/60 cursor-pointer text-[#545454] text-sm"
+                                    onClick={() => handleCountrySelect(country)}
+                                    onMouseDown={(e) => e.preventDefault()}
+                                  >
+                                    {country.name}
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="p-3 text-gray-500">
+                                  No countries found
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                         {/* State Dropdown */}
                         <div className="relative" ref={stateDropdownRef}>
                           <input
                             type="text"
@@ -6231,7 +6300,11 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
                             </div>
                           )}
                         </div>
+                          
+                      </div>
 
+                      {/* State and City Dropdowns */}
+                      <div className="grid grid-cols-2  w-full">
                         {/* City Dropdown */}
                         <div className="relative" ref={cityDropdownRef}>
                           <input
@@ -6274,10 +6347,7 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
                             </div>
                           )}
                         </div>
-                      </div>
 
-                      {/* Pincode and Country */}
-                      <div className="grid grid-cols-2  w-full">
                         {/* Pincode Input */}
                         <input
                           type="text"
@@ -6287,86 +6357,16 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
                           className="w-full h-[44px] px-3 flex items-center text-[#545454] bg-[#E7EFF8]/60 border border-white/20 rounded-bl-[12px] outline-none"
                           placeholder="Pincode"
                         />
-                        {/* Country Dropdown */}
-                        <div className="relative" ref={countryDropdownRef}>
-                          <input
-                            type="text"
-                            name="countrySearch"
-                            value={createFormData.country || countrySearchTerm}
-                            onChange={handleCountrySearchChange}
-                            onFocus={() => setCountryDropdownOpen(true)}
-                            onBlur={() => setCountryDropdownOpen(false)}
-                            className="w-full h-[44px] px-4 bg-[#E7EFF8]/60 border border-white/20  outline-none text-[#545454] placeholder-[#545454] rounded-br-[12px] text-[16px]"
-                            placeholder="Select Country"
-                            autoComplete="off"
-                          />
-                          {countryDropdownOpen && (
-                            <div className="absolute z-10 custom-scrollbar w-full mt-1 bg-white rounded-[12px] shadow-lg max-h-60 overflow-y-auto border border-gray-200">
-                              {filteredCountries.length > 0 ? (
-                                filteredCountries.map((country) => (
-                                  <div
-                                    key={country.isoCode}
-                                    className="p-3 hover:bg-[#E7EFF8]/60 cursor-pointer text-[#545454] text-sm"
-                                    onClick={() => handleCountrySelect(country)}
-                                    onMouseDown={(e) => e.preventDefault()}
-                                  >
-                                    {country.name}
-                                  </div>
-                                ))
-                              ) : (
-                                <div className="p-3 text-gray-500">
-                                  No countries found
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
                       </div>
+
+                  
                     </div>
                   </div>
 
-    {/* Route No */}
-<div className="space-y-2 md:col-start-1 md:row-start-8">
-  <label className="block text-[#4B5563] text-[16px] mb-2">
-    Route
-  </label>
-  <select
-    name="route"
-    value={createFormData.route}
-    onChange={handleCreateInputChange}
-    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-               focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
-  >
-    <option value="">Select Route</option>
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-    <option value="7">7</option>
-    <option value="Other">Other</option>
-  </select>
-</div>
 
-
-{/* Map Location */}
-<div className="space-y-2 md:col-start-2 md:row-start-8">
-  <label className="block text-[#4B5563] text-[16px] mb-2">
-    Map Location
-  </label>
-  <input
-    type="text"
-    name="near_location"
-   value={createFormData.near_location}
-    onChange={handleCreateInputChange}
-    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-               focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
-  />
-</div>
-
+                  {/* Branch Code */}
 {/* Branch Code */}
-<div className="space-y-2 md:col-start-1 md:row-start-9">
+<div className="space-y-2 md:col-start-1 md:row-start-8">
   <label className="block text-[#4B5563] text-[16px] mb-2">
     Branch Code
   </label>
@@ -6383,39 +6383,120 @@ navigate(`/quotation/create?type=order&customer=${customerId}`);
   </select>
 </div>
 
+{/* Route No */}
+<div className="space-y-2 md:col-start-2 md:row-start-8">
+  <label className="block text-[#4B5563] text-[16px] mb-2">Route</label>
+  <select
+    name="route"
+    value={createFormData.route}
+    onChange={handleCreateInputChange}
+    disabled={!createFormData.branch_code} // 🔥 disable until Branch Code is selected
+    className={`w-full h-[48px] px-3 rounded-[12px] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454] 
+      ${
+        !createFormData.branch_code
+          ? "bg-gray-300 cursor-not-allowed opacity-60"
+          : "bg-[#E7EFF8]"
+      }`}
+  >
+    <option value="">Select Route</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="Other">Other</option>
+  </select>
+</div>
 
 {/* Area */}
-<div className="space-y-2 md:col-start-2 md:row-start-9">
-  <label className="block text-[#4B5563] text-[16px] mb-2">
-    Area
-  </label>
+<div className="space-y-2 md:col-start-1 md:row-start-9">
+  <label className="block text-[#4B5563] text-[16px] mb-2">Area</label>
   <input
     type="text"
     name="area"
     value={createFormData.area}
-      onChange={handleCreateInputChange}
-    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-               focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
-  
+    onChange={handleCreateInputChange}
+    disabled={!createFormData.branch_code} // 🔥 disable until Branch Code is selected
+    className={`w-full h-[48px] px-3 rounded-[12px] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]
+      ${
+        !createFormData.branch_code
+          ? "bg-gray-300 cursor-not-allowed opacity-60"
+          : "bg-[#E7EFF8]"
+      }`}
   />
 </div>
-<div className="space-y-2 md:col-start-1 md:row-start-10">
-  <label className="block text-[#4B5563] text-[16px] mb-2">
-    Village
-  </label>
+
+{/* Village */}
+<div className="space-y-2 md:col-start-2 md:row-start-9">
+  <label className="block text-[#4B5563] text-[16px] mb-2">Village</label>
   <input
     type="text"
     name="village"
     value={createFormData.village}
-      onChange={handleCreateInputChange}
-    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-               focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
-  
+    onChange={handleCreateInputChange}
+    className={`w-full h-[48px] px-3 rounded-[12px] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]
+      ${
+        !createFormData.branch_code
+          ? "bg-gray-300 cursor-not-allowed opacity-60"
+          : "bg-[#E7EFF8]"
+      }`}
   />
 </div>
 
+
+{/* Map Location */}
+<div className="space-y-2 md:col-start-1 md:row-start-10">
+  <label className="block text-[#4B5563] text-[16px] mb-2">
+    Map Location
+  </label>
+  <input
+    type="text"
+    name="near_location"
+   value={createFormData.near_location}
+    onChange={handleCreateInputChange}
+    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
+               focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
+  />
+</div>
+
+
+
+{/* Source */} 
+<div className="space-y-2 md:col-start-2 md:row-start-10">
+  <label className="block text-[#4B5563] text-[16px] mb-2">
+    Customer Relationship
+  </label>
+  <select
+    name="customer_relationship"  // ✅ Correct name
+    value={createFormData.customer_relationship}
+    onChange={handleCreateInputChange}
+    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
+    focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+  >
+    <option value="">Select...</option>
+    <option value="POOR">POOR</option>
+    <option value="GOOD">GOOD</option>
+    <option value="VERY GOOD">VERY GOOD</option>
+    <option value="EXCELLENT">EXCELLENT</option>
+    <option value="NEW">NEW</option>
+  </select>
+</div>
+
+
+<div className="md:col-span-1 flex flex-col w-full">
+   <label className="block text-[#4B5563] text-[16px] mb-2"> Shop image </label>
+    <label htmlFor="file-upload" className="flex items-center justify-between w-full px-4 py-2 bg-[#f1f5f9] text-gray-600 rounded-md cursor-pointer border border-gray-300 hover:bg-gray-100 transition" >
+       <span id="file-name" className="truncate"> Choose an image (PNG, JPG, GIF up to 10MB) </span> 
+       <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-[#ef7e1b]" xmlns="http://www.w3.org/2000/svg" > 
+       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path> 
+       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path> </svg> </label> 
+       <input id="file-upload" className="hidden" accept="image/*" type="file" onChange={handleProfilePictureChange} /> 
+       </div>
                 </div>
-                
               </div>
             
               {/* Save button */}
