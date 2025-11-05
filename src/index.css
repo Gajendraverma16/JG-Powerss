@@ -1,0 +1,164 @@
+/* src/index.css */
+
+/* 1) Single Tailwind import for v4 */
+@import "tailwindcss";
+
+@font-face {
+  font-family: Quicksand;
+  src: url("../public/fonts/Quicksand/Quicksand-Medium.ttf");
+}
+
+@theme {
+  --font-quicksand: Quicksand, "sans-serif";
+  --font-sfpro: "SF Pro Display", "sans-serif";
+  --font-mont: "Montserrat", "sans-serif";
+}
+
+/* 2) Base layer: register your fonts and default stack */
+@layer base {
+  /* — RESET: border-box + zero margins/padding — */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Firefox */
+  /* Apply to html/body or all elements to make scrollbars thin with matching thumb color */
+
+  /* — SF Pro Display — */
+  @font-face {
+    font-family: "SF Pro Display";
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    src: url("/fonts/SF-Pro-Display/SF-Pro-Display-Regular.otf")
+      format("opentype");
+  }
+  @font-face {
+    font-family: "SF Pro Display";
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+    src: url("/fonts/SF-Pro-Display/SF-Pro-Display-Medium.otf")
+      format("opentype");
+  }
+  @font-face {
+    font-family: "SF Pro Display";
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+    src: url("/fonts/SF-Pro-Display/SF-Pro-Display-Semibold.otf")
+      format("opentype");
+  }
+  @font-face {
+    font-family: "SF Pro Display";
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+    src: url("/fonts/SF-Pro-Display/SF-Pro-Display-Bold.otf") format("opentype");
+  }
+
+  /* — Montserrat — */
+  @font-face {
+    font-family: "Montserrat";
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    src: url("../public/fonts/Montserrat/Montserrat-Regular.ttf");
+  }
+  @font-face {
+    font-family: "Montserrat";
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+    src: url("/fonts/Montserrat/Montserrat-Medium.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Montserrat";
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+    src: url("/fonts/Montserrat/Montserrat-SemiBold.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Montserrat";
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+    src: url("/fonts/Montserrat/Montserrat-Bold.ttf") format("truetype");
+  }
+
+  /* set your default stack on <html> */
+  html {
+    font-family: theme("fontFamily.sans");
+  }
+}
+
+/* 3) component layer (your sidebar styles, etc) */
+@layer components {
+  .sidebar details > summary {
+    list-style: none;
+  }
+  .sidebar details > summary::marker,
+  .sidebar details > summary::-webkit-details-marker {
+    display: none;
+  }
+  .sidebar details > summary::after {
+    content: "›";
+    float: right;
+    transform: rotate(90deg);
+    transition: transform 0.2s ease;
+  }
+  .sidebar details[open] > summary::after {
+    transform: rotate(-90deg);
+  }
+}
+
+/* 4) global font-smoothing */
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+@media (max-width: 890px) {
+  .user-activity-container {
+    gap: 6px !important; /* or whatever smaller gap you want */
+  }
+  .user-activity-card {
+    min-width: 80px !important;
+    max-width: 100px !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+}
+
+
+@media (min-width: 1322px) {
+  .custom-1322 {
+
+    max-width: 1100px;
+  }
+}
+@media (min-width: 1470px) {
+  .custom-1400 {
+    max-width: 100%;
+  }
+}
+
+
+@media (min-width: 1470px) {
+  .custom-1300 {
+
+    width: 100%;
+  }
+}
+
+button {
+  cursor: pointer;
+}

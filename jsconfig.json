@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "jsx": "react",
+    "baseUrl": "",
+    "paths": {
+      // Optional: if you use absolute imports from src, e.g. "@/components"
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src"]
+}
