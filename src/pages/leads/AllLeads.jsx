@@ -4521,15 +4521,14 @@ useEffect(() => {
                         ) {
                           return lead.city;
                         }
-                        return "";
                       })()}
                     </td>
-                    {/* <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
+                    <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {lead.whatsapp_number}
-                    </td> */}
+                    </td>
                     <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {lead.requirements}
-                    </td>
+                    </td> 
                     {/* <td className="py-4 px-6 max-w-xs overflow-hidden truncate">
                       <div className="relative inline-block">
                         <span
@@ -4664,7 +4663,7 @@ useEffect(() => {
      Exchange
   </span>
 </button> */}
-                                {/* {permissionsForLeadsModule.includes("edit") && (
+                                {permissionsForLeadsModule.includes("edit") && (
                                   <button
                                     onClick={() => handleEdit(lead)}
                                     className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md cursor-pointer"
@@ -4685,7 +4684,7 @@ useEffect(() => {
                                       Edit
                                     </span>
                                   </button>
-                                )} */}
+                                )}
 
                                 <svg
                                   className="w-full h-[1px]"
@@ -5196,7 +5195,7 @@ useEffect(() => {
           })
         )}
       </div>
-    {/* ✅ EDIT MODAL (Fully Synced with Create Version) */}
+{/* ✅ EDIT MODAL (Now 100% identical to Create Modal) */}
 {isModalOpen && (
   <div className="fixed inset-0 flex items-center justify-center z-50">
     {/* Overlay */}
@@ -5205,18 +5204,17 @@ useEffect(() => {
       onClick={() => setIsModalOpen(false)}
     />
 
-    {/* Modal Container */}
+    {/* Glassmorphism Container */}
     <div
-      className="
-        w-11/12 max-w-[1000px] max-h-[90vh] overflow-y-auto p-6 md:p-8
-        rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF]
-        shadow-lg relative z-10 custom-scrollbar
-      "
+      className="w-11/12 max-w-[1000px] max-h-[90vh] overflow-y-auto p-6 md:p-8
+                 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF]
+                 shadow-lg relative z-10 custom-scrollbar"
     >
       {/* Close Button */}
       <button
         onClick={() => setIsModalOpen(false)}
-        className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors cursor-pointer"
+        className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center 
+                   rounded-full hover:bg-white/20 transition-colors cursor-pointer"
       >
         <svg
           width="14"
@@ -5244,13 +5242,12 @@ useEffect(() => {
 
       {/* Title */}
       <h2 className="text-[24px] sm:text-[29px] font-medium text-[#1F2837] mb-8">
-        Edit Shop Owners
+        Edit Shop Owner
       </h2>
 
       {/* Form */}
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
           {/* Profile Picture */}
           <div className="md:col-span-1 flex flex-col items-center">
             <label className="block text-[#4B5563] text-[16px] mb-4 w-full">
@@ -5258,32 +5255,34 @@ useEffect(() => {
             </label>
             <div className="relative w-32 h-32">
               <img
-                src={imagePreview || editingLead?.profile_pic || "/dummyavatar.jpeg"}
+                src={imagePreview || formData.profile_pic || "/dummyavatar.jpeg"}
                 alt="Profile Preview"
                 className="w-32 h-32 rounded-full object-cover border-2 border-white shadow-md"
               />
               <label
                 htmlFor="edit-file-upload"
-                className="absolute bottom-1 right-1 bg-[#ef7e1b] text-white rounded-full p-2 cursor-pointer hover:bg-Duskwood-600 transition-colors"
+                className="absolute bottom-1 right-1 bg-[#ef7e1b] text-white 
+                           rounded-full p-2 cursor-pointer hover:bg-[#0e4053] transition-colors"
               >
                 <FiEdit className="w-4 h-4" />
                 <input
-                  type="file"
-                  name="profile_pic"
                   id="edit-file-upload"
+                  name="profile_pic"
+                  type="file"
+                  accept="image/*"
                   onChange={handleInputChange}
                   className="hidden"
-                  accept="image/*"
                 />
               </label>
             </div>
-            <p className="text-xs text-gray-500 mt-2">PNG, JPG, GIF up to 10MB</p>
+            <p className="text-xs text-gray-500 mt-2">
+              PNG, JPG, GIF up to 10MB
+            </p>
           </div>
 
-          {/* Form Fields */}
+          {/* Right Section */}
           <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* Name */}
+            {/* Shop Owner Name */}
             <div className="space-y-2">
               <label className="block text-[#4B5563] text-[16px] mb-2">
                 Shop Owner Name
@@ -5294,73 +5293,89 @@ useEffect(() => {
                 value={formData.name}
                 onChange={handleInputChange}
                 required
-                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8]
+                           border border-white/20 focus:ring-2 focus:ring-[#0e4053]
+                           outline-none text-[#545454]"
               />
             </div>
 
             {/* Email */}
             <div className="space-y-2">
-              <label className="block text-[#4B5563] text-[16px] mb-2">Email</label>
+              <label className="block text-[#4B5563] text-[16px] mb-2">
+                Email
+              </label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8]
+                           border border-white/20 focus:ring-2 focus:ring-[#0e4053]
+                           outline-none text-[#545454]"
               />
             </div>
 
             {/* Contact */}
             <div className="space-y-2">
-              <label className="block text-[#4B5563] text-[16px] mb-2">Contact</label>
+              <label className="block text-[#4B5563] text-[16px] mb-2">
+                Contact
+              </label>
               <input
                 type="text"
                 name="phoneno"
                 value={formData.phoneno}
                 onChange={handleInputChange}
                 required
-                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8]
+                           border border-white/20 focus:ring-2 focus:ring-[#0e4053]
+                           outline-none text-[#545454]"
               />
             </div>
 
             {/* WhatsApp */}
             <div className="space-y-2">
-              <label className="block text-[#4B5563] text-[16px] mb-2">WhatsApp</label>
+              <label className="block text-[#4B5563] text-[16px] mb-2">
+                WhatsApp
+              </label>
               <input
                 type="text"
                 name="whatsapp"
                 value={formData.whatsapp}
                 onChange={handleInputChange}
-                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8]
+                           border border-white/20 focus:ring-2 focus:ring-[#0e4053]
+                           outline-none text-[#545454]"
               />
             </div>
 
             {/* Shop Name */}
             <div className="space-y-2">
-              <label className="block text-[#4B5563] text-[16px] mb-2">Shop Name</label>
+              <label className="block text-[#4B5563] text-[16px] mb-2">
+                Shop Name
+              </label>
               <input
                 type="text"
                 name="requirements"
                 value={formData.requirements}
                 onChange={handleInputChange}
-                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8]
+                           border border-white/20 focus:ring-2 focus:ring-[#0e4053]
+                           outline-none text-[#545454]"
               />
             </div>
 
             {/* Source */}
             <div className="space-y-2">
-              <label className="block text-[#4B5563] text-[16px] mb-2">Source</label>
+              <label className="block text-[#4B5563] text-[16px] mb-2">
+                Source
+              </label>
               <select
                 name="source"
                 value={formData.source}
                 onChange={handleInputChange}
-                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8]
+                           border border-white/20 focus:ring-2 focus:ring-[#0e4053]
+                           outline-none text-[#545454]"
               >
                 <option value="">Select...</option>
                 <option value="LIKE">LIKE</option>
@@ -5371,81 +5386,122 @@ useEffect(() => {
               </select>
             </div>
 
-            {/* Follow Up Date / Time */}
+            {/* Join Date */}
             <div className="space-y-2">
-              <label className="block text-[#4B5563] text-[16px] mb-2">Follow Up</label>
+              <label className="block text-[#4B5563] text-[16px] mb-2">
+                Join Date
+              </label>
               <div className="flex gap-2">
                 <input
                   type="date"
                   name="follow_up_date_input"
                   value={formData.follow_up_date_input}
                   onChange={handleInputChange}
-                  className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                  focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                  className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8]
+                             border border-white/20 focus:ring-2 focus:ring-[#0e4053]
+                             outline-none text-[#545454]"
                 />
                 <input
                   type="time"
                   name="follow_up_time_input"
                   value={formData.follow_up_time_input}
                   onChange={handleInputChange}
-                  className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                  focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                  className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8]
+                             border border-white/20 focus:ring-2 focus:ring-[#0e4053]
+                             outline-none text-[#545454]"
                 />
               </div>
             </div>
 
-            {/* Customer Relationship */}
+            {/* Categories */}
             <div className="space-y-2">
               <label className="block text-[#4B5563] text-[16px] mb-2">
-                Customer Relationship
+                Categories
               </label>
-              <select
-                name="customer_relationship"
-                value={formData.customer_relationship}
-                onChange={handleInputChange}
-                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
-              >
-                <option value="">Select...</option>
-                <option value="POOR">POOR</option>
-                <option value="GOOD">GOOD</option>
-                <option value="VERY GOOD">VERY GOOD</option>
-                <option value="EXCELLENT">EXCELLENT</option>
-                <option value="NEW">NEW</option>
-              </select>
+              {renderStatusDropdown()}
             </div>
 
-            {/* Map Location */}
+            {/* Assign To (Admin Only) */}
+            {user?.role === "admin" && (
+              <div className="space-y-2 md:col-span-2">
+                <label className="block text-[#4B5563] text-[16px] mb-2">
+                  Assign To
+                </label>
+                <select
+                  name="assigned_to"
+                  value={formData.assigned_to}
+                  onChange={handleInputChange}
+                  className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8]
+                             border border-white/20 focus:ring-2 focus:ring-[#0e4053]
+                             outline-none text-[#545454]"
+                >
+                  <option value="">Select User</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.name}>
+                      {u.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Address Section */}
+            <div className="space-y-1 md:col-span-2">
+              <label className="block text-[#4B5563] text-sm font-medium">
+                Address
+              </label>
+              <div className="w-full rounded-[12px] border border-white/20 flex flex-col">
+                <input
+                  type="text"
+                  name="blockUnitStreetName"
+                  value={formData.blockUnitStreetName}
+                  onChange={handleInputChange}
+                  className="w-full h-[44px] px-3 bg-[#E7EFF8]/60 border border-white/20 outline-none text-[#545454] rounded-t-[12px]"
+                  placeholder="Block/Unit/Street Name"
+                />
+                <div className="grid grid-cols-2 w-full">
+                  <input
+                    type="text"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleInputChange}
+                    className="w-full h-[44px] px-3 bg-[#E7EFF8]/60 border border-white/20 outline-none text-[#545454]"
+                    placeholder="Country"
+                  />
+                  <input
+                    type="text"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleInputChange}
+                    className="w-full h-[44px] px-3 bg-[#E7EFF8]/60 border border-white/20 outline-none text-[#545454]"
+                    placeholder="State"
+                  />
+                </div>
+                <div className="grid grid-cols-2 w-full">
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    className="w-full h-[44px] px-3 bg-[#E7EFF8]/60 border border-white/20 outline-none text-[#545454]"
+                    placeholder="City"
+                  />
+                  <input
+                    type="text"
+                    name="pincode"
+                    value={formData.pincode}
+                    onChange={handleInputChange}
+                    className="w-full h-[44px] px-3 bg-[#E7EFF8]/60 border border-white/20 outline-none text-[#545454]"
+                    placeholder="Pincode"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Branch - Route - Area - Village */}
+            {/* Branch */}
             <div className="space-y-2">
-              <label className="block text-[#4B5563] text-[16px] mb-2">Map Location</label>
-              <input
-                type="text"
-                name="near_location"
-                value={formData.near_location}
-                onChange={handleInputChange}
-                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
-              />
-            </div>
-
-            {/* Shop Image */}
-            <div className="md:col-span-2">
-              <label className="block text-[#4B5563] text-[16px] mb-2">Shop Image</label>
-              <input
-                type="file"
-                name="shop_image"
-                accept="image/*"
-                onChange={handleInputChange}
-                className="w-full h-[48px] px-3 py-2 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] file:mr-3 
-                file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-[#ef7e1b] 
-                file:text-white cursor-pointer"
-              />
-            </div>
-
-            {/* Branch Hierarchy */}
-            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Branch */}
+              <label className="block text-[#4B5563] text-[16px] mb-2">Branch</label>
               <select
                 name="branch_code"
                 value={formData.branch_code}
@@ -5459,7 +5515,7 @@ useEffect(() => {
                   handleInputChange(e);
                 }}
                 className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                           focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
               >
                 <option value="">Select Branch</option>
                 {branchHierarchy.map((branch) => (
@@ -5468,8 +5524,11 @@ useEffect(() => {
                   </option>
                 ))}
               </select>
+            </div>
 
-              {/* Route */}
+            {/* Route */}
+            <div className="space-y-2">
+              <label className="block text-[#4B5563] text-[16px] mb-2">Route</label>
               <select
                 name="route"
                 value={formData.route}
@@ -5483,7 +5542,9 @@ useEffect(() => {
                 }}
                 disabled={!selectedBranch}
                 className={`w-full h-[48px] px-3 rounded-[12px] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] ${
-                  !selectedBranch ? "bg-gray-300 opacity-60" : "bg-[#E7EFF8]"
+                  !selectedBranch
+                    ? "bg-gray-300 cursor-not-allowed opacity-60"
+                    : "bg-[#E7EFF8]"
                 }`}
               >
                 <option value="">Select Route</option>
@@ -5493,8 +5554,11 @@ useEffect(() => {
                   </option>
                 ))}
               </select>
+            </div>
 
-              {/* Area */}
+            {/* Area */}
+            <div className="space-y-2">
+              <label className="block text-[#4B5563] text-[16px] mb-2">Area</label>
               <select
                 name="area"
                 value={formData.area}
@@ -5507,7 +5571,9 @@ useEffect(() => {
                 }}
                 disabled={!selectedRoute}
                 className={`w-full h-[48px] px-3 rounded-[12px] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] ${
-                  !selectedRoute ? "bg-gray-300 opacity-60" : "bg-[#E7EFF8]"
+                  !selectedRoute
+                    ? "bg-gray-300 cursor-not-allowed opacity-60"
+                    : "bg-[#E7EFF8]"
                 }`}
               >
                 <option value="">Select Area</option>
@@ -5517,15 +5583,20 @@ useEffect(() => {
                   </option>
                 ))}
               </select>
+            </div>
 
-              {/* Village */}
+            {/* Village */}
+            <div className="space-y-2">
+              <label className="block text-[#4B5563] text-[16px] mb-2">Village</label>
               <select
                 name="village"
                 value={formData.village}
                 onChange={handleInputChange}
                 disabled={!selectedArea}
                 className={`w-full h-[48px] px-3 rounded-[12px] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] ${
-                  !selectedArea ? "bg-gray-300 opacity-60" : "bg-[#E7EFF8]"
+                  !selectedArea
+                    ? "bg-gray-300 cursor-not-allowed opacity-60"
+                    : "bg-[#E7EFF8]"
                 }`}
               >
                 <option value="">Select Village</option>
@@ -5537,33 +5608,107 @@ useEffect(() => {
               </select>
             </div>
 
+            {/* Map Location */}
+            <div className="space-y-2">
+              <label className="block text-[#4B5563] text-[16px] mb-2">
+                Map Location
+              </label>
+              <input
+                type="text"
+                name="near_location"
+                value={formData.near_location}
+                onChange={handleInputChange}
+                className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8]
+                           border border-white/20 focus:ring-2 focus:ring-[#0e4053]
+                           outline-none text-[#545454]"
+              />
+            </div> 
+            <div className="space-y-2 md:col-start-1 md:row-start-10">
+  <label className="block text-[#4B5563] text-[16px] mb-2">
+    Customer Relationship
+  </label>
+  <select
+    name="customer_relationship"  // ✅ Correct name
+    value={formData.customer_relationship}
+    onChange={handleInputChange}
+    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
+    focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+  >
+    <option value="">Select...</option>
+    <option value="POOR">POOR</option>
+    <option value="GOOD">GOOD</option>
+    <option value="VERY GOOD">VERY GOOD</option>
+    <option value="EXCELLENT">EXCELLENT</option>
+    <option value="NEW">NEW</option>
+  </select>
+</div>
+            {/* Shop Image */}
+            <div className="md:col-span-1 flex flex-col w-full">
+              <label className="block text-[#4B5563] text-[16px] mb-2">
+                Shop Image
+              </label>
+              <label
+                htmlFor="shop-image-upload"
+                className="flex items-center justify-between w-full px-4 py-2 bg-[#f1f5f9]
+                           text-gray-600 rounded-md cursor-pointer border border-gray-300
+                           hover:bg-gray-100 transition"
+              >
+                <span>Choose an image (PNG, JPG, GIF up to 10MB)</span>
+                <svg
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-5 h-5 text-[#ef7e1b]"
+                >
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </label>
+              <input
+                id="shop-image-upload"
+                name="shop_image"
+                type="file"
+                accept="image/*"
+                onChange={handleInputChange}
+                className="hidden"
+              />
+            </div>
+
             {/* Message */}
-            <div className="md:col-span-2">
-              <label className="block text-[#4B5563] text-[16px] mb-2">Message</label>
+            <div className="space-y-2 md:col-span-2">
+              <label className="block text-[#4B5563] text-[16px] mb-2">
+                Message
+              </label>
               <textarea
                 name="message"
                 value={formData.message}
                 onChange={handleInputChange}
                 rows="2"
-                className="w-full min-h-[58px] p-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
-                focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] resize-none"
+                className="w-full min-h-[58px] p-3 rounded-[12px] bg-[#E7EFF8]
+                           border border-white/20 focus:ring-2 focus:ring-[#0e4053]
+                           outline-none text-[#545454] resize-none"
               />
             </div>
           </div>
         </div>
 
         {/* Buttons */}
-        <div className="mt-10 flex justify-center gap-2 lg:ml-64 items-center">
+        <div className="mt-10 flex justify-center">
           <button
             type="button"
             onClick={() => setIsModalOpen(false)}
-            className="w-full md:w-[207px] h-[46px] text-[#ef7e1b] border border-[#0e4053] rounded-[10px] hover:bg-[#ee7f1b] hover:text-white transition-colors cursor-pointer"
+            className="w-full md:w-[207px] h-[46px] text-[#ef7e1b] border border-[#0e4053]
+                       rounded-[10px] hover:bg-[#ee7f1b] hover:text-white transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="w-full md:w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors cursor-pointer"
+            className="w-full md:w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px]
+                       hover:bg-[#ee7f1b] transition-colors cursor-pointer ml-4"
           >
             Save
           </button>
@@ -5572,7 +5717,6 @@ useEffect(() => {
     </div>
   </div>
 )}
-
 
       {/* Create Modal */}
       {isModalOpenCreate && (
