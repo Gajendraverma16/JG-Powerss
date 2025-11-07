@@ -27,6 +27,8 @@ import ViewPage from "../pages/Orders/order"
 import SalesmanOrderFlow from "@/pages/Orders/neworder";
 import Website from "@/Website/website";  
 import TestOrder from "@/pages/Orders/TestOrder";
+import Branch from "../pages/branch/Branch";
+
 
 function PrivateRoute({ children, roles }) {
   const { user, loading, rolePermissions } = useAuth();
@@ -92,6 +94,7 @@ export default function AppRoutes() {
       {/* Public login route */}
       
       <Route path="/login" element={<Login />} />
+
 
       {/* Redirect root to dashboard */}
       {/* <Route path="/" element={<Navigate to="/dashboard" replace />} /> */}
@@ -210,6 +213,18 @@ export default function AppRoutes() {
             <PrivateRoute>
               <PermissionRoute>
                 < SalesmanOrderFlow/>
+              </PermissionRoute>
+            </PrivateRoute>
+          }
+        />
+
+
+         <Route
+          path="Order/sum"
+          element={
+            <PrivateRoute>
+              <PermissionRoute>
+                <Branch/>
               </PermissionRoute>
             </PrivateRoute>
           }
