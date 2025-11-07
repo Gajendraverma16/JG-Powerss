@@ -220,11 +220,11 @@ export default function AppRoutes() {
 
 
          <Route
-          path="Order/sum"
+          path="/branch"
           element={
             <PrivateRoute>
               <PermissionRoute>
-                <Branch/>
+                < Branch/>
               </PermissionRoute>
             </PrivateRoute>
           }

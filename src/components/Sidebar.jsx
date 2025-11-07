@@ -36,23 +36,23 @@ const initialMenu = [
     ],
      
   },
-  // {
-  //   label: "Categories",
-  //   icon: (
-  //     <div className="w-6 h-6 flex items-center justify-center">
-  //       <img
-  //         src="/Invoice.svg"
-  //         alt="leads"
-  //         className="w-5 h-5 transition-all [filter:invert(12%)_sepia(6%)_saturate(285%)_hue-rotate(353deg)_brightness(94%)_contrast(89%)] group-[.active]:brightness-0 group-[.active]:invert"
-  //       />
-  //     </div>
-  //   ),
-  //   children: [
-    
-  //     // Dynamic lead statuses will be inserted here
-  //   ],
+ {
+    label: "Branch",
+    icon: (
+      <div className="w-6 h-6 flex items-center justify-center">
+        <img
+          src="/leadicon.png"
+          alt="leads"
+          className="w-5 h-5 transition-all [filter:invert(12%)_sepia(6%)_saturate(285%)_hue-rotate(353deg)_brightness(94%)_contrast(89%)] group-[.active]:brightness-0 group-[.active]:invert"
+        />
+      </div>
+    ),
+    children: [
+      { label: "Create Branches", path: "/branch" },
+      // Dynamic lead statuses will be inserted here
+    ],
      
-  // },
+  },
   {
     label: "Product",
     icon: (
