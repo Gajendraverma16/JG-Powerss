@@ -67,6 +67,7 @@ const initialMenu = [
     children: [
       { label: "All Product ", path: "/quotation/view" },
       { label: "Create New", path: "/quotation/create" },
+      { label: "Create Product Categories", path: "/categories" },
     ],
   },
   {

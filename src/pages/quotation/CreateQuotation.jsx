@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import api from "../../api";
 import Swal from "sweetalert2";
 import { SidebarContext } from "../../components/Layout";
@@ -13,6 +13,7 @@ const CreateQuotation = () => {
     sale_price: "",
     quantity: "",
     item_points: "",
+    category_id: "",
     is_refundable: true,
     is_exchangeable: true,
     is_active: true,
@@ -21,7 +22,29 @@ const CreateQuotation = () => {
     slug: "",
   });
 
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // ✅ Fetch all categories for dropdown
+useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get("/categories");
+      if (res.data?.success) {
+        setCategories(res.data.data || []);   
+      } else {
+        setCategories([]);
+        console.error("Failed to fetch categories:", res.data?.message);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setCategories([]);
+    }
+  };
+    
+  fetchCategories();
+}, []);
+
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -52,7 +75,9 @@ const CreateQuotation = () => {
       "quantity",
       "item_points",
       "product_image",
+      "category_id",
     ];
+
     for (let field of requiredFields) {
       if (!formData[field]) {
         Swal.fire({
@@ -105,6 +130,7 @@ const CreateQuotation = () => {
           sale_price: "",
           quantity: "",
           item_points: "",
+          category_id: "",
           is_refundable: true,
           is_exchangeable: true,
           is_active: true,
@@ -140,6 +166,24 @@ const CreateQuotation = () => {
         onSubmit={handleSubmit}
         className="bg-white shadow-md rounded-2xl p-4 sm:p-6 w-full max-w-lg mx-auto space-y-4 sm:space-y-6"
       >
+        {/* Category Dropdown */}
+        <div>
+          <label className="block text-[#4B5563] text-[16px] mb-2">Select Product Category</label>
+          <select
+            name="category_id"
+            value={formData.category_id}
+            onChange={handleInputChange}
+            className="w-full h-[44px] sm:h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+          >
+            <option value="">Select Product Category</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.category_name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Item Name */}
         <div>
           <label className="block text-[#4B5563] text-[16px] mb-2">Item Name</label>
@@ -192,7 +236,7 @@ const CreateQuotation = () => {
           </div>
         </div>
 
-        {/* Stock Quantity & Points */}
+        {/* Quantity & Points */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-[#4B5563] text-[16px] mb-2">Stock Quantity</label>

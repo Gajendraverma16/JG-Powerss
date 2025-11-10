@@ -25,6 +25,7 @@ import ViewPage from "../pages/Orders/order"
 import SalesmanOrderFlow from "@/pages/Orders/neworder";
 import Website from "@/Website/website";  
 import TestOrder from "@/pages/Orders/TestOrder";
+import Categories from "../pages/quotation/Categories";
 
 function PrivateRoute({ children, roles }) {
   const { user, loading, rolePermissions } = useAuth();
@@ -151,6 +152,16 @@ export default function AppRoutes() {
             <PrivateRoute>
               <PermissionRoute moduleName="Quotation">
                 <QuotationView />
+              </PermissionRoute>
+            </PrivateRoute>
+          }
+        />
+          <Route
+          path="/categories"
+          element={
+            <PrivateRoute>
+              <PermissionRoute moduleName="Quotation">
+                <Categories/>
               </PermissionRoute>
             </PrivateRoute>
           }
