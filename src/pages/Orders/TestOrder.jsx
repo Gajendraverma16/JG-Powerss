@@ -31,7 +31,7 @@ const TestOrder = () => {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [quotations, setQuotations] = useState([]);
-  console.log("farhabn",quotations);
+  // console.log("farhabn",quotations);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -122,7 +122,7 @@ const TestOrder = () => {
     const fetchQuotations = async () => {
       try {
         const response = await api.get(dynamicApiEndpoint); // Use dynamicApiEndpoint
-        console.log(response.data);
+        // console.log(response.data);
         if (response.data.success) {
           setQuotations(response.data.data); // Access data.data for quotations
         } else {

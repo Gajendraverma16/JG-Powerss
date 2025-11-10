@@ -110,11 +110,11 @@ const CreateLeads = () => {
       year: "numeric",
     });
     return (
-      <div className="flex flex-col">
-        <span>{time}</span>
-        <span className="text-[10px] text-Duskwood-600">{date}</span>
-      </div>
-    );
+       <span className="text-[10px] ml-1 text-gray-900 whitespace-nowrap inline-flex flex-col">
+  <span>{time}</span>
+  <span className="text-[10px] text-gray-600">{date}</span>
+</span>
+      );
   };
 
   const { user, rolePermissions } = useAuth();
@@ -1332,36 +1332,36 @@ useEffect(() => {
       }
 
       // Format the data to match API keys
-      const formattedData = {
-        customer_name: createFormData.name,
-        email: createFormData.email,
-        contact_number: createFormData.phoneno,
-        whatsapp_number: createFormData.whatsapp,
-        requirements: createFormData.requirements,
-        source: createFormData.source,
-        assigned_to:
-          assignedToId && !isNaN(parseInt(assignedToId, 10))
-            ? parseInt(assignedToId, 10)
-            : 0,
-            route:createFormData.route,
-    near_location:createFormData.near_location,
-    branch_code:createFormData.branch_code,
-    area:createFormData.area,
-    village:createFormData.village,
-    customer_relationship:createFormData.customer_relationship,
-    source_column:createFormData.source_column,
-    latitude:createFormData.latitude,
-    longitude:createFormData.longitude,
-    Join_date:createFormData.Join_date,
-    shop_image:createFormData.shop_image,
-        follow_up_date: combinedFollowUpDate, // Use the combined date and time
-        status: selectedStatus ? selectedStatus.status_name : "",
-        status_id: selectedStatus ? selectedStatus.status_id : "",
-        message: createFormData.message,
-        profile_image: createFormData.profile_pic,
-        shop_image:createFormData.profile_pic,
-        city: isAddressEmpty ? "" : JSON.stringify(addressObject), // Send empty string if address is empty
-      };
+     const formattedData = {
+  customer_name: createFormData.name,
+  email: createFormData.email,
+  contact_number: createFormData.phoneno,
+  whatsapp_number: createFormData.whatsapp,
+  requirements: createFormData.requirements,
+  source: createFormData.source,
+  assigned_to:
+    assignedToId && !isNaN(parseInt(assignedToId, 10))
+      ? parseInt(assignedToId, 10)
+      : 0,
+  route: createFormData.route,
+  near_location: createFormData.near_location,
+  branch_code: createFormData.branch_code,
+  area: createFormData.area,
+  village: createFormData.village,
+  customer_relationship: createFormData.customer_relationship,
+  source_column: createFormData.source_column,
+  latitude: createFormData.latitude,
+  longitude: createFormData.longitude,
+  Join_date: createFormData.Join_date,
+  shop_image: createFormData.shop_image, // ✅ keep only one
+  follow_up_date: combinedFollowUpDate,
+  status: selectedStatus ? selectedStatus.status_name : "",
+  status_id: selectedStatus ? selectedStatus.status_id : "",
+  message: createFormData.message,
+  profile_image: createFormData.profile_pic,
+  city: isAddressEmpty ? "" : JSON.stringify(addressObject),
+};
+
 
       // If not admin, force assigned_to to user.id
       if (user?.role !== "admin") {
@@ -1966,7 +1966,7 @@ useEffect(() => {
   };
 
 const handleEdit = (lead) => {
-  console.log("Editing lead:", lead);
+  // console.log("Editing lead:", lead);
 
   setEditingLead(lead);
 
@@ -2590,7 +2590,7 @@ const handleSubmit = async (e) => {
 
   let loadingAlert;
   try {
-    console.log("🛠 Updating Shop Owner ID:", formData.id);
+    // console.log("🛠 Updating Shop Owner ID:", formData.id);
 
     loadingAlert = Swal.fire({
       title: "Updating Shop Owner...",
@@ -2662,7 +2662,7 @@ const handleSubmit = async (e) => {
 
     const { data } = response;
     await loadingAlert.close();
-    console.log("✅ Edit API Response:", data);
+    // console.log("✅ Edit API Response:", data);
 
     if (data.status || data.success) {
       await Swal.fire({

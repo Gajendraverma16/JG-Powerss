@@ -8,8 +8,6 @@ import Dashboard from "../pages/dashboard/Dashboard";
 import LeadsAll from "../pages/leads/AllLeads";
 import QuotationCreate from "../pages/quotation/CreateQuotation";
 import QuotationView from "../pages/quotation/View";
-import ReturnQuotationCreate from "../pages/Orders/return";
-
 import CustomerInquiry from "../pages/customer inquiry/Customer";
 import RolesPermissions from "../pages/settings/RolesPermissions";
 import CreateUser from "../pages/settings/CreateNewUser";
@@ -214,7 +212,7 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
-        <Route
+        {/* <Route
           path="Order/return"
           element={
             <PrivateRoute>
@@ -223,7 +221,7 @@ export default function AppRoutes() {
               </PermissionRoute>
             </PrivateRoute>
           }
-        />
+        /> */}
         {/* Payment routes (flattened) */}
         <Route
           path="payment/create"
