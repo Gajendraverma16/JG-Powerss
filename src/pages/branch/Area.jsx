@@ -7,18 +7,19 @@ const Area = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [areas, setareas] = useState([
-    { id: 1, name: "Indore" },
-    { id: 2, name: "Bhopal" },
+    { id: 1, name: "Indore"  , branch: "East Branch" ,route : "1"},
+    { id: 2, name: "Bhopal",branch: "Main Branch"  ,route : "2" },
   ]);
 
   const [activeDropdown, setActiveDropdown] = useState(null);
-  const [formData, setFormData] = useState({ name: "" });
+  const [formData, setFormData] = useState({ name: "", branch: "" ,route : "" });
   const [editId, setEditId] = useState(null);
 
   // Handle Add / Edit
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name) return alert("Please fill all fields");
+    if ( !formData.branch ||  
+       !formData.route || !formData.name  ) return alert("Please fill all fields");
 
     if (isEditing) {
       setareas((prev) =>
@@ -30,6 +31,8 @@ const Area = () => {
       const newarea = {
         id: areas.length + 1,
         name: formData.name,
+           branch: formData.branch,
+            route: formData.route,
       };
       setareas([...areas, newarea]);
     }
@@ -39,7 +42,7 @@ const Area = () => {
 
   // Edit area (open modal)
   const handleEdit = (area) => {
-    setFormData({ name: area.name });
+    setFormData({ name: area.name , branch: area.branch  , route: area.route });
     setEditId(area.id);
     setIsEditing(true);
     setIsModalOpen(true);
@@ -73,7 +76,7 @@ const Area = () => {
 
   // Cancel Modal/Form
   const handleCancel = () => {
-    setFormData({ name: "" });
+    setFormData({ name: "", branch: "", route: ""  });
     setEditId(null);
     setIsEditing(false);
     setIsModalOpen(false);
@@ -90,14 +93,14 @@ const Area = () => {
         <div className="mb-8 flex flex-row gap-3 items-center justify-between">
           <h1 className="text-[20px] md:text-[24px] font-semibold text-[#1F2837]">
             <span className="inline-block border-b-2 border-[#0e4053] pb-1">
-              Area
+              Areas
             </span>
           </h1>
           <button
             onClick={() => {
               setIsModalOpen(true);
               setIsEditing(false);
-              setFormData({ name: "" });
+              setFormData({ name: "" , branch: "", route: ""});
             }}
             className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] transition-colors hover:bg-[#ee7f1b]"
           >
@@ -152,6 +155,34 @@ const Area = () => {
                     <label className="block text-[#4B5563] text-[16px] mb-2">
                       Area Name
                     </label>
+                       <select
+                      value={formData.branch}
+                      onChange={(e) =>
+                        setFormData({ ...formData, branch: e.target.value })
+                      }
+                      required
+                      className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none"
+                    >
+                      <option value="">Select Branch </option>
+                      <option value="Main Branch">Main Branch</option>
+                      <option value="East Branch">East Branch</option>
+                      <option value="West Branch">West Branch</option>
+                      <option value="South Branch">South Branch</option>
+                    </select>
+                           <select
+                      value={formData.route}
+                      onChange={(e) =>
+                        setFormData({ ...formData, route: e.target.value })
+                      }
+                      required
+                      className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none"
+                    >
+                      <option value="">Select Route </option>
+                      <option value="Main Branch">1</option>
+                      <option value="East Branch">2</option>
+                      <option value="West Branch">3</option>
+                      <option value="South Branch">4</option>
+                    </select>
                     <input
                       type="text"
                       value={formData.name}
@@ -183,6 +214,8 @@ const Area = () => {
           <div className="hidden md:block w-full flex-grow">
             <div className="w-full rounded-lg overflow-hidden">
               <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563]">
+              <div className="font-medium text-sm text-left">Branch</div>
+               <div className="font-medium text-sm text-left">Route</div>
                 <div className="font-medium text-sm text-left">Area ID</div>
                 <div className="font-medium text-sm text-left">Area Name</div>
                 <div className="font-medium text-sm text-left">Actions</div>
@@ -191,7 +224,7 @@ const Area = () => {
               </div>
 
               <div className="pb-20">
-                {areas.length === 0 ? (
+                {areas?.length === 0 ? (
                   <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-8 text-center text-[#4B5563] border-b border-gray-200 items-center last:border-b-0">
                     <div className="lg:col-span-5">No area available.</div>
                   </div>
@@ -201,6 +234,14 @@ const Area = () => {
                       key={area.id}
                       className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-4 border-b border-gray-200 items-center last:border-b-0 transition-colors"
                     >
+                      
+                      <div className="text-sm text-[#4B5563] text-left">
+                        {area.branch}
+                      </div>
+                      
+                      <div className="text-sm text-[#4B5563] text-left">
+                        {area.route}
+                      </div>
                       <div className="text-sm text-[#4B5563] text-left">
                         {index + 1}
                       </div>
@@ -215,42 +256,23 @@ const Area = () => {
                         >
                           <TbDotsVertical className="w-4 h-4" />
                         </button>
-                        {activeDropdown === area.id && (
-                          <div className="relative">
-                            <div
-                              ref={(el) => {
-                                if (el) {
-                                  el.scrollIntoView({
-                                    behavior: "smooth",
-                                    block: "nearest",
-                                  });
-                                }
-                              }}
-                              className="absolute left-0 w-24 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-10 overflow-hidden"
+                           {activeDropdown === area.id && (
+                          <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10">
+                            <button
+                              onClick={() => handleEdit(area)}
+                              className="px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full text-left"
                             >
-                              <button
-                                onClick={() => handleEdit(area)}
-                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
-                              >
-                                Edit
-                              </button>
-                              <svg
-                                className="w-full h-[1px]"
-                                viewBox="0 0 100 1"
-                                preserveAspectRatio="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
-                              </svg>
-                              <button
-                                onClick={() => handleDelete(area.id)}
-                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
-                              >
-                                Delete
-                              </button>
-                            </div>
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(area.id)}
+                              className="px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full text-left"
+                            >
+                              Delete
+                            </button>
                           </div>
                         )}
+                     
                       </div>
                       <div /> {/* spacer */}
                     </div>
@@ -274,6 +296,12 @@ const Area = () => {
                     <div className="flex items-center gap-3">
                       <div className="space-y-1 pr-2">
                         <p className="font-bold text-lg text-[#1F2837]">{area.name}</p>
+                        <p className="text-sm text-gray-500">
+                          Branch: {area.branch}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Route: {area.route}
+                        </p>
                         <p className="text-sm text-gray-500 break-all">ID: {index + 1}</p>
                       </div>
                     </div>
@@ -284,39 +312,20 @@ const Area = () => {
                       >
                         <TbDotsVertical className="w-5 h-5" />
                       </button>
-                      {activeDropdown === area.id && (
-                        <div className="absolute right-0 mt-1 w-28 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-20 overflow-hidden">
-                          <div
-                            ref={(el) => {
-                              if (el) {
-                                el.scrollIntoView({
-                                  behavior: "smooth",
-                                  block: "nearest",
-                                });
-                              }
-                            }}
+                         {activeDropdown === area.id && (
+                        <div className="absolute right-0 mt-1 w-28 rounded-md shadow-md bg-white z-20">
+                          <button
+                            onClick={() => handleEdit(area)}
+                            className="px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full text-left"
                           >
-                            <button
-                              onClick={() => handleEdit(area)}
-                              className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
-                            >
-                              Edit
-                            </button>
-                            <svg
-                              className="w-full h-[1px]"
-                              viewBox="0 0 100 1"
-                              preserveAspectRatio="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
-                            </svg>
-                            <button
-                              onClick={() => handleDelete(area.id)}
-                              className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
-                            >
-                              Delete
-                            </button>
-                          </div>
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(area.id)}
+                            className="px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full text-left"
+                          >
+                            Delete
+                          </button>
                         </div>
                       )}
                     </div>
