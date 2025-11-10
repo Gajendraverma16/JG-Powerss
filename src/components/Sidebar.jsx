@@ -37,23 +37,6 @@ const initialMenu = [
      
   },
   {
-    label: "Branch",
-    icon: (
-      <div className="w-6 h-6 flex items-center justify-center">
-        <img
-          src="/Invoice.svg"
-          alt="leads"
-          className="w-5 h-5 transition-all [filter:invert(12%)_sepia(6%)_saturate(285%)_hue-rotate(353deg)_brightness(94%)_contrast(89%)] group-[.active]:brightness-0 group-[.active]:invert"
-        />
-      </div>
-    ),
-    children: [
-    
-       { label: "Create Branch", path: "/branch" },
-    ],
-     
-  },
-  {
     label: "Product",
     icon: (
       <div className="w-6 h-6 flex items-center justify-center">
@@ -116,6 +99,27 @@ const initialMenu = [
   //     </div>
   //   ),
   // },
+   {
+    label: "Create New",
+    icon: (
+      <div className="w-6 h-6 flex items-center justify-center">
+        <img
+          src="/Invoice.svg"
+          alt="leads"
+          className="w-5 h-5 transition-all [filter:invert(12%)_sepia(6%)_saturate(285%)_hue-rotate(353deg)_brightness(94%)_contrast(89%)] group-[.active]:brightness-0 group-[.active]:invert"
+        />
+      </div>
+    ),
+    children: [
+     { label: "Create Categories", path: "/settings/leads-settings" },   
+       { label: "Create Branch", path: "/branch" }, 
+        { label: "Create Route", path: "/routee" },      
+       { label: "Create Area", path: "/area" },
+       { label: "Create Village", path: "/village" },
+
+    ],
+     
+  },
   {
     label: "Settings",
     icon: (
@@ -132,7 +136,7 @@ const initialMenu = [
       { label: "Create New Member", path: "/settings/users" },
       { label: "Organization Info", path: "/settings/org" },
       { label: "Update Profile", path: "/settings/update-profile" },
-      { label: "Shop Owner Settings", path: "/settings/leads-settings" },
+      // { label: "Shop Owner Settings", path: "/settings/leads-settings" },
     ],
   },
   {

@@ -4,12 +4,12 @@ import React, { useState } from "react";
 import { TbDotsVertical } from "react-icons/tb";
 import Swal from "sweetalert2";
 
-const Branch = () => {
+const Village = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-   const [branches, setBanches] = useState([
-    { id: 1, name: "Sales Branch" },
-    { id: 2, name: "Marketing Branch" },
+  const [villages, setVillages] = useState([
+    { id: 1, name: "Indore" },
+    { id: 2, name: "Bhopal" },
   ]);
 
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -22,32 +22,32 @@ const Branch = () => {
     if (!formData.name) return alert("Please fill all fields");
 
     if (isEditing) {
-      setBanches((prev) =>
-        prev.map((branch) =>
-          branch.id === editId ? { ...branch, name: formData.name } : branch
+      setVillages((prev) =>
+        prev.map((village) =>
+          village.id === editId ? { ...village, name: formData.name } : village
         )
       );
     } else {
-      const newbranch = {
-      id: branches.length + 1,
+      const newvillage = {
+      id: villages.length + 1,
         name: formData.name,
       };
-      setBanches([...branches, newbranch]);
+      setVillages([...villages, newvillage]);
     }
 
     handleCancel();
   };
 
-  // Edit branch (open modal)
-  const handleEdit = (branch) => {
-    setFormData({ name: branch.name });
-    setEditId(branch.id);
+  // Edit village (open modal)
+  const handleEdit = (village) => {
+    setFormData({ name: village.name });
+    setEditId(village.id);
     setIsEditing(true);
     setIsModalOpen(true);
     setActiveDropdown(null);
   };
 
-  // Delete branch (with Swal confirm)
+  // Delete village (with Swal confirm)
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -59,11 +59,11 @@ const Branch = () => {
       confirmButtonText: "Yes, delete it!",
     });
     if (result.isConfirmed) {
-      setBanches((prev) => prev.filter((branch) => branch.id !== id));
+      setVillages((prev) => prev.filter((village) => village.id !== id));
       await Swal.fire({
         icon: "success",
         title: "Deleted!",
-        text: "branch has been removed.",
+        text: "village has been removed.",
         confirmButtonColor: "#0e4053",
         timer: 1200,
         showConfirmButton: false,
@@ -91,7 +91,7 @@ const Branch = () => {
         <div className="mb-8 flex flex-row gap-3 items-center justify-between">
           <h1 className="text-[20px] md:text-[24px] font-semibold text-[#1F2837]">
             <span className="inline-block border-b-2 border-[#0e4053] pb-1">
-              Branch
+              Village
             </span>
           </h1>
           <button
@@ -102,7 +102,7 @@ const Branch = () => {
             }}
             className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] transition-colors hover:bg-[#ee7f1b]"
           >
-            Add Branch
+            Add Village
           </button>
         </div>
 
@@ -144,14 +144,14 @@ const Branch = () => {
               </button>
 
               <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">
-                {isEditing ? "Edit branch" : "Add New branch"}
+                {isEditing ? "Edit village" : "Add New village"}
               </h2>
 
               <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-2">
                     <label className="block text-[#4B5563] text-[16px] mb-2">
-                      Branch Name
+                      Village Name
                     </label>
                     <input
                       type="text"
@@ -160,7 +160,7 @@ const Branch = () => {
                         setFormData({ ...formData, name: e.target.value })
                       }
                       className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
-                      placeholder="Enter branch name"
+                      placeholder="Enter village name"
                       required
                     />
                   </div>
@@ -170,7 +170,7 @@ const Branch = () => {
                     type="submit"
                     className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
                   >
-                    {isEditing ? "Save changes" : "Add branch"}
+                    {isEditing ? "Save changes" : "Add village"}
                   </button>
                 </div>
               </form>
@@ -184,39 +184,39 @@ const Branch = () => {
           <div className="hidden md:block w-full flex-grow">
             <div className="w-full rounded-lg overflow-hidden">
               <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563]">
-                <div className="font-medium text-sm text-left">Branch ID</div>
-                <div className="font-medium text-sm text-left">Branch Name</div>
+                <div className="font-medium text-sm text-left">village ID</div>
+                <div className="font-medium text-sm text-left">village Name</div>
                 <div className="font-medium text-sm text-left">Actions</div>
                 <div /> {/* spacer */}
                 <div /> {/* spacer */}
               </div>
 
               <div className="pb-20">
-                {branches.length === 0 ? (
+                {villages.length === 0 ? (
                   <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-8 text-center text-[#4B5563] border-b border-gray-200 items-center last:border-b-0">
-                    <div className="lg:col-span-5">No branch available.</div>
+                    <div className="lg:col-span-5">No village available.</div>
                   </div>
                 ) : (
-                  branches.map((branch , index) => (
+                  villages.map((village , index) => (
                     <div
-                      key={branch.id}
+                      key={village.id}
                       className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-4 border-b border-gray-200 items-center last:border-b-0 transition-colors"
                     >
                       <div className="text-sm text-[#4B5563] text-left">
                         {index + 1}
                       </div>
                       <div className="text-sm text-[#4B5563] text-left whitespace-nowrap">
-                        {branch.name}
+                        {village.name}
                       </div>
 
                       <div className="relative text-left">
                         <button
-                          onClick={() => toggleDropdown(branch.id)}
+                          onClick={() => toggleDropdown(village.id)}
                           className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full transition-colors"
                         >
                           <TbDotsVertical className="w-4 h-4" />
                         </button>
-                        {activeDropdown === branch.id && (
+                        {activeDropdown === village.id && (
                           <div className="relative">
                             <div
                               ref={(el) => {
@@ -230,7 +230,7 @@ const Branch = () => {
                               className="absolute left-0 w-24 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-10 overflow-hidden"
                             >
                               <button
-                                onClick={() => handleEdit(branch)}
+                                onClick={() => handleEdit(village)}
                                 className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
                               >
                                 Edit
@@ -244,7 +244,7 @@ const Branch = () => {
                                 <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
                               </svg>
                               <button
-                                onClick={() => handleDelete(branch.id)}
+                                onClick={() => handleDelete(village.id)}
                                 className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
                               >
                                 Delete
@@ -263,29 +263,29 @@ const Branch = () => {
 
           {/* Mobile cards */}
           <div className="md:hidden w-full space-y-4 pb-32 flex-grow">
-            {branches.length === 0 ? (
-              <div className="py-8 px-6 text-center text-[#4B5563]">No branch available.</div>
+            {villages.length === 0 ? (
+              <div className="py-8 px-6 text-center text-[#4B5563]">No village available.</div>
             ) : (
-              branches.map((branch) => (
+              villages.map((village , index) => (
                 <div
-                  key={branch.id}
+                  key={village.id}
                   className="rounded-lg shadow p-4 border border-gray-200/80"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                       <div className="space-y-1 pr-2">
-                        <p className="font-bold text-lg text-[#1F2837]">{branch.name}</p>
-                        <p className="text-sm text-gray-500 break-all">ID: {branch.id}</p>
+                        <p className="font-bold text-lg text-[#1F2837]">{village.name}</p>
+                        <p className="text-sm text-gray-500 break-all">ID: {index + 1}</p>
                       </div>
                     </div>
                     <div className="relative">
                       <button
-                        onClick={() => toggleDropdown(branch.id)}
+                        onClick={() => toggleDropdown(village.id)}
                         className="p-2 text-[#4B5563] rounded-full hover:bg-gray-100"
                       >
                         <TbDotsVertical className="w-5 h-5" />
                       </button>
-                      {activeDropdown === branch.id && (
+                      {activeDropdown === village.id && (
                         <div className="absolute right-0 mt-1 w-28 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-20 overflow-hidden">
                           <div
                             ref={(el) => {
@@ -298,7 +298,7 @@ const Branch = () => {
                             }}
                           >
                             <button
-                              onClick={() => handleEdit(branch)}
+                              onClick={() => handleEdit(village)}
                               className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
                             >
                               Edit
@@ -312,7 +312,7 @@ const Branch = () => {
                               <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
                             </svg>
                             <button
-                              onClick={() => handleDelete(branch.id)}
+                              onClick={() => handleDelete(village.id)}
                               className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
                             >
                               Delete
@@ -332,7 +332,16 @@ const Branch = () => {
   );
 };
 
-export default Branch;
+export default Village;
+
+
+
+
+
+
+
+
+
 
 
 
@@ -348,12 +357,12 @@ export default Branch;
 // import { TbDotsVertical } from "react-icons/tb";
 // import Swal from "sweetalert2";
 
-// const Branch = () => {
+// const Village = () => {
 //   const [isModalOpen, setIsModalOpen] = useState(false);
 //   const [isEditing, setIsEditing] = useState(false);
-//   const [branches, setBanches] = useState([
-//     { id: 1, name: "Sales Branch" },
-//     { id: 2, name: "Marketing Branch" },
+//   const [villages, setVillages] = useState([
+//     { id: 1, name: "Indore" },
+//     { id: 2, name: "Bhopal" },
 //   ]);
 
 //   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -366,32 +375,32 @@ export default Branch;
 //     if (!formData.name) return alert("Please fill all fields");
 
 //     if (isEditing) {
-//       setBanches((prev) =>
-//         prev.map((branch) =>
-//           branch.id === editId ? { ...branch, name: formData.name } : branch
+//       setVillages((prev) =>
+//         prev.map((Village) =>
+//           Village.id === editId ? { ...Village, name: formData.name } : Village
 //         )
 //       );
 //     } else {
-//       const newBranch = {
-//         id: branches.length + 1 ,
+//       const newVillage = {
+//         id: villages.length + 1 ,
 //         name: formData.name,
 //       };
-//       setBanches([...branches, newBranch]);
+//       setVillages([...villages, newVillage]);
 //     }
 
 //     handleCancel();
 //   };
 
-//   // Edit Branch (open modal)
-//   const handleEdit = (branch) => {
-//     setFormData({ name: branch.name });
-//     setEditId(branch.id);
+//   // Edit Village (open modal)
+//   const handleEdit = (Village) => {
+//     setFormData({ name: Village.name });
+//     setEditId(Village.id);
 //     setIsEditing(true);
 //     setIsModalOpen(true);
 //     setActiveDropdown(null);
 //   };
 
-//   // Delete Branch (with Swal confirm)
+//   // Delete Village (with Swal confirm)
 //   const handleDelete = async (id) => {
 //     const result = await Swal.fire({
 //       title: "Are you sure?",
@@ -403,11 +412,11 @@ export default Branch;
 //       confirmButtonText: "Yes, delete it!",
 //     });
 //     if (result.isConfirmed) {
-//       setBanches((prev) => prev.filter((branch) => branch.id !== id));
+//       setVillages((prev) => prev.filter((Village) => Village.id !== id));
 //       await Swal.fire({
 //         icon: "success",
 //         title: "Deleted!",
-//         text: "Branch has been removed.",
+//         text: "Village has been removed.",
 //         confirmButtonColor: "#0e4053",
 //         timer: 1200,
 //         showConfirmButton: false,
@@ -435,7 +444,7 @@ export default Branch;
 //         <div className="mb-8 flex flex-row gap-3 items-center justify-between">
 //           <h1 className="text-[20px] md:text-[24px] font-semibold text-[#1F2837]">
 //             <span className="inline-block border-b-2 border-[#0e4053] pb-1">
-//               Branch
+//               Village
 //             </span>
 //           </h1>
 //           <button
@@ -446,7 +455,7 @@ export default Branch;
 //             }}
 //             className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] transition-colors hover:bg-[#ee7f1b]"
 //           >
-//             Add Branch
+//             Add Village
 //           </button>
 //         </div>
 //         {/* Add/Edit Modal */}
@@ -487,14 +496,14 @@ export default Branch;
 //               </button>
 
 //               <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">
-//                 Add New Branch
+//                 Add New Village
 //               </h2>
 
 //               <form onSubmit={handleSubmit}>
 //                 <div className="grid grid-cols-1 gap-6">
 //                   <div className="space-y-2">
 //                     <label className="block text-[#4B5563] text-[16px] mb-2">
-//                       Branch Name
+//                       Village Name
 //                     </label>
 //                     <input
 //                       type="text"
@@ -503,7 +512,7 @@ export default Branch;
 //                         setFormData({ ...formData, name: e.target.value })
 //                       }
 //                       className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
-//                       placeholder="Enter branch name"
+//                       placeholder="Enter Village name"
 //                       required
 //                     />
 //                   </div>
@@ -513,7 +522,7 @@ export default Branch;
 //                     type="submit"
 //                     className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
 //                   >
-//                     Add Branch
+//                     Add Village
 //                   </button>
 //                 </div>
 //               </form>
@@ -523,120 +532,94 @@ export default Branch;
 
 //         {/* Table */}
 //         <div className="flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF]">
-//           <table className="table-fixed">
-//             <thead>
-//               <tr className="border-b border-[#DFE8F6] text-left text-[#4B5563]">
-//                     <th className="py-4 px-6 text-sm font-medium w-[100px]">Branch ID</th>
-//                 <th className="py-4 px-6 text-sm font-medium">Branch</th>
-//                 <th className="py-4 px-6 text-sm font-medium text-right">
-//                   Actions
-//                 </th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {branches.length === 0 ? (
-//                 <tr>
-//                   <td
-//                     colSpan={3}
-//                     className="py-12 px-6 text-center text-sm font-medium text-[#6B7280]"
-//                   >
-//                     No Branch available.
-//                   </td>
-//                 </tr>
-//               ) : (
-//                 branches.map((branch ,index) => (
-//                   <tr
-//                     key={branch.id}
-//                     className="border-b border-[#E9F1FF] text-[#1F2837] last:border-b-0"
-//                   >
-//          <td className="whitespace-nowrap py-5 px-6 text-sm font-medium text-[#6B7280]">
+//          <table className="table-fixed">
+//   <thead>
+//     <tr className="border-b border-[#DFE8F6] text-left text-[#4B5563]">
+//       <th className="py-4 px-6 text-sm font-medium w-[100px]"> Village ID</th>
+//       <th className="py-4 px-6 text-sm font-medium">Village</th>
+//       <th className="py-4 px-6 text-sm font-medium text-right">
+//         Actions
+//       </th>
+//     </tr>
+//   </thead>
+//   <tbody>
+//     {villages.length === 0 ? (
+//       <tr>
+//         <td
+//           colSpan={3}
+//           className="py-12 px-6 text-center text-sm font-medium text-[#6B7280]"
+//         >
+//           No village available.
+//         </td>
+//       </tr>
+//     ) : (
+//       villages.map((village , index) => (
+//         <tr
+//           key={village.id}
+//           className="border-b border-[#E9F1FF] text-[#1F2837] last:border-b-0"
+//         >
+//               <td className="whitespace-nowrap py-5 px-6 text-sm font-medium text-[#6B7280]">
 //       {index + 1}
+//     </td>
+//           <td className="whitespace-nowrap py-5 px-6 text-sm font-medium">
+//             {village.name}
 //           </td>
-//                     <td className="whitespace-nowrap py-5 px-6 text-sm font-medium">
-//                       {branch.name}
-//                     </td>
 
-//                     <td className="py-5 px-6 relative text-right">
-//                       <button
-//                         onClick={() => toggleDropdown(branch.id)}
-//                         className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full transition-colors"
-//                       >
-//                         <TbDotsVertical className="w-4 h-4" />
-//                       </button>
-//                       {activeDropdown === branch.id && (
-//                         <div className="relative">
-//                           <div
-//                             ref={(el) => {
-//                               if (el) {
-//                                 el.scrollIntoView({
-//                                   behavior: "smooth",
-//                                   block: "nearest",
-//                                 });
-//                               }
-//                             }}
-//                             className="absolute left-0 w-24 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-10 overflow-hidden"
-//                           >
-//                             <button
-//                               onClick={() => handleEdit(branch)}
-//                               className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
-//                             >
-//                               <svg
-//                                 xmlns="http://www.w3.org/2000/svg"
-//                                 width="24"
-//                                 height="24"
-//                                 viewBox="0 0 24 24"
-//                                 className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors"
-//                               >
-//                                 <path
-//                                   fill="currentColor"
-//                                   d="M4 14v-2h7v2zm0-4V8h11v2zm0-4V4h11v2zm9 14v-3.075l6.575-6.55l3.075 3.05L16.075 20zm7.5-6.575l-.925-.925zm-6 5.075h.95l3.025-3.05l-.45-.475l-.475-.45l-3.05 3.025zm3.525-3.525l-.475-.45l.925.925z"
-//                                 />
-//                               </svg>
-//                               <span className="group-hover:text-white transition-colors">
-//                                 Edit
-//                               </span>
-//                             </button>
-//                             <svg
-//                               className="w-full h-[1px]"
-//                               viewBox="0 0 100 1"
-//                               preserveAspectRatio="none"
-//                               xmlns="http://www.w3.org/2000/svg"
-//                             >
-//                               <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
-//                             </svg>
-//                             <button
-//                               onClick={() => handleDelete(branch.id)}
-//                               className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
-//                             >
-//                               <svg
-//                                 xmlns="http://www.w3.org/2000/svg"
-//                                 width="24"
-//                                 height="24"
-//                                 viewBox="0 0 24 24"
-//                                 className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors"
-//                               >
-//                                 <path
-//                                   fill="currentColor"
-//                                   d="M7.616 20q-.672 0-1.144-.472T6 18.385V6H5V5h4v-.77h6V5h4v1h-1v12.385q0 .69-.462 1.153T16.384 20zM17 6H7v12.385q0 .269.173.442t.443.173h8.769q.23 0 .423-.192t.192-.424zM9.808 17h1V8h-1zm3.384 0h1V8h-1zM7 6v13z"
-//                                 />
-//                               </svg>
-//                               <span className="group-hover:text-white transition-colors">
-//                                 Delete
-//                               </span>
-//                             </button>
-//                           </div>
-//                         </div>
-//                       )}
-//                     </td>
-//                   </tr>
-//                 ))
-//               )}
-//             </tbody>
-//           </table>
+//           <td className="py-5 px-6 relative text-right">
+//             {/* Actions (unchanged) */}
+//             <button
+//               onClick={() => toggleDropdown(village.id)}
+//               className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full transition-colors"
+//             >
+//               <TbDotsVertical className="w-4 h-4" />
+//             </button>
+//             {activeDropdown === village.id && (
+//               <div className="relative">
+//                 <div
+//                   ref={(el) => {
+//                     if (el) {
+//                       el.scrollIntoView({
+//                         behavior: "smooth",
+//                         block: "nearest",
+//                       });
+//                     }
+//                   }}
+//                   className="absolute left-0 w-24 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-10 overflow-hidden"
+//                 >
+//                   <button
+//                     onClick={() => handleEdit(village)}
+//                     className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
+//                   >
+//                     Edit
+//                   </button>
+//                   <svg
+//                     className="w-full h-[1px]"
+//                     viewBox="0 0 100 1"
+//                     preserveAspectRatio="none"
+//                     xmlns="http://www.w3.org/2000/svg"
+//                   >
+//                     <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
+//                   </svg>
+//                   <button
+//                     onClick={() => handleDelete(village.id)}
+//                     className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
+//                   >
+//                     Delete
+//                   </button>
+//                 </div>
+//               </div>
+//             )}
+//           </td>
+//         </tr>
+//       ))
+//     )}
+//   </tbody>
+// </table>
+
 //         </div>
 //       </div>
 //     </div>
 //   );
 // };
 
-// export default Branch;
+// export default Village;
