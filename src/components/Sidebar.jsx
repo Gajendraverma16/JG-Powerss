@@ -341,7 +341,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile }) {
   const HamburgerButton = () => (
     <button
       onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      className="hamburger-button fixed top-4 left-4 z-50 md:hidden w-10 h-10 flex flex-col items-center justify-center bg-white/95 backdrop-blur-[160px] border border-[#F5EFE9] rounded-lg shadow-sm"
+      className="hamburger-button fixed top-5 right-8 z-50 md:hidden w-10 h-10 flex flex-col items-center justify-center bg-white/95 backdrop-blur-[160px] border border-[#F5EFE9] rounded-lg shadow-sm"
     >
       <span
         className={`block w-6 h-0.5 bg-[#242220] transition-all duration-300 ${

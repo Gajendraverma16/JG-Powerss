@@ -13,6 +13,7 @@ import { FaPlus, FaMinus, FaTimes } from "react-icons/fa";
  * ✅ Product dropdown is always visible (fixed z-index)
  * ✅ Mobile modal view for product search
  * ✅ Quantity editable, price read-only
+ * ✅ Shows product images in dropdown
  */
 
 const NewOrder = () => {
@@ -52,31 +53,30 @@ const NewOrder = () => {
   }, []);
 
   // Fetch leads
-useEffect(() => {
-  let canceled = false;
-  setLeadsLoading(true);
+  useEffect(() => {
+    let canceled = false;
+    setLeadsLoading(true);
 
-  api
-    .get("/showlead")
-    .then((res) => {
-      if (canceled) return;
-      let fetched = res?.data?.result || [];
-      if (!Array.isArray(fetched)) fetched = Object.values(fetched);
+    api
+      .get("/showlead")
+      .then((res) => {
+        if (canceled) return;
+        let fetched = res?.data?.result || [];
+        if (!Array.isArray(fetched)) fetched = Object.values(fetched);
 
-      // ✅ No filtering — show all leads for all users
-      setLeads(fetched);
-    })
-    .catch((err) => {
-      console.error("Error fetching leads:", err);
-      setLeads([]);
-    })
-    .finally(() => setLeadsLoading(false));
+        // ✅ No filtering — show all leads for all users
+        setLeads(fetched);
+      })
+      .catch((err) => {
+        console.error("Error fetching leads:", err);
+        setLeads([]);
+      })
+      .finally(() => setLeadsLoading(false));
 
-  return () => {
-    canceled = true;
-  };
-}, [user]);
-
+    return () => {
+      canceled = true;
+    };
+  }, [user]);
 
   // Fetch products
   useEffect(() => {
@@ -150,6 +150,7 @@ useEffect(() => {
       product_price: parseFloat(product.price || 0),
       product_points: parseInt(product.item_points || 0),
       quantity: 1,
+      product_obj: product,
     };
     setItems(updated);
     setProductDropdownOpenIndex(null);
@@ -199,16 +200,29 @@ useEffect(() => {
     };
 
     try {
-      Swal.fire({ title: "Creating order...", didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+      Swal.fire({
+        title: "Creating order...",
+        didOpen: () => Swal.showLoading(),
+        allowOutsideClick: false,
+      });
       const res = await api.post("/orders", payload);
       Swal.close();
       if (res.data?.success) {
         Swal.fire("Success", res.data.message, "success");
         setSelectedLead(null);
         setLeadSearch("");
-        setItems([{ product_id: "", title: "", product_price: 0, product_points: 0, quantity: 1 }]);
+        setItems([
+          {
+            product_id: "",
+            title: "",
+            product_price: 0,
+            product_points: 0,
+            quantity: 1,
+          },
+        ]);
         setNotes("");
-      } else Swal.fire("Error", res.data?.message || "Failed to create order", "error");
+      } else
+        Swal.fire("Error", res.data?.message || "Failed to create order", "error");
     } catch (e) {
       Swal.close();
       Swal.fire("Error", "Failed to create order.", "error");
@@ -231,7 +245,9 @@ useEffect(() => {
 
       {/* Lead selector */}
       <div className="mb-6">
-        <label className="block text-sm font-medium mb-2">Select Shop Owner</label>
+        <label className="block text-sm font-medium mb-2">
+          Select Shop Owner
+        </label>
         <div className="relative overflow-visible">
           <input
             type="text"
@@ -257,7 +273,7 @@ useEffect(() => {
           )}
 
           {leadDropdownOpen && (
-            <div className="absolute z-[9999] mt-2 bg-white border rounded-xl shadow-2xl max-h-64 overflow-y-auto w-full">
+            <div className="absolute z-[9999] mt-2 bg-white border border-gray-300 rounded-xl shadow-2xl max-h-64 overflow-y-auto w-full">
               {leadsLoading ? (
                 <div className="p-4 text-center text-gray-500">Loading...</div>
               ) : filteredLeads.length === 0 ? (
@@ -275,7 +291,9 @@ useEffect(() => {
                   >
                     <div>
                       <div className="font-medium">{lead.customer_name}</div>
-                      <div className="text-xs text-gray-500">{lead.email || lead.contact}</div>
+                      <div className="text-xs text-gray-500">
+                        {lead.email || lead.contact}
+                      </div>
                     </div>
                     <div className="text-xs text-gray-400">
                       Assigned: {lead.assigned_to || "-"}
@@ -288,7 +306,7 @@ useEffect(() => {
         </div>
 
         {selectedLead && (
-          <div className="mt-3 p-3 bg-gray-50 border rounded-xl text-sm">
+          <div className="mt-3 p-3 bg-gray-50 border border-gray-300 rounded-xl text-sm">
             <div className="font-semibold">{selectedLead.customer_name}</div>
             <div>{selectedLead.email || selectedLead.contact}</div>
           </div>
@@ -296,170 +314,201 @@ useEffect(() => {
       </div>
 
       {/* Product list */}
-     <div className="border border-gray-200 rounded-xl overflow-visible mb-6">
-  <div className="grid grid-cols-[2fr_1fr_1fr_40px_1fr] text-xs font-semibold text-white bg-gray-800 rounded-t-xl">
-    <div className="p-2">Product</div>
-    <div className="p-2 text-center">Qty</div>
-    <div className="p-2 text-center">Price</div>
-    <div></div>
-    <div className="p-2 text-right">Amount</div>
-  </div>
+      <div className="border border-gray-200 rounded-xl overflow-visible mb-6">
+        <div className="grid grid-cols-[2fr_1fr_1fr_40px_1fr] text-xs font-semibold text-white bg-gray-800 rounded-t-xl">
+          <div className="p-2">Product</div>
+          <div className="p-2 text-center">Qty</div>
+          <div className="p-2 text-center">Price</div>
+          <div></div>
+          <div className="p-2 text-right">Amount</div>
+        </div>
 
-  {items.map((it, idx) => (
-    <div
-      key={idx}
-      className="grid grid-cols-[2fr_1fr_1fr_40px_1fr] items-center px-2 py-3 border-b relative overflow-visible"
-    >
-      {/* Product Search */}
-      <div className="relative overflow-visible" data-product-dropdown>
-        <input
-          type="text"
-          value={it.title || ""}
-          onChange={(e) => {
-            const val = e.target.value;
-            const updated = [...items];
-            updated[idx].title = val;
-            setItems(updated);
-            setProductDropdownOpenIndex(idx);
-            setProductSearchTerm(val);
-          }}
-          onFocus={() => {
-            setProductDropdownOpenIndex(idx);
-            setProductSearchTerm(it.title);
-          }}
-          placeholder="Search product..."
-          className="w-full px-2 py-2 border-b border-gray-200 outline-none bg-transparent"
-        />
+        {items.map((it, idx) => (
+          <div
+            key={idx}
+            className="grid grid-cols-[2fr_1fr_1fr_40px_1fr] items-center px-2 py-3  relative overflow-visible"
+          >
+            {/* Product Search */}
+            <div className="relative overflow-visible" data-product-dropdown>
+              <input
+                type="text"
+                value={it.title || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const updated = [...items];
+                  updated[idx].title = val;
+                  setItems(updated);
+                  setProductDropdownOpenIndex(idx);
+                  setProductSearchTerm(val);
+                }}
+                onFocus={() => {
+                  setProductDropdownOpenIndex(idx);
+                  setProductSearchTerm(it.title);
+                }}
+                placeholder="Search product..."
+                className="w-full px-2 py-2 border-b border-gray-200 outline-none bg-transparent"
+              />
 
-        {productDropdownOpenIndex === idx &&
-          (isMobileView ? (
-            // Mobile full screen modal
-            <div className="fixed inset-0 z-[9999] bg-white p-4 overflow-y-auto">
-              <div className="flex items-center gap-3 mb-4">
-                <input
-                  autoFocus
-                  type="text"
-                  value={productSearchTerm}
-                  onChange={(e) => setProductSearchTerm(e.target.value)}
-                  placeholder="Search product..."
-                  className="flex-1 px-3 py-2 border rounded-lg"
-                />
-                <button
-                  className="text-gray-600"
-                  onClick={() => setProductDropdownOpenIndex(null)}
-                >
-                  <FaTimes />
-                </button>
-              </div>
-              <div className="space-y-1">
-                {productsLoading ? (
-                  <div className="p-3 text-sm text-gray-500">
-                    Loading products...
+              {productDropdownOpenIndex === idx &&
+                (isMobileView ? (
+                  // Mobile full screen modal
+                  <div className="fixed inset-0 z-[9999] bg-white p-4 overflow-y-auto">
+                    <div className="flex items-center gap-3 mb-4">
+                      <input
+                        autoFocus
+                        type="text"
+                        value={productSearchTerm}
+                        onChange={(e) =>
+                          setProductSearchTerm(e.target.value)
+                        }
+                        placeholder="Search product..."
+                        className="flex-1 px-3 py-2 border rounded-lg"
+                      />
+                      <button
+                        className="text-gray-600"
+                        onClick={() => setProductDropdownOpenIndex(null)}
+                      >
+                        <FaTimes />
+                      </button>
+                    </div>
+                    <div className="space-y-1">
+                      {productsLoading ? (
+                        <div className="p-3 text-sm text-gray-500">
+                          Loading products...
+                        </div>
+                      ) : (
+                        getFilteredProducts(productSearchTerm).map((p) => (
+                          <div
+                            key={p.id}
+                            className="flex items-center justify-between p-3  hover:bg-gray-100 cursor-pointer"
+                            onClick={() => handleProductSelect(p, idx)}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              {/* ✅ Product Image */}
+                              <img
+                                src={`${p.product_image}`}
+                                alt={p.item_name}
+                                className="w-12 h-12 object-cover rounded-md border border-gray-200"
+                              />
+                              <div>
+                                <div className="font-medium truncate">
+                                  {p.item_name}
+                                </div>
+                                <div className="text-xs text-gray-500 truncate">
+                                  {p.sku}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-sm font-semibold text-gray-700">
+                              ₹{p.price}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
                 ) : (
-                  getFilteredProducts(productSearchTerm).map((p) => (
-                    <div
-                      key={p.id}
-                      className="flex items-center justify-between p-3 border-b hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleProductSelect(p, idx)}
-                    >
-                      <div className="min-w-0">
-                        <div className="font-medium truncate">{p.item_name}</div>
-                        <div className="text-xs text-gray-500 truncate">{p.sku}</div>
+                  // Desktop dropdown
+                  <div className="absolute z-[99999] left-0 top-full mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-2xl max-h-60 overflow-y-auto">
+                    {productsLoading ? (
+                      <div className="p-3 text-sm text-gray-500">
+                        Loading products...
                       </div>
-                      <div className="text-sm font-semibold text-gray-700">
-                        ₹{p.price}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          ) : (
-            // Desktop dropdown
-            <div className="absolute z-[99999] left-0 top-full mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-2xl max-h-60 overflow-y-auto">
-              {productsLoading ? (
-                <div className="p-3 text-sm text-gray-500">Loading products...</div>
-              ) : (
-                getFilteredProducts(productSearchTerm).map((p) => (
-                  <div
-                    key={p.id}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer transition-all rounded-lg"
-                    onClick={() => handleProductSelect(p, idx)}
-                  >
-                    <div>
-                      <div className="font-medium">{p.item_name}</div>
-                      <div className="text-xs text-gray-500">{p.sku}</div>
-                    </div>
-                    <div className="text-sm font-semibold text-gray-700">₹{p.price}</div>
+                    ) : (
+                      getFilteredProducts(productSearchTerm).map((p) => (
+                        <div
+                          key={p.id}
+                          className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer transition-all rounded-lg"
+                          onClick={() => handleProductSelect(p, idx)}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {/* ✅ Product Image */}
+                            <img
+                              src={`${p.product_image}`}
+                              alt={p.item_name}
+                              className="w-10 h-10 object-cover rounded-md border border-gray-200"
+                            />
+                            <div>
+                              <div className="font-medium">
+                                {p.item_name}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {p.sku}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-sm font-semibold text-gray-700">
+                            ₹{p.price}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
-                ))
-              )}
+                ))}
             </div>
-          ))}
+
+            {/* Qty */}
+            <div className="text-center">
+              <input
+                type="number"
+                min="1"
+                value={it.quantity}
+                onChange={(e) =>
+                  handleQuantityChange(idx, e.target.value)
+                }
+                className="w-full text-center border border-gray-200 rounded-md"
+              />
+            </div>
+
+            {/* Price */}
+            <div className="text-center">
+              <input
+                type="number"
+                value={it.product_price}
+                readOnly
+                className="w-full text-center border border-gray-200 bg-gray-50 rounded-md"
+              />
+            </div>
+
+            {/* Remove */}
+            <div className="text-center">
+              <button
+                onClick={() => removeItemRow(idx)}
+                className="text-red-500 hover:text-red-700"
+              >
+                <FaMinus />
+              </button>
+            </div>
+
+            {/* Amount */}
+            <div className="text-right font-medium">
+              ₹{(it.quantity * it.product_price).toLocaleString()}
+            </div>
+          </div>
+        ))}
+
+        {/* Add new product */}
+        <div className="p-3 text-center">
+          <button
+            onClick={addItemRow}
+            className="text-[#ef7e1b] border border-dashed border-[#ef7e1b] px-3 py-2 rounded-full text-sm"
+          >
+            <FaPlus className="inline mr-1" /> Add Product
+          </button>
+        </div>
       </div>
-
-      {/* Qty */}
-      <div className="text-center">
-        <input
-          type="number"
-          min="1"
-          value={it.quantity}
-          onChange={(e) => handleQuantityChange(idx, e.target.value)}
-          className="w-full text-center border border-gray-200 rounded-md"
-        />
-      </div>
-
-      {/* Price */}
-      <div className="text-center">
-        <input
-          type="number"
-          value={it.product_price}
-          readOnly
-          className="w-full text-center border border-gray-200 bg-gray-50 rounded-md"
-        />
-      </div>
-
-      {/* Remove */}
-      <div className="text-center">
-        <button
-          onClick={() => removeItemRow(idx)}
-          className="text-red-500 hover:text-red-700"
-        >
-          <FaMinus />
-        </button>
-      </div>
-
-      {/* Amount */}
-      <div className="text-right font-medium">
-        ₹{(it.quantity * it.product_price).toLocaleString()}
-      </div>
-    </div>
-  ))}
-
-  {/* Add new product */}
-  <div className="p-3 text-center">
-    <button
-      onClick={addItemRow}
-      className="text-[#ef7e1b] border border-dashed border-[#ef7e1b] px-3 py-2 rounded-full text-sm"
-    >
-      <FaPlus className="inline mr-1" /> Add Product
-    </button>
-  </div>
-</div>
-
 
       {/* Notes */}
       <textarea
         rows="3"
-        className="w-full border rounded-xl p-3 text-sm mb-6"
+        className="w-full border border-gray-300 rounded-xl p-3 text-sm mb-6"
         placeholder="Add any notes..."
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
       />
 
       {/* Totals */}
-      <div className="flex justify-between items-center flex-wrap gap-4 bg-[#f9fafb] border rounded-xl p-5">
+      <div className="flex justify-between items-center flex-wrap gap-4 bg-[#f9fafb] border border-gray-300 rounded-xl p-5">
         {(() => {
           const { total_value, total_points } = calculateTotals();
           return (

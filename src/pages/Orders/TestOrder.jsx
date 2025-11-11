@@ -25,12 +25,14 @@ const TestOrder = () => {
     const dynamicHeaderTitle = "All Order List";
     const dynamicModalTitle = statusName
     ? `Edit ${decodeURIComponent(statusName)} Item`
-    : "Edit Quotation";
+    : "Edit Order Item";
 
   // Mobile detection and search state
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [quotations, setQuotations] = useState([]);
+  const [orders, setOrders] = useState([]);
+
   // console.log("farhabn",quotations);
   
   const [loading, setLoading] = useState(true);
@@ -126,10 +128,10 @@ const TestOrder = () => {
         if (response.data.success) {
           setQuotations(response.data.data); // Access data.data for quotations
         } else {
-          setError("Failed to fetch");
+          setError("Failed to fetch data");
         }
       } catch (err) {
-        setError("Error fetching : " + err.message);
+        setError("Error fetching data");
       } finally {
         setLoading(false);
       }
@@ -443,6 +445,9 @@ switch (filters.contact) {
     );
   });
 
+
+
+  
   // Helper function for form validation
   const validateFormData = (data) => {
     const errors = [];
@@ -696,7 +701,7 @@ const handleDelete = async (id) => {
         );
         Swal.fire({
           icon: "success",
-          title: "Quotation Updated",
+          title: "Order Item Updated",
           text:
             response.data.message ||
             `${formData.client_name} was successfully updated.`,
@@ -706,9 +711,9 @@ const handleDelete = async (id) => {
         throw new Error(response.data.message || "Failed to update ");
       }
     } catch (err) {
-      let errorTitle = "Error Updating ";
+      let errorTitle = "Error Updating Order Item";
       let errorMessage =
-        "An error occurred while updating the quotation. Please try again.";
+        "An error occurred while updating the order item. Please try again.";
 
       if (err.response) {
         if (err.response.status === 422) {
@@ -1662,21 +1667,88 @@ const handleDelete = async (id) => {
           </td>
 
           {/* ✅ Order Status */}
-          <td
-            className={`py-4 px-3 text-sm font-medium overflow-hidden truncate ${
-              order?.order_type === "return"
-                ? "text-red-600"
-                : order?.order_type === "new"
-                ? "text-blue-600"
-                : "text-gray-700"
-            }`}
-          >
-            {order?.order_type
-              ? order?.order_type === "return"
-                ? "Return"
-                : "New Order"
-              : "Pending"}
-          </td>
+<select
+  value={order?.order_type || ""}
+  onChange={async (e) => {
+    const newStatus = e.target.value;
+    const orderId = order?.id;
+
+    // keep old value in case of error
+    const prevStatus = order?.order_type;
+
+    try {
+      // ✅ Optimistic UI update (instant without refresh)
+     setQuotations((prev) =>
+  prev.map((o) =>
+    o.id === orderId ? { ...o, order_type: newStatus } : o
+  )
+);
+
+
+      // 🛰️ Send update to backend
+      const res = await api.put(`/orders/${orderId}/status`, {
+        order_type: newStatus,
+      });
+
+      if (res.data?.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Updated",
+          text: `Order marked as "${newStatus}"`,
+          timer: 1000,
+          showConfirmButton: false,
+        });
+      } else {
+        // ❌ Revert on error
+       setQuotations((prev) =>
+  prev.map((o) =>
+    o.id === orderId ? { ...o, order_type: prevStatus } : o
+  )
+);
+
+        Swal.fire("Error", res.data?.message || "Failed to update status", "error");
+      }
+    } catch (error) {
+      // ❌ Revert on network error
+      setQuotations((prev) =>
+  prev.map((o) =>
+    o.id === orderId ? { ...o, order_type: prevStatus } : o
+  )
+);
+
+      Swal.fire("Error", "Network or server error while updating.", "error");
+      console.error("Status Update Error:", error);
+    }
+  }}
+  className={`block mt-4 mb-4 w-[120px] rounded-full text-center text-sm font-medium px-3 py-2 border border-gray-300 bg-white cursor-pointer outline-none transition-all
+    focus:ring-2 focus:ring-[#EF7E1B]/40 focus:border-[#EF7E1B] hover:shadow-sm
+    ${
+      order?.order_type === "completed"
+        ? "text-green-600"
+        : order?.order_type === "hold"
+        ? "text-yellow-600"
+        : order?.order_type === "cancel"
+        ? "text-red-600"
+        : order?.order_type === "process"
+        ? "text-blue-600"
+        : "text-gray-700"
+    }
+  `}
+>
+  <option value="" disabled>
+    Select Status
+  </option>
+  <option value="new" className="text-gray-700">New</option>
+  <option value="hold" className="text-yellow-600">Hold</option>
+  <option value="process" className="text-blue-600">Process</option>
+  <option value="completed" className="text-green-600">Completed</option>
+  <option value="cancel" className="text-red-600">Cancel</option>
+</select>
+
+
+
+
+
 
           {/* ✅ Order Number */}
           <td className="py-4 px-3 text-sm text-[#4B5563] overflow-hidden truncate">
@@ -1816,12 +1888,184 @@ const handleDelete = async (id) => {
         </table>
       </div>
       {/* Quotation List Cards for Mobile */}
-      <div className="md:hidden w-full space-y-6 pb-24 flex-grow overflow-x-auto">
-        {currentQuotations.length === 0 ? (
-          <div className="py-12 px-6 text-center">
-            <div className="w-16 h-16 mx-auto mb-4  rounded-full flex items-center justify-center">
+   {/* Orders List Cards for Mobile */}
+<div className="md:hidden w-full space-y-6 pb-24 flex-grow overflow-x-auto">
+  {currentQuotations?.length === 0 ? (
+    <div className="py-12 px-6 text-center">
+      <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-gray-50">
+        <svg
+          className="w-8 h-8 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.5"
+            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-5.5a2.5 2.5 0 00-2.5 2.5v.5a2 2 0 01-2 2h-3a2 2 0 01-2-2v-.5a2.5 2.5 0 00-2.5-2.5H4"
+          />
+        </svg>
+      </div>
+      <p className="text-gray-500 font-medium">
+        {searchTerm
+          ? "No orders found matching your search."
+          : "No orders available."}
+      </p>
+    </div>
+  ) : (
+     currentQuotations?.map((order) => (
+      <div
+        key={order?.id}
+        className="bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-all duration-300 hover:shadow-lg relative"
+      >
+        {/* Header */}
+        <div className="p-4 border-b border-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={selectedLeads.includes(order?.id)}
+                onChange={() => toggleQuotationSelection(order?.id)}
+                className="w-5 h-5 rounded border-gray-300 text-gray-900 focus:ring-gray-500 focus:ring-2"
+              />
+              <div>
+<select
+  value={order?.order_type || ""}
+  onChange={async (e) => {
+    const newStatus = e.target.value;
+    const orderId = order?.id;
+
+    // keep old value in case of error
+    const prevStatus = order?.order_type;
+
+    try {
+      // ✅ Optimistic UI update (instant without refresh)
+     setQuotations((prev) =>
+  prev.map((o) =>
+    o.id === orderId ? { ...o, order_type: newStatus } : o
+  )
+);
+
+
+      // 🛰️ Send update to backend
+      const res = await api.put(`/orders/${orderId}/status`, {
+        order_type: newStatus,
+      });
+
+      if (res.data?.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Updated",
+          text: `Order marked as "${newStatus}"`,
+          timer: 1000,
+          showConfirmButton: false,
+        });
+      } else {
+        // ❌ Revert on error
+        setQuotations((prev) =>
+  prev.map((o) =>
+    o.id === orderId ? { ...o, order_type: prevStatus } : o
+  )
+);
+
+        Swal.fire("Error", res.data?.message || "Failed to update status", "error");
+      }
+    } catch (error) {
+      // ❌ Revert on network error
+      setQuotations((prev) =>
+  prev.map((o) =>
+    o.id === orderId ? { ...o, order_type: prevStatus } : o
+  )
+);
+
+      Swal.fire("Error", "Network or server error while updating.", "error");
+      console.error("Status Update Error:", error);
+    }
+  }}
+  className={`block mt-4 mb-4 w-[120px] rounded-full text-center text-sm font-medium px-3 py-2 border border-gray-300 bg-white cursor-pointer outline-none transition-all
+    focus:ring-2 focus:ring-[#EF7E1B]/40 focus:border-[#EF7E1B] hover:shadow-sm
+    ${
+      order?.order_type === "completed"
+        ? "text-green-600"
+        : order?.order_type === "hold"
+        ? "text-yellow-600"
+        : order?.order_type === "cancel"
+        ? "text-red-600"
+        : order?.order_type === "process"
+        ? "text-blue-600"
+        : "text-gray-700"
+    }
+  `}
+>
+  <option value="" disabled>
+    Select Status
+  </option>
+  <option value="new" className="text-gray-700">New</option>
+  <option value="hold" className="text-yellow-600">Hold</option>
+  <option value="process" className="text-blue-600">Process</option>
+  <option value="completed" className="text-green-600">Completed</option>
+  <option value="cancel" className="text-red-600">Cancel</option>
+</select>
+
+                <h3 className="text-base font-semibold text-gray-900">
+                  {order?.shop_owner?.customer_name || "-"}
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Order No: {order?.order_no || "-"}
+                </p>
+              </div>
+            </div>
+
+            {/* Action Menu */}
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown(order?.id)}
+                className="p-2 text-[#4B5563] hover:bg-gray-100 rounded-full transition"
+              >
+                <TbDotsVertical className="w-4 h-4" />
+              </button>
+
+              {activeDropdown === order?.id && (
+                <div className="absolute right-0 top-8 w-24 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-20 overflow-hidden">
+                  {/* Edit (optional) */}
+                  {/* <button
+                    onClick={() => handleEdit(order)}
+                    className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors"
+                  >
+                    <FiEdit className="mr-2 w-4 h-4 group-hover:text-white" />
+                    <span className="group-hover:text-white">Edit</span>
+                  </button> */}
+
+                  <svg
+                    className="w-full h-[1px]"
+                    viewBox="0 0 100 1"
+                    preserveAspectRatio="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
+                  </svg>
+
+                  <button
+                    onClick={() => handleDelete(order?.id)}
+                    className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors"
+                  >
+                    <FiTrash2 className="mr-2 w-4 h-4 group-hover:text-white" />
+                    <span className="group-hover:text-white">Delete</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Order Details */}
+        <div className="p-4 space-y-3">
+          {/* Notes */}
+          <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+            <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
               <svg
-                className="w-8 h-8 text-gray-400"
+                className="w-4 h-4 text-gray-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1830,352 +2074,143 @@ const handleDelete = async (id) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="1.5"
-                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-5.5a2.5 2.5 0 00-2.5 2.5v.5a2 2 0 01-2 2h-3a2 2 0 01-2-2v-.5a2.5 2.5 0 00-2.5-2.5H4"
+                  d="M3 5h18M9 3v2m6-2v2M4 8h16v13H4z"
                 />
               </svg>
             </div>
-            <p className="text-gray-500 font-medium">
-              {searchTerm
-                ? "No quotations found matching your search."
-                : "No quotations available."}
-            </p>
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase font-medium tracking-wide">
+                Notes
+              </p>
+              <p className="text-xs text-gray-900">
+                {order?.notes || "No notes provided"}
+              </p>
+            </div>
           </div>
-        ) : (
-          currentQuotations.map((quotation) => {
-            return (
-              <div
-                key={quotation?.id}
-                className="bg-white rounded-2xl border border-gray-100 hover:border-gray-200 transition-all duration-300 hover:shadow-lg"
+
+          {/* Contact */}
+          <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+            <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
+              <svg
+                className="w-4 h-4 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                {/* Header Section */}
-                <div className="p-4 sm:p-6 border-b border-gray-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2 sm:space-x-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedLeads.includes(quotation?.id)}
-                        onChange={() => toggleQuotationSelection(quotation?.id)}
-                        className="w-5 h-5 rounded border-gray-300 text-gray-900 focus:ring-gray-500 focus:ring-2"
-                      />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M3 5a2 2 0 002-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase font-medium tracking-wide">
+                Contact
+              </p>
+              <p className="text-xs text-gray-900">
+                {order?.shop_owner?.contact_number || "No contact"}
+              </p>
+            </div>
+          </div>
 
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden ring-1 ring-gray-200">
-                          {/* Removed profile_pic rendering */}
-                          <img
-                            src="/dummyavatar.jpeg"
-                            alt={quotation?.client_name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+          {/* Total */}
+          <div
+            className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer"
+            onClick={(e) => handleShowItems(order?.items, e)}
+          >
+            <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
+              <svg
+                className="w-5 h-5 text-[#EF7E1B]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M12 8v8m0 0l-3-3m3 3l3-3"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase font-medium tracking-wide">
+                Total
+              </p>
+              <p className="text-sm font-semibold text-gray-900">
+                ₹{parseFloat(order.total_value || 0).toFixed(2)}{" "}
+                <span className="text-xs text-gray-500">
+                  ({order?.items?.length || 0} items)
+                </span>
+              </p>
+            </div>
+          </div>
 
-                        <div>
-                          {/* Quotation ID */}
-                          <div className="text-xs text-Duskwood-600 font-semibold ">
-                            Quotation No: {quotation?.quote_no}
-                          </div>
-                          <h3 className="text-base font-semibold text-gray-900 whitespace-nowrap">
-                            {quotation?.client_name}
-                          </h3>
-                          <p className="text-xs text-gray-500">
-                            {quotation?.client_address}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            {quotation?.created_at ? (
-                              <>
-                                <span className="block text-xs">
-                                  {new Date(
-                                    quotation?.created_at
-                                  ).toLocaleTimeString("en-US", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  })}
-                                </span>
-                                <span className="block text-Duskwood-600 text-xs mt-1">
-                                  {formatDateForDisplay(quotation?.created_at)}
-                                </span>
-                              </>
-                            ) : (
-                              ""
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+          {/* Created / Updated */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+              <p className="text-[10px] text-gray-500 uppercase font-medium tracking-wide">
+                Created
+              </p>
+              <p className="text-xs text-gray-900">
+                {order?.created_at &&
+                  new Date(order.created_at).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
+              </p>
+            </div>
 
-                    {/* Actions Menu */}
-                    <div className="relative">
-                      <button
-                        onClick={() => toggleDropdown(quotation?.id)}
-                        className="p-1 text-[#4B5563] rounded-full hover:bg-gray-100"
-                      >
-                        <TbDotsVertical className="w-4 h-4" />
-                      </button>
+            <div className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+              <p className="text-[10px] text-gray-500 uppercase font-medium tracking-wide">
+                Updated
+              </p>
+              <p className="text-xs text-gray-900">
+                {order?.updated_at &&
+                  new Date(order.updated_at).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
+              </p>
+            </div>
+          </div>
 
-                      {activeDropdown === quotation?.id && (
-                        <div className="absolute right-0 mt-1 w-24 sm:w-28 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-20 overflow-hidden">
-                          <div>
-                            {/* EDIT button */}
-                            <button
-                              onClick={() => handleEdit(quotation)}
-                              className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                className="mr-2 w-3 h-3 fill-current text-[#4B5563] group-hover:text-white transition-colors"
-                              >
-                                <path
-                                  fill="currentColor"
-                                  d="M4 14v-2h7v2zm0-4V8h11v2zm0-4V4h11v2zm9 14v-3.075l6.575-6.55l3.075 3.05L16.075 20zm7.5-6.575l-.925-.925zm-6 5.075h.95l3.025-3.05l-.45-.475l-.475-.45l-3.05 3.025zm3.525-3.525l-.475-.45l.925.925z"
-                                />
-                              </svg>
-                              <span className="group-hover:text-white transition-colors">
-                                Edit
-                              </span>
-                            </button>
+          {/* Salesman */}
+          <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+            <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
+              <svg
+                className="w-4 h-4 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M5.121 17.804A13.937 13.937 0 0112 15c2.486 0 4.813.604 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase font-medium tracking-wide">
+                Salesman
+              </p>
+              <p className="text-xs text-gray-900">
+                {order?.salesman?.name || "-"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    ))
+  )}
+</div>
 
-                            {/* Tapered separator */}
-                            <svg
-                              className="w-full h-[1px]"
-                              viewBox="0 0 100 1"
-                              preserveAspectRatio="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
-                            </svg>
-
-                            {/* DELETE button */}
-                            <button
-                              onClick={() => handleDelete(quotation?.id)}
-                              className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                className="mr-2 w-3 h-3 fill-current text-[#4B5563] group-hover:text-white transition-colors"
-                              >
-                                <path
-                                  fill="currentColor"
-                                  d="M7.616 20q-.672 0-1.144-.472T6 18.385V6H5V5h4v-.77h6V5h4v1h-1v12.385q0 .69-.462 1.153T16.384 20zM17 6H7v12.385q0 .269.173.442t.443.173h8.769q.23 0 .423-.192t.192-.424zM9.808 17h1V8h-1zm3.384 0h1V8h-1zM7 6v13z"
-                                />
-                              </svg>
-                              <span className="group-hover:text-white transition-colors">
-                                Delete
-                              </span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Details Section */}
-                <div className="p-3 sm:p-4 space-y-3">
-                  {/* Total Row (matches desktop, clickable for items modal) */}
-                  <div
-                    className="flex items-center space-x-1 p-2 bg-Duskwood-50 rounded-lg hover:bg-Duskwood-100 transition-colors duration-200 mb-2 cursor-pointer"
-                    onClick={(e) => handleShowItems(quotation?.items, e)}
-                  >
-                    <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
-                      <svg
-                        className="w-5 h-5 text-Duskwood-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.5"
-                          d="M12 8v8m0 0l-3-3m3 3l3-3"
-                        />
-                      </svg>
-                    </div>
-                    <div className="min-w-0 flex-1 ">
-                      <p className="text-[10px] ml-1 font-medium text-Duskwood-600 uppercase tracking-wide">
-                        Total
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-[13px] ml-1 text-Duskwood-900 font-bold">
-                          Rs {parseFloat(quotation?.grand_total).toFixed(2)}
-                        </p>
-                        <span className="text-xs text-Duskwood-600">
-                          ({quotation?.items.length} items)
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Contact Number Row */}
-                  <div className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                    <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
-                      <svg
-                        className="w-3 h-3 text-gray-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.5"
-                          d="M3 5a2 2 0 002-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                        />
-                      </svg>
-                    </div>
-                    <div className="min-w-0 flex-1 ">
-                      <p className="text-[10px] ml-1 font-medium text-gray-500 uppercase tracking-wide">
-                        Shop Name
-                      </p>
-                    <p className="text-[10px] ml-1 text-gray-900">
-  {quotation?.lead?.requirements || "No requirements provided"}
-</p>
-
-                    </div>
-                  </div>
-                  {/* Created At Row */}
-                  <div className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                    <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
-                      <svg
-                        className="w-3 h-3 text-gray-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.5"
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    </div>
-                    <div className="min-w-0 flex-1 ">
-                      <p className="text-[10px] ml-1 font-medium text-gray-500 uppercase tracking-wide">
-                        Created At
-                      </p>
-                      <p className="text-[10px] ml-1 text-gray-900">
-                        {quotation?.created_at ? (
-                          <>
-                            <span className="block text-xs">
-                              {new Date(
-                                quotation?.created_at
-                              ).toLocaleTimeString("en-US", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              })}
-                            </span>
-                            <span className="block text-Duskwood-600 text-xs mt-1">
-                              {formatDateForDisplay(quotation?.created_at)}
-                            </span>
-                          </>
-                        ) : (
-                          ""
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  {/* Updated At Row */}
-                  <div className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                    <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
-                      <svg
-                        className="w-3 h-3 text-gray-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.5"
-                          d="M4 4v5h.582m15.356-2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m0 0H15"
-                        />
-                      </svg>
-                    </div>
-                    <div className="min-w-0 flex-1 ">
-                      <p className="text-[10px] ml-1 font-medium text-gray-500 uppercase tracking-wide">
-                        Updated At
-                      </p>
-                      <p className="text-[10px] ml-1 text-gray-900">
-                        {quotation?.updated_at ? (
-                          <>
-                            <span className="block text-xs">
-                              {new Date(
-                                quotation?.updated_at
-                              ).toLocaleTimeString("en-US", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                              })}
-                            </span>
-                            <span className="block text-Duskwood-600 text-xs mt-1">
-                              {formatDateForDisplay(quotation?.updated_at)}
-                            </span>
-                          </>
-                        ) : (
-                          ""
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  {/* Valid Until Row */}
-                  <div className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                    <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
-                      <svg
-                        className="w-3 h-3 text-gray-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.5"
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                    <div className="min-w-0 flex-1 ">
-                      {/* <p className="text-[10px] ml-1 font-medium text-gray-500 uppercase tracking-wide">
-                        Valid Until
-                      </p> */}
-                      <p className="text-[10px] ml-1 text-gray-900">
-                        {quotation?.valid_until ? (
-                          <>
-                            <span className="block text-xs">
-                              {formatDateForDisplay(quotation?.valid_until)}
-                            </span>
-                            <span
-                              className={`block text-xs mt-1 ${
-                                calculateDaysRemaining(
-                                  quotation?.valid_until
-                                ) === "Expired"
-                                  ? "text-red-600"
-                                  : "text-green-600"
-                              }`}
-                            >
-                              ({calculateDaysRemaining(quotation?.valid_until)})
-                            </span>
-                          </>
-                        ) : (
-                          ""
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  {/* Removed WhatsApp, Status, and old items table UI */}
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>{" "}
       {/* Items Modal */}
       {isItemsModalOpen && selectedItems && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
