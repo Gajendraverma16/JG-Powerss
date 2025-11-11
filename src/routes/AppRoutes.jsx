@@ -26,6 +26,10 @@ import SalesmanOrderFlow from "@/pages/Orders/neworder";
 import Website from "@/Website/website";
 import TestOrder from "@/pages/Orders/TestOrder";
 import Categories from "../pages/quotation/Categories";
+import Branch from "../pages/branch/Branch";
+import Routee from "../pages/branch/Routee";
+import Area from "../pages/branch/Area";  
+import Village from "@/pages/branch/Village";
 
 function PrivateRoute({ children, roles }) {
   const { user, loading, rolePermissions } = useAuth();
@@ -231,7 +235,7 @@ export default function AppRoutes() {
           element={
             <PrivateRoute>
               <PermissionRoute>
-                < Branch />
+                <Branch/>
               </PermissionRoute>
             </PrivateRoute>
           }
@@ -252,6 +256,16 @@ export default function AppRoutes() {
             <PrivateRoute>
               <PermissionRoute>
                 < Area />
+              </PermissionRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/village"
+          element={
+            <PrivateRoute>
+              <PermissionRoute>
+                < Village />
               </PermissionRoute>
             </PrivateRoute>
           }
