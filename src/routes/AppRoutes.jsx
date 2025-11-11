@@ -8,8 +8,6 @@ import Dashboard from "../pages/dashboard/Dashboard";
 import LeadsAll from "../pages/leads/AllLeads";
 import QuotationCreate from "../pages/quotation/CreateQuotation";
 import QuotationView from "../pages/quotation/View";
-import ReturnQuotationCreate from "../pages/Orders/return";
-
 import CustomerInquiry from "../pages/customer inquiry/Customer";
 import RolesPermissions from "../pages/settings/RolesPermissions";
 import CreateUser from "../pages/settings/CreateNewUser";
@@ -27,12 +25,7 @@ import ViewPage from "../pages/Orders/order"
 import SalesmanOrderFlow from "@/pages/Orders/neworder";
 import Website from "@/Website/website";
 import TestOrder from "@/pages/Orders/TestOrder";
-import Branch from "../pages/branch/Branch";
-import Area from "../pages/branch/Area";
-import Routee from "@/pages/branch/Routee";
-import Village from "@/pages/branch/Village";
-
-
+import Categories from "../pages/quotation/Categories";
 
 function PrivateRoute({ children, roles }) {
   const { user, loading, rolePermissions } = useAuth();
@@ -164,6 +157,16 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
+          <Route
+          path="/categories"
+          element={
+            <PrivateRoute>
+              <PermissionRoute moduleName="Quotation">
+                <Categories/>
+              </PermissionRoute>
+            </PrivateRoute>
+          }
+        />
 
         {/* Invoice routes (flattened) */}
         <Route
@@ -253,18 +256,7 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/village"
-          element={
-            <PrivateRoute>
-              <PermissionRoute>
-                < Village />
-              </PermissionRoute>
-            </PrivateRoute>
-          }
-        />
-        \
-        <Route
+        {/* <Route
           path="Order/return"
           element={
             <PrivateRoute>
@@ -273,7 +265,7 @@ export default function AppRoutes() {
               </PermissionRoute>
             </PrivateRoute>
           }
-        />
+        /> */}
         {/* Payment routes (flattened) */}
         <Route
           path="payment/create"

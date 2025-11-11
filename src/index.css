@@ -5,10 +5,10 @@
 
 @font-face {
   font-family: Quicksand;
-  src: url("../public/fonts/Quicksand/Quicksand-Medium.ttf");
+src: url("/fonts/Quicksand/Quicksand-Medium.ttf");
 }
 
-@theme {
+@theme {  
   --font-quicksand: Quicksand, "sans-serif";
   --font-sfpro: "SF Pro Display", "sans-serif";
   --font-mont: "Montserrat", "sans-serif";

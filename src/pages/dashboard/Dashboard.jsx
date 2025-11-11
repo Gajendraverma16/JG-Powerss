@@ -315,7 +315,7 @@ const Dashboard = () => {
     fetchAllData();
   }, []); 
   
- console.log(leadStatuses);
+//  console.log(leadStatuses);
   
   
   return (

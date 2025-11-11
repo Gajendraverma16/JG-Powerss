@@ -31,7 +31,7 @@ const TestOrder = () => {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [quotations, setQuotations] = useState([]);
-  console.log("farhabn",quotations);
+  // console.log("farhabn",quotations);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -122,7 +122,7 @@ const TestOrder = () => {
     const fetchQuotations = async () => {
       try {
         const response = await api.get(dynamicApiEndpoint); // Use dynamicApiEndpoint
-        console.log(response.data);
+        // console.log(response.data);
         if (response.data.success) {
           setQuotations(response.data.data); // Access data.data for quotations
         } else {
@@ -608,41 +608,49 @@ switch (filters.contact) {
   };
 
   // DELETE
-  const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "This cannot be undone.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      cancelButtonColor: "#aaa",
-      confirmButtonText: "Yes, delete it!",
-    });
-    if (result.isConfirmed) {
-      try {
-        const response = await api.get(`/deletequotation/${id}`); // Changed endpoint to deletequotation
-        if (response.data.status || response.data.success) {
-          setQuotations((prev) => prev.filter((q) => q.id !== id));
-          await Swal.fire({
-            icon: "success",
-            title: "Deleted!",
-            text: response.data.message || " has been removed.",
-            confirmButtonColor: "#0e4053",
-          });
-        } else {
-          throw new Error(response.data.message || "Server rejected delete");
-        }
-      } catch (err) {
-        Swal.fire({
-          icon: "error",
-          title: "Delete  Failed",
-          text: err.message,
-          confirmButtonColor: "#DD6B55",
+const handleDelete = async (id) => {
+  const result = await Swal.fire({
+    title: "Are you sure?",
+    text: "This action cannot be undone.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#DD6B55",
+    cancelButtonColor: "#aaa",
+    confirmButtonText: "Yes, delete it!",
+  });
+
+  if (result.isConfirmed) {
+    try {
+      // ✅ Use DELETE request instead of GET
+      const response = await api.delete(`/orders/${id}`);
+
+      // ✅ Check response consistency
+      if (response.data?.success || response.data?.status) {
+        // ✅ Update state locally
+        setQuotations((prev) => prev.filter((q) => q.id !== id));
+
+        await Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: response.data.message || "Order has been removed successfully.",
+          confirmButtonColor: "#0e4053",
         });
+      } else {
+        throw new Error(response.data?.message || "Server rejected delete request.");
       }
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Delete Failed",
+        text: err.message || "Something went wrong while deleting.",
+        confirmButtonColor: "#DD6B55",
+      });
     }
-    setActiveDropdown(null);
-  };
+  }
+
+  // ✅ Close any open dropdown menu after delete attempt
+  setActiveDropdown(null);
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1607,7 +1615,7 @@ switch (filters.contact) {
               </th>
 
               <th className="py-4 px-3 font-medium text-sm w-[120px] whitespace-nowrap">
-                Shop Name
+                Notes
               </th>
               <th className="py-4 px-3 font-medium text-sm w-[120px] whitespace-nowrap">
                 Contact
