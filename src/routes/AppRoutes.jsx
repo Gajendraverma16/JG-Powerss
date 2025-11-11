@@ -29,6 +29,7 @@ import Website from "@/Website/website";
 import TestOrder from "@/pages/Orders/TestOrder";
 import Branch from "../pages/branch/Branch";
 import Area from "../pages/branch/Area";
+import Routee from "@/pages/branch/Routee";
 import Village from "@/pages/branch/Village";
 
 
@@ -228,6 +229,16 @@ export default function AppRoutes() {
             <PrivateRoute>
               <PermissionRoute>
                 < Branch />
+              </PermissionRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/routee"
+          element={
+            <PrivateRoute>
+              <PermissionRoute>
+                < Routee />
               </PermissionRoute>
             </PrivateRoute>
           }

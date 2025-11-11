@@ -1,252 +1,290 @@
-// import React, { useCallback, useEffect, useState } from "react";
-// import api from "../../api";
-// import { TbDotsVertical } from "react-icons/tb";
-// import Swal from "sweetalert2";
+import React, { useCallback, useEffect, useState } from "react";
+import { TbDotsVertical } from "react-icons/tb";
+import Swal from "sweetalert2";
+import api from "../../api";
 
-// const Routee = ({ branchId = null }) => {
-//   const [routes, setRoutes] = useState([]);
-//   const [branches, setBranches] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-//   const [isEditing, setIsEditing] = useState(false);
-//   const [editId, setEditId] = useState(null);
-//   const [activeDropdown, setActiveDropdown] = useState(null);
-//   const [formData, setFormData] = useState({ branch_id: branchId || "", route_name: "" });
+const Routee = ({ branchId = null }) => {
+  const [routes, setRoutes] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
-//   /**  Fetch all branches */
-//   const fetchBranches = useCallback(async () => {
-//     try {
-//       const res = await api.get("/branches");
-//       console.log("Branches:", res.data);
-//       if (res.data.status) {
-//         setBranches(res.data.data);
-//       } else {
-//         console.error("Failed to fetch branches:", res.data.message);
-//       }
-//     } catch (err) {
-//       console.error("Error fetching branches:", err);
-//     }
-//   }, []);
+  const [formData, setFormData] = useState({
+    branch_id: "",
+    route_name: "",
+  });
 
-//   /**  Fetch all routes */
-//   // const fetchRoutes = useCallback(async () => {
-//   //   setLoading(true);
-//   //   try {
-//   //     const endpoint = branchId ? `/routes/branch/${branchId}` : "/routes";
-//   //     const response = await api.get(endpoint);
-//   //     console.log("Routes:", response.data);
+  // ✅ Fetch Routes
+  const fetchRoutes = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/routes");
+      if (res.data?.data) setRoutes(res.data.data);
+      else if (Array.isArray(res.data)) setRoutes(res.data);
+    } catch (err) {
+      console.error("Error fetching routes:", err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-//   //     if (response?.data?.status) {
-//   //       setRoutes(response.data.data || []);
-//   //     } else {
-//   //       setRoutes([]);
-//   //     }
-//   //   } catch (err) {
-//   //     console.error("Error fetching routes:", err);
-//   //     setRoutes([]);
-//   //   } finally {
-//   //     setLoading(false);
-//   //   }
-//   // }, [branchId]);
+  // ✅ Fetch Branches
+  const fetchBranches = useCallback(async () => {
+    try {
+      const res = await api.get("/branches");
+      if (res.data.status) setBranches(res.data.data);
+    } catch (err) {
+      console.error("Error fetching branches:", err.message);
+    }
+  }, []);
 
-//   useEffect(() => {
-//     fetchBranches();
-//     fetchRoutes();
-//   }, [fetchBranches, fetchRoutes]);
+  useEffect(() => {
+    fetchBranches();
+    fetchRoutes();
+  }, [fetchBranches, fetchRoutes]);
 
-//   const handleInputChange = (name, value) => {
-//     setFormData((prev) => ({ ...prev, [name]: value }));
-//   };
+  // Helper
+  const getBranchName = (id) => {
+    const branch = branches.find((b) => b.id === id);
+    return branch ? branch.branch_name : "N/A";
+  };
 
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     const payload = {
-//       branch_id: branchId || formData.branch_id,
-//       route_name: formData.route_name,
-//     };
+  const handleInputChange = (name, value) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-//     if (!payload.branch_id || !payload.route_name) {
-//       return Swal.fire("Error", "Please fill all fields", "error");
-//     }
+  const handleCancel = () => {
+    setFormData({ branch_id: "", route_name: "" });
+    setIsEditing(false);
+    setEditId(null);
+    setIsModalOpen(false);
+  };
 
-//     try {
-//       if (isEditing && editId) {
-//         await api.put(`/routes/${editId}`, payload);
-//         Swal.fire("Updated!", "Route updated successfully!", "success");
-//       } else {
-//         await api.post("/routes", payload);
-//         Swal.fire("Created!", "Route added successfully!", "success");
-//       }
-//       fetchRoutes();
-//       handleCancel();
-//     } catch (error) {
-//       console.error("Error saving route:", error);
-//       Swal.fire("Error", "Failed to save route", "error");
-//     }
-//   };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.branch_id || !formData.route_name) {
+      Swal.fire("Warning", "Please fill all fields", "warning");
+      return;
+    }
 
-//   const handleEdit = (route) => {
-//     setFormData({
-//       branch_id: route.branch_id || branchId || "",
-//       route_name: route.route_name || "",
-//     });
-//     setEditId(route.id);
-//     setIsEditing(true);
-//     setIsModalOpen(true);
-//     setActiveDropdown(null);
-//   };
+    try {
+      setLoading(true);
+      if (isEditing) {
+        await api.put(`/routes/${editId}`, formData);
+        Swal.fire("Updated!", "Route updated successfully!", "success");
+      } else {
+        await api.post("/routes", formData);
+        Swal.fire("Created!", "New route added successfully!", "success");
+      }
+      await fetchRoutes();
+      handleCancel();
+    } catch (err) {
+      Swal.fire("Error", "Failed to save route", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-//   const handleDelete = async (id) => {
-//     const confirm = await Swal.fire({
-//       title: "Are you sure?",
-//       text: "This action cannot be undone!",
-//       icon: "warning",
-//       showCancelButton: true,
-//       confirmButtonColor: "#DD6B55",
-//       cancelButtonColor: "#aaa",
-//       confirmButtonText: "Yes, delete it!",
-//     });
+  const handleEdit = (route) => {
+    setFormData({
+      branch_id: route.branch_id,
+      route_name: route.route_name,
+    });
+    setEditId(route.id);
+    setIsEditing(true);
+    setIsModalOpen(true);
+    setActiveDropdown(null);
+  };
 
-//     if (confirm.isConfirmed) {
-//       try {
-//         await api.delete(`/routes/${id}`);
-//         Swal.fire("Deleted!", "Route deleted successfully!", "success");
-//         fetchRoutes();
-//       } catch (error) {
-//         console.error("Error deleting route:", error);
-//         Swal.fire("Error", "Failed to delete route", "error");
-//       }
-//     }
-//   };
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This will permanently delete the route.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      cancelButtonColor: "#aaa",
+      confirmButtonText: "Yes, delete it!",
+    });
 
-//   const handleCancel = () => {
-//     setIsModalOpen(false);
-//     setIsEditing(false);
-//     setEditId(null);
-//     setFormData({ branch_id: branchId || "", route_name: "" });
-//   };
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        await api.delete(`/routes/${id}`);
+        await fetchRoutes();
+        Swal.fire("Deleted!", "Route has been removed.", "success");
+      } catch (err) {
+        Swal.fire("Error", "Failed to delete route", "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+    setActiveDropdown(null);
+  };
 
-//   const toggleDropdown = (id) => {
-//     setActiveDropdown((prev) => (prev === id ? null : id));
-//   };
+  const toggleDropdown = (id) => {
+    setActiveDropdown((prev) => (prev === id ? null : id));
+  };
 
-//   if (loading) {
-//     return <div className="w-full min-h-[797px] flex items-center justify-center">Loading...</div>;
-//   }
+  if (loading) {
+    return (
+      <div className="w-full min-h-[797px] flex items-center justify-center">
+        Loading routes...
+      </div>
+    );
+  }
 
-//   return (
-//     <div className="w-full px-4 py-6 md:px-10 md:py-10">
-//       <div className="relative mx-auto flex min-h-[440px] max-w-5xl flex-col rounded-[18px] border border-white/60 bg-gradient-to-br from-white via-[#F5FAFF] to-[#E7F4FF] p-6 shadow-[0px_20px_45px_rgba(20,84,182,0.08)] md:p-8">
-//         <div className="mb-8 flex flex-row gap-3 items-center justify-between">
-//           <h1 className="text-[20px] md:text-[24px] font-semibold text-[#1F2837]">
-//             <span className="inline-block border-b-2 border-[#0e4053] pb-1">Routes</span>
-//           </h1>
-//           <button
-//             onClick={() => {
-//               setIsModalOpen(true);
-//               setIsEditing(false);
-//               setFormData({ branch_id: branchId || "", route_name: "" });
-//             }}
-//             className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] transition-colors hover:bg-[#ee7f1b]"
-//           >
-//             Add Route
-//           </button>
-//         </div>
+  return (
+    <div className="w-full px-4 py-6 md:px-10 md:py-10">
+      <div className="relative mx-auto flex min-h-[440px] max-w-5xl flex-col rounded-[18px] border border-white/60 bg-gradient-to-br from-white via-[#F5FAFF] to-[#E7F4FF] p-6 shadow-[0px_20px_45px_rgba(20,84,182,0.08)] md:p-8">
+        {/* Header */}
+        <div className="mb-8 flex flex-row gap-3 items-center justify-between">
+          <h1 className="text-[20px] md:text-[24px] font-semibold text-[#1F2837]">
+            <span className="inline-block border-b-2 border-[#0e4053] pb-1">
+              Routes
+            </span>
+          </h1>
 
-//         {isModalOpen && (
-//           <div className="fixed inset-0 flex items-center justify-center z-50">
-//             <div className="absolute inset-0 bg-gray-50/10 backdrop-blur-sm" onClick={handleCancel} />
-//             <div className="w-11/12 max-w-[600px] max-h-[90vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-lg relative z-10">
-//               <button onClick={handleCancel} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors">
-//                 ✕
-//               </button>
+          <button
+            onClick={() => {
+              setIsModalOpen(true);
+              setIsEditing(false);
+              setFormData({ branch_id: "", route_name: "" });
+            }}
+            className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
+          >
+            Add Route
+          </button>
+        </div>
 
-//               <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">{isEditing ? "Edit Route" : "Add New Route"}</h2>
+        {/* Table */}
+        <div className="flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF]">
+          <div className="hidden md:block">
+            <div className="grid md:grid-cols-[1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] font-medium text-sm">
+              <div>Branch</div>
+              <div>Route ID</div>
+              <div>Route Name</div>
+              <div>Actions</div>
+            </div>
 
-//               <form onSubmit={handleSubmit}>
-//                 {!branchId && (
-//                   <div className="mb-4">
-//                     <label className="block text-[#4B5563] text-[16px] mb-2">Select Branch</label>
-//                     <select
-//                       value={formData.branch_id}
-//                       onChange={(e) => handleInputChange("branch_id", e.target.value)}
-//                       required
-//                       className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none"
-//                     >
-//                       <option value="">Select Branch</option>
-//                       {branches.map((branch) => (
-//                         <option key={branch.id} value={branch.id}>
-//                           {branch.branch_name}
-//                         </option>
-//                       ))}
-//                     </select>
-//                   </div>
-//                 )}
+            <div className="pb-20">
+              {routes.length === 0 ? (
+                <div className="text-center py-6 text-gray-500">
+                  No routes available.
+                </div>
+              ) : (
+                routes.map((route) => (
+                  <div
+                    key={route.id}
+                    className="grid md:grid-cols-[1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
+                  >
+                    <div>{getBranchName(route.branch_id)}</div>
+                    <div>{route.id}</div>
+                    <div>{route.route_name}</div>
+                    <div className="relative">
+                      <button
+                        onClick={() => toggleDropdown(route.id)}
+                        className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
+                      >
+                        <TbDotsVertical className="w-4 h-4" />
+                      </button>
 
-//                 <div className="mb-8">
-//                   <label className="block text-[#4B5563] text-[16px] mb-2">Route Name</label>
-//                   <input
-//                     type="text"
-//                     value={formData.route_name}
-//                     onChange={(e) => handleInputChange("route_name", e.target.value)}
-//                     placeholder="Enter route name"
-//                     required
-//                     className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none"
-//                   />
-//                 </div>
+                      {activeDropdown === route.id && (
+                        <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10">
+                          <button
+                            onClick={() => handleEdit(route)}
+                            className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(route.id)}
+                            className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
-//                 <div className="flex justify-center">
-//                   <button type="submit" className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors">
-//                     {isEditing ? "Save Changes" : "Add Route"}
-//                   </button>
-//                 </div>
-//               </form>
-//             </div>
-//           </div>
-//         )}
+      {/*  Modal  */}
+{isModalOpen && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+    <div className="relative bg-white rounded-2xl p-6 w-[400px] shadow-lg">
+      {/* ✖ Close Button (same as Area) */}
+      <button
+        onClick={handleCancel}
+        className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl leading-none"
+      >
+        &times;
+      </button>
 
-//         <div className="flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF]">
-//           <div className="hidden md:block w-full flex-grow">
-//             <div className="grid md:grid-cols-[1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] font-medium text-sm">
-//               <div>Branch Name</div>
-//               <div>Route ID</div>
-//               <div>Route Name</div>
-//               <div>Actions</div>
-//             </div>
+      <h2 className="text-lg font-semibold mb-4">
+        {isEditing ? "Edit Route" : "Add Route"}
+      </h2>
 
-//             <div className="pb-20">
-//               {routes.length === 0 ? (
-//                 <div className="text-center py-6 text-gray-500">No routes available.</div>
-//               ) : (
-//                 routes.map((route) => (
-//                   <div key={route.id} className="grid md:grid-cols-[1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center">
-//                     <div>{route.branch?.branch_name || "N/A"}</div>
-//                     <div>{route.id}</div>
-//                     <div>{route.route_name}</div>
-//                     <div className="relative">
-//                       <button onClick={() => toggleDropdown(route.id)} className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full transition-colors">
-//                         <TbDotsVertical className="w-4 h-4" />
-//                       </button>
-//                       {activeDropdown === route.id && (
-//                         <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10">
-//                           <button onClick={() => handleEdit(route)} className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left">
-//                             Edit
-//                           </button>
-//                           <button onClick={() => handleDelete(route.id)} className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left">
-//                             Delete
-//                           </button>
-//                         </div>
-//                       )}
-//                     </div>
-//                   </div>
-//                 ))
-//               )}
-//             </div>\
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Branch select */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Select Branch</label>
+          <select
+            value={formData.branch_id}
+            onChange={(e) => handleInputChange("branch_id", e.target.value)}
+            className="w-full border rounded-md px-3 py-2"
+          >
+            <option value="">Select Branch</option>
+            {branches.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.branch_name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-// export default Routee;
+        {/* Route name */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Route Name</label>
+          <input
+            type="text"
+            value={formData.route_name}
+            onChange={(e) => handleInputChange("route_name", e.target.value)}
+            placeholder="Enter route name"
+            className="w-full border rounded-md px-3 py-2"
+          />
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 rounded-md bg-[#ef7e1b] text-white hover:bg-[#ee7f1b]"
+          >
+            {isEditing ? "Update" : "Save"}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
+    </div>
+  );
+};
+
+export default Routee;
