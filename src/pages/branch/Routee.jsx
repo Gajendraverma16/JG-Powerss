@@ -46,7 +46,6 @@ const Routee = ({ branchId = null }) => {
     fetchRoutes();
   }, [fetchBranches, fetchRoutes]);
 
-  // Helper
   const getBranchName = (id) => {
     const branch = branches.find((b) => b.id === id);
     return branch ? branch.branch_name : "N/A";
@@ -217,72 +216,99 @@ const Routee = ({ branchId = null }) => {
         </div>
       </div>
 
-      {/*  Modal  */}
-{isModalOpen && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-    <div className="relative bg-white rounded-2xl p-6 w-[400px] shadow-lg">
-      {/* ✖ Close Button (same as Area) */}
-      <button
-        onClick={handleCancel}
-        className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl leading-none"
-      >
-        &times;
-      </button>
-
-      <h2 className="text-lg font-semibold mb-4">
-        {isEditing ? "Edit Route" : "Add Route"}
-      </h2>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Branch select */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Select Branch</label>
-          <select
-            value={formData.branch_id}
-            onChange={(e) => handleInputChange("branch_id", e.target.value)}
-            className="w-full border rounded-md px-3 py-2"
-          >
-            <option value="">Select Branch</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.branch_name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Route name */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Route Name</label>
-          <input
-            type="text"
-            value={formData.route_name}
-            onChange={(e) => handleInputChange("route_name", e.target.value)}
-            placeholder="Enter route name"
-            className="w-full border rounded-md px-3 py-2"
-          />
-        </div>
-
-        <div className="flex justify-end gap-3">
-          <button
-            type="button"
+      {/* 🟠 Modal (same as Area) */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 border-white/30">
+          <div
+            className="absolute inset-0 bg-gray-50/10 backdrop-blur-sm"
             onClick={handleCancel}
-            className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 rounded-md bg-[#ef7e1b] text-white hover:bg-[#ee7f1b]"
-          >
-            {isEditing ? "Update" : "Save"}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
+          />
+          <div className="w-11/12 max-w-[600px] max-h-[90vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-lg relative z-10">
+            {/* Close Button (same as Area) */}
+            <button
+              onClick={handleCancel}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M13 1L1 13"
+                  stroke="#1F2837"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M1 1L13 13"
+                  stroke="#1F2837"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
 
+            <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">
+              {isEditing ? "Edit Route" : "Add New Route"}
+            </h2>
+
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 gap-6">
+                {/* Branch */}
+                <div className="space-y-2">
+                  <label className="block text-[#4B5563] text-[16px] mb-2">
+                    Select Branch
+                  </label>
+                  <select
+                    value={formData.branch_id}
+                    onChange={(e) =>
+                      handleInputChange("branch_id", e.target.value)
+                    }
+                    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                    required
+                  >
+                    <option value="">Select Branch</option>
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.branch_name}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Route Name */}
+                  <label className="block text-[#4B5563] text-[16px] mb-2">
+                    Route Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.route_name}
+                    onChange={(e) =>
+                      handleInputChange("route_name", e.target.value)
+                    }
+                    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                    placeholder="Enter route name"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="mt-10 flex justify-center">
+                <button
+                  type="submit"
+                  className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                >
+                  {isEditing ? "Save changes" : "Add Route"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
