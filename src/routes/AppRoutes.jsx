@@ -23,7 +23,7 @@ import ViewInvoice from "../pages/invoice/ViewInvoice";
 import CreateInvoice from "../pages/invoice/CreateInvoice";
 import ViewPage from "../pages/Orders/order"
 import SalesmanOrderFlow from "@/pages/Orders/neworder";
-import Website from "@/Website/website";  
+import Website from "@/Website/website";
 import TestOrder from "@/pages/Orders/TestOrder";
 import Categories from "../pages/quotation/Categories";
 
@@ -32,7 +32,7 @@ function PrivateRoute({ children, roles }) {
   if (loading) {
     return null;
   }
- if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
   if (roles && !roles.includes(user.role))
     return <Navigate to="/dashboard" replace />;
   return children;
@@ -42,7 +42,7 @@ function PrivateRoute({ children, roles }) {
 function PermissionRoute({ moduleName, children }) {
   const { rolePermissions, loading } = useAuth();
   if (loading) return null;
-  
+
   // If no moduleName is provided, treat route as not permission-guarded
   // (legacy routes may have omitted moduleName - allow them instead of redirecting)
   if (!moduleName) return children;
@@ -55,8 +55,8 @@ function PermissionRoute({ moduleName, children }) {
   }
 
   const modulePerm = rolePermissions?.find(
-  (perm) => perm.module?.toLowerCase() === moduleName?.toLowerCase()
-);
+    (perm) => perm.module?.toLowerCase() === moduleName?.toLowerCase()
+  );
 
   const hasView = modulePerm?.permissions?.includes("view");
   if (!hasView) return <Navigate to="/dashboard" replace />;
@@ -89,8 +89,9 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/" element={<Website />} />
       {/* Public login route */}
-      
+
       <Route path="/login" element={<Login />} />
+
 
       {/* Redirect root to dashboard */}
       {/* <Route path="/" element={<Navigate to="/dashboard" replace />} /> */}
@@ -192,33 +193,65 @@ export default function AppRoutes() {
         />
 
 
- <Route
+        <Route
           path="Order/view"
           element={
             <PrivateRoute>
               <PermissionRoute>
-                < ViewPage/>
+                < ViewPage />
               </PermissionRoute>
             </PrivateRoute>
           }
         />
- <Route
+        <Route
           path="Order/testorder"
           element={
             <PrivateRoute>
               <PermissionRoute>
-                <TestOrder/>
+                <TestOrder />
               </PermissionRoute>
             </PrivateRoute>
           }
         />
 
-         <Route
+        <Route
           path="Order/new"
           element={
             <PrivateRoute>
               <PermissionRoute>
-                < SalesmanOrderFlow/>
+                < SalesmanOrderFlow />
+              </PermissionRoute>
+            </PrivateRoute>
+          }
+        />
+
+
+        <Route
+          path="/branch"
+          element={
+            <PrivateRoute>
+              <PermissionRoute>
+                < Branch />
+              </PermissionRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/routee"
+          element={
+            <PrivateRoute>
+              <PermissionRoute>
+                < Routee />
+              </PermissionRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/area"
+          element={
+            <PrivateRoute>
+              <PermissionRoute>
+                < Area />
               </PermissionRoute>
             </PrivateRoute>
           }
@@ -261,7 +294,7 @@ export default function AppRoutes() {
           }
         />
 
-        
+
 
 
         {/* Settings (admin only, flattened) */}
