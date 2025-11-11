@@ -152,61 +152,75 @@ const fetchCategories = async () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
         <h1 className="text-[22px] font-medium text-[#1F2837]">All Products</h1>
 
-        {/* Category + Search Controls */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-          {/* Category Filter */}
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full sm:w-56 px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 focus:ring-2 focus:ring-[#ef7e1b] outline-none"
-          >
-            <option value="">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.category_name}
-              </option>
-            ))}
-          </select>
+       {/* Category + Search Controls (Fully Responsive) */}
+<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+  {/* Category Filter */}
+  <div className="relative w-full sm:w-56">
+    <select
+      value={selectedCategory}
+      onChange={(e) => setSelectedCategory(e.target.value)}
+      className="w-full h-[42px] sm:h-[46px] px-3 pr-10 rounded-[10px] bg-[#E7EFF8] border border-gray-300 text-[#4B5563] text-[14px] sm:text-[15px] focus:ring-2 focus:ring-[#ef7e1b] outline-none appearance-none"
+    >
+      <option value="">All Categories</option>
+      {categories.map((cat) => (
+        <option key={cat.id} value={cat.id}>
+          {cat.category_name}
+        </option>
+      ))}
+    </select>
 
-          {/* Search Input */}
-          <div className="w-full sm:w-80">
-            <div className="relative">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={handleSearchChange}
-                placeholder="Search by name, SKU or ID..."
-                className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#ef7e1b] outline-none"
-              />
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15.5 15.5L19 19M5 11a6 6 0 1112 0 6 6 0 01-12 0z"
-                  />
-                </svg>
-              </div>
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 p-1"
-                  aria-label="Clear search"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+    {/* Dropdown arrow */}
+    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-4 h-4 text-gray-500"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
+  </div>
+
+  {/* Search Input */}
+  <div className="relative w-full sm:w-80">
+    <input
+      type="text"
+      value={searchTerm}
+      onChange={handleSearchChange}
+      placeholder="Search by name, SKU or ID..."
+      className="w-full h-[42px] sm:h-[46px] pl-10 pr-10 rounded-[10px] bg-white border border-gray-300 focus:ring-2 focus:ring-[#ef7e1b] outline-none text-[#4B5563] text-[14px] sm:text-[15px]"
+    />
+    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M15.5 15.5L19 19M5 11a6 6 0 1112 0 6 6 0 01-12 0z"
+        />
+      </svg>
+    </div>
+    {searchTerm && (
+      <button
+        onClick={() => setSearchTerm("")}
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 p-1"
+        aria-label="Clear search"
+      >
+        ✕
+      </button>
+    )}
+  </div>
+</div>
+
       </div>
 
       {/* Product Table / Grid */}
@@ -447,143 +461,189 @@ const fetchCategories = async () => {
         </div>
       )}
 
-      {/* Edit Modal (No Category Edit) */}
-      {editingProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-2 sm:p-4">
-          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 w-full max-w-[calc(100%-2rem)] sm:max-w-md mx-auto relative max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setEditingProduct(null)}
-              className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white bg-red-500 w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600"
+      {/* ✅ Edit Modal (With Category Selection) */}
+{editingProduct && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-2 sm:p-4">
+    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 w-full max-w-[calc(100%-2rem)] sm:max-w-md mx-auto relative max-h-[90vh] overflow-y-auto">
+      {/* Close Button */}
+      <button
+        onClick={() => setEditingProduct(null)}
+        className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white bg-red-500 w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600"
+      >
+        ✕
+      </button>
+
+      <h1 className="text-[22px] font-medium text-[#1F2837] mb-6">
+        Edit Product
+      </h1>
+
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+
+          const payload = {
+            item_name: e.target.item_name.value,
+            category_id: e.target.category_id.value,
+            sku: e.target.sku.value,
+            regular_price: parseFloat(e.target.regular_price.value),
+            sale_price: parseFloat(e.target.sale_price.value),
+            quantity:e.target.quantity.value,
+            item_points:e.target.item_points.value,
+            slug: e.target.slug.value,
+            is_refundable: editingProduct.is_refundable ? 1 : 0,
+            is_exchangeable: editingProduct.is_exchangeable ? 1 : 0,
+            is_active: editingProduct.is_active ? 1 : 0,
+          };
+
+          // If image uploaded
+          if (e.target.product_image.files[0]) {
+            const formData = new FormData();
+            formData.append("product_image", e.target.product_image.files[0]);
+            Object.keys(payload).forEach((key) =>
+              formData.append(key, payload[key])
+            );
+            await handleUpdateProduct(formData, editingProduct.id, true);
+          } else {
+            await handleUpdateProduct(payload, editingProduct.id, false);
+          }
+        }}
+        className="space-y-4"
+      >
+        {/* ✅ Category Dropdown */}
+        <div>
+          <label className="block text-[#4B5563] mb-1">Select Category</label>
+          <div className="relative">
+            <select
+              name="category_id"
+              defaultValue={editingProduct.category_id || ""}
+              className="w-full h-[42px] sm:h-[46px] px-3 pr-10 rounded-lg bg-[#E7EFF8] border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#4B5563] text-[14px] sm:text-[15px] appearance-none"
             >
-              ✕
-            </button>
-
-            <h1 className="text-[22px] font-medium text-[#1F2837] mb-6">
-              Edit Product
-            </h1>
-
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-
-                const payload = {
-                  item_name: e.target.item_name.value,
-                  sku: e.target.sku.value,
-                  regular_price: parseFloat(e.target.regular_price.value),
-                  sale_price: parseFloat(e.target.sale_price.value),
-                  quantity: parseInt(e.target.quantity.value),
-                  item_points: parseInt(e.target.item_points.value),
-                  slug: e.target.slug.value,
-                  is_refundable: editingProduct.is_refundable ? 1 : 0,
-                  is_exchangeable: editingProduct.is_exchangeable ? 1 : 0,
-                  is_active: editingProduct.is_active ? 1 : 0,
-                };
-
-                if (e.target.product_image.files[0]) {
-                  const formData = new FormData();
-                  formData.append("product_image", e.target.product_image.files[0]);
-                  Object.keys(payload).forEach((key) =>
-                    formData.append(key, payload[key])
-                  );
-                  await handleUpdateProduct(formData, editingProduct.id, true);
-                } else {
-                  await handleUpdateProduct(payload, editingProduct.id, false);
-                }
-              }}
-              className="space-y-4"
-            >
-              <div>
-                <label className="block text-[#4B5563] mb-1">Item Name</label>
-                <input
-                  type="text"
-                  name="item_name"
-                  defaultValue={editingProduct.item_name}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[#4B5563] mb-1">SKU</label>
-                <input
-                  type="text"
-                  name="sku"
-                  defaultValue={editingProduct.sku}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[#4B5563] mb-1">Regular Price</label>
-                  <input
-                    type="number"
-                    name="regular_price"
-                    defaultValue={editingProduct.regular_price}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#4B5563] mb-1">Sale Price</label>
-                  <input
-                    type="number"
-                    name="sale_price"
-                    defaultValue={editingProduct.sale_price}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[#4B5563] mb-1">Stock Quantity</label>
-                  <input
-                    type="number"
-                    name="quantity"
-                    defaultValue={editingProduct.quantity}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#4B5563] mb-1">Points</label>
-                  <input
-                    type="number"
-                    name="item_points"
-                    defaultValue={editingProduct.item_points}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[#4B5563] mb-1">Upload Product Image</label>
-                <input
-                  type="file"
-                  name="product_image"
-                  accept="image/*"
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[#4B5563] mb-1">Slug</label>
-                <input
-                  type="text"
-                  name="slug"
-                  defaultValue={editingProduct.slug}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-[#ef7e1b] text-white py-2 rounded-xl hover:bg-[#ee7f1b] transition"
+              <option value="">Select Product Category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.category_name}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4 text-gray-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                Update Product
-              </button>
-            </form>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
           </div>
         </div>
-      )}
+
+        {/* Item Name */}
+        <div>
+          <label className="block text-[#4B5563] mb-1">Item Name</label>
+          <input
+            type="text"
+            name="item_name"
+            defaultValue={editingProduct.item_name}
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
+          />
+        </div>
+
+        {/* SKU */}
+        <div>
+          <label className="block text-[#4B5563] mb-1">SKU</label>
+          <input
+            type="text"
+            name="sku"
+            defaultValue={editingProduct.sku}
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
+          />
+        </div>
+
+        {/* Regular & Sale Price */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[#4B5563] mb-1">Regular Price</label>
+            <input
+              type="number"
+              name="regular_price"
+              defaultValue={editingProduct.regular_price}
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-[#4B5563] mb-1">Sale Price</label>
+            <input
+              type="number"
+              name="sale_price"
+              defaultValue={editingProduct.sale_price}
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Quantity & Points */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[#4B5563] mb-1">Stock Quantity</label>
+            <input
+              type="number"
+              name="quantity"
+              defaultValue={editingProduct.quantity}
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-[#4B5563] mb-1">Points</label>
+            <input
+              type="number"
+              name="item_points"
+              defaultValue={editingProduct.item_points}
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Image Upload */}
+        <div>
+          <label className="block text-[#4B5563] mb-1">Upload Product Image</label>
+          <input
+            type="file"
+            name="product_image"
+            accept="image/*"
+            className="w-full"
+          />
+        </div>
+
+        {/* Slug */}
+        <div>
+          <label className="block text-[#4B5563] mb-1">Slug</label>
+          <input
+            type="text"
+            name="slug"
+            defaultValue={editingProduct.slug}
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
+          />
+        </div>
+
+        {/* Submit */}
+        <button
+          type="submit"
+          className="w-full bg-[#ef7e1b] text-white py-2 rounded-xl hover:bg-[#ee7f1b] transition"
+        >
+          Update Product
+        </button>
+      </form>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

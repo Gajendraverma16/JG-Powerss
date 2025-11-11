@@ -1,74 +1,110 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { TbDotsVertical } from "react-icons/tb";
-import { FiEdit } from "react-icons/fi";
+import React, { useState, useEffect, useContext } from "react";
 import api from "../../api";
 import Swal from "sweetalert2";
+import { SidebarContext } from "../../components/Layout";
+import { Menu } from "@headlessui/react";
+import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 
-const Categories = () => {
+const CategoriesView = () => {
+  const { isCollapsed } = useContext(SidebarContext);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeDropdown, setActiveDropdown] = useState(null);
-
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const [formData, setFormData] = useState({
-    category_name: "",
-    description: "",
-    is_active: true,
-  });
+  // Search / responsive state
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [newCategory, setNewCategory] = useState({
-    category_name: "",
-    description: "",
-    is_active: true,
-  });
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // =============================
-  // READ
-  // =============================
-  const fetchCategories = useCallback(async () => {
+  // Fetch categories
+  const fetchCategories = async () => {
     try {
-      setLoading(true);
       const res = await api.get("/categories");
       if (res.data?.success) {
         setCategories(res.data.data || []);
       } else {
         setCategories([]);
       }
-    } catch (err) {
-      console.error("Error fetching categories:", err);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
       setCategories([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
+  }, []);
 
-  const toggleDropdown = (id) => {
-    setActiveDropdown((prev) => (prev === id ? null : id));
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Search filter
+  const filteredCategories = categories.filter(
+    (cat) =>
+      !searchTerm ||
+      cat.category_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(cat.id).includes(searchTerm)
+  );
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage) || 1;
+  const paginatedCategories = filteredCategories.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, itemsPerPage]);
+
+  // Delete category
+  const handleDelete = async (id, name) => {
+    const confirm = await Swal.fire({
+      title: "Are you sure?",
+      text: `Delete "${name}" permanently?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      cancelButtonColor: "#aaa",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      const res = await api.delete(`/categories/${id}`);
+      if (res.data?.success) {
+        Swal.fire("Deleted!", "Category deleted successfully.", "success");
+        fetchCategories();
+      } else {
+        throw new Error(res.data?.message || "Failed to delete category");
+      }
+    } catch (err) {
+      Swal.fire("Error", err.message || "Something went wrong", "error");
+    }
   };
 
-  // =============================
-  // CREATE
-  // =============================
-  const handleAddChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setNewCategory((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
+  // Add category
   const handleAddSubmit = async (e) => {
     e.preventDefault();
-    if (!newCategory.category_name.trim()) {
+    const form = e.target;
+    const newCategory = {
+      category_name: form.category_name.value.trim(),
+      description: form.description.value.trim(),
+      is_active: form.is_active.checked,
+    };
+
+    if (!newCategory.category_name)
       return Swal.fire("Error", "Category name is required", "warning");
-    }
 
     const loadingAlert = Swal.fire({
       title: "Adding Category...",
@@ -81,14 +117,9 @@ const Categories = () => {
       await loadingAlert.close();
 
       if (res.data?.success) {
-        Swal.fire({
-          icon: "success",
-          title: "Added!",
-          text: "Category created successfully.",
-          confirmButtonColor: "#0e4053",
-        });
+        Swal.fire("Success", "Category added successfully", "success");
+        form.reset();
         setIsAddModalOpen(false);
-        setNewCategory({ category_name: "", description: "", is_active: true });
         fetchCategories();
       } else {
         throw new Error(res.data?.message || "Failed to add category");
@@ -99,349 +130,371 @@ const Categories = () => {
     }
   };
 
-  // =============================
-  // UPDATE
-  // =============================
-  const openEditModal = (category) => {
-    setEditingCategory(category);
-    setFormData({
-      category_name: category.category_name || "",
-      description: category.description || "",
-      is_active: category.is_active ?? true,
-    });
-    setIsEditModalOpen(true);
-    setActiveDropdown(null);
+ // ✅ Update category (using PATCH)
+const handleUpdateSubmit = async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const updatedCategory = {
+    category_name: form.category_name.value.trim(),
+    description: form.description.value.trim(),
+    is_active: form.is_active.checked,
   };
 
-  const handleEditChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
+  const loadingAlert = Swal.fire({
+    title: "Updating Category...",
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading(),
+  });
 
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    if (!editingCategory) return;
-
-    const loadingAlert = Swal.fire({
-      title: "Updating Category...",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });
-
-    try {
-      const res = await api.post(`/categories/${editingCategory.id}`, formData);
-      await loadingAlert.close();
-
-      if (res.data?.success) {
-        Swal.fire({
-          icon: "success",
-          title: "Updated!",
-          text: "Category updated successfully.",
-          confirmButtonColor: "#0e4053",
-        });
-        setIsEditModalOpen(false);
-        setEditingCategory(null);
-        fetchCategories();
-      } else {
-        throw new Error(res.data?.message || "Failed to update category");
-      }
-    } catch (err) {
-      await loadingAlert.close();
-      Swal.fire("Error", err.message || "Something went wrong", "error");
-    }
-  };
-
-  // =============================
-  // DELETE
-  // =============================
-  const handleDelete = async (id, name) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: `Delete "${name}" permanently?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#DD6B55",
-      cancelButtonColor: "#aaa",
-      confirmButtonText: "Yes, delete it!",
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      const res = await api.delete(`/categories/${id}`);
-      if (res.data?.success) {
-        Swal.fire("Deleted!", "Category deleted successfully.", "success");
-        fetchCategories();
-      } else {
-        throw new Error(res.data?.message || "Failed to delete category");
-      }
-    } catch (err) {
-      Swal.fire("Error", err.message || "Something went wrong", "error");
-    } finally {
-      setActiveDropdown(null);
-    }
-  };
-
-  // =============================
-  // UI
-  // =============================
-  if (loading)
-    return (
-      <div className="w-full min-h-[797px] flex items-center justify-center">
-        Loading...
-      </div>
+  try {
+    const res = await api.patch(
+      `/categories/${editingCategory.id}`,
+      updatedCategory
     );
+    await loadingAlert.close();
+
+    if (res.data?.success) {
+      Swal.fire({
+        icon: "success",
+        title: "Updated!",
+        text: "Category updated successfully.",
+        confirmButtonColor: "#0e4053",
+      });
+      setEditingCategory(null);
+      fetchCategories();
+    } else {
+      throw new Error(res.data?.message || "Failed to update category");
+    }
+  } catch (err) {
+    await loadingAlert.close();
+    Swal.fire("Error", err.message || "Something went wrong", "error");
+  }
+};
+
 
   return (
-    <div className="w-full h-auto min-h-[300px] p-4 md:p-6 bg-gradient-to-br from-white to-[#E7F4FF] rounded-[10px] shadow-[2px_2px_6px_rgba(24,95,235,0.1)] flex flex-col">
+    <div
+      className={`min-h-screen p-2 sm:p-4 md:p-6 relative bg-gradient-to-br from-white to-[#E7F4FF]
+        rounded-[10px] shadow-[2px_2px_6px_rgba(24,95,235,0.1)] flex flex-col w-full ${
+          isCollapsed ? "lg:max-w-[85vw] md:w-[85vw]" : "lg:max-w-[75vw] md:w-[80vw]"
+        } mx-auto`}
+    >
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-        <h2 className="text-[22px] font-medium text-[#1F2837]"> Product Categories</h2>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="hover:bg-[#ee7f1b] bg-[#ef7e1b] text-white h-[44px] px-8 rounded-[8px]"
-        >
-          Add Product Category
-        </button>
-      </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
+        <h1 className="text-[22px] font-medium text-[#1F2837]">All Product Categories</h1>
 
-      {/* Table (Desktop) */}
-      <div className="hidden md:block w-full flex-grow">
-        <div className="w-full rounded-lg overflow-hidden">
-          <div className="grid md:grid-cols-[1fr_2fr_2fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] bg-[#ef7e1b] text-white font-medium">
-            <div>ID</div>
-            <div>Name</div>
-            <div>Description</div>
-            <div>Status</div>
-            <div>Actions</div>
-          </div>
+        {/* Add & Search Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-end items-center gap-3 w-full sm:w-auto">
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-[#ef7e1b] text-white px-6 py-2 rounded-lg hover:bg-[#ee7f1b]"
+          >
+            Create Categories
+          </button>
 
-          <div className="pb-20">
-            {categories.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                No  Product Categories found.
-              </div>
-            ) : (
-              categories.map((cat) => (
-                <div
-                  key={cat.id}
-                  className="grid md:grid-cols-[1fr_2fr_2fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center hover:bg-[#E7EFF8] transition"
-                >
-                  <div>{cat.id}</div>
-                  <div>{cat.category_name}</div>
-                  <div>{cat.description || "—"}</div>
-                  <div>{cat.is_active ? "Active" : "Inactive"}</div>
-                  <div className="relative text-left">
-                    <button
-                      onClick={() => toggleDropdown(cat.id)}
-                      className="p-2 text-[#4B5563] rounded-full hover:bg-gray-100"
-                    >
-                      <TbDotsVertical className="w-4 h-4" />
-                    </button>
-                    {activeDropdown === cat.id && (
-                      <div className="absolute right-0 mt-2 w-28 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-10 overflow-hidden">
-                        <button
-                          onClick={() => openEditModal(cat)}
-                          className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] hover:text-white w-full transition-colors"
-                        >
-                          <FiEdit className="mr-2" /> Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(cat.id, cat.category_name)}
-                          className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] hover:text-white w-full transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
+          <div className="relative w-full sm:w-80">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by name or ID..."
+              className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#ef7e1b] outline-none"
+            />
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15.5 15.5L19 19M5 11a6 6 0 1112 0 6 6 0 01-12 0z"
+                />
+              </svg>
+            </div>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 p-1"
+              >
+                ✕
+              </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Mobile Cards */}
-      <div className="md:hidden space-y-4">
-        {categories.map((cat) => (
-          <div
-            key={cat.id}
-            className="rounded-lg shadow p-4 border border-gray-200 bg-white"
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-semibold text-lg">{cat.category_name}</h3>
-                <p className="text-sm text-gray-600">ID: {cat.id}</p>
-                <p className="text-sm text-gray-500">
-                  {cat.description || "—"}
-                </p>
-                <p className="text-sm mt-1">
-                  Status:{" "}
-                  <span
-                    className={`font-medium ${
+      {/* Category Table */}
+      <div className="bg-white rounded-2xl shadow-md">
+        {loading ? (
+          <p className="text-center text-gray-500 p-6">Loading product categories...</p>
+        ) : filteredCategories.length === 0 ? (
+          <p className="text-center text-gray-500 p-6">No product categories found.</p>
+        ) : (
+          <>
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full text-sm text-left border-collapse">
+                <thead className="bg-[#ef7e1b] text-white">
+                  <tr>
+                    <th className="px-4 py-3">ID</th>
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Description</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedCategories.map((cat) => (
+                    <tr key={cat.id} className="hover:bg-[#E7EFF8] transition">
+                      <td className="px-4 py-3">{cat.id}</td>
+                      <td className="px-4 py-3">{cat.category_name}</td>
+                      <td className="px-4 py-3">{cat.description || "—"}</td>
+                      <td className="px-4 py-3">
+                        {cat.is_active ? "Active" : "Inactive"}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Menu as="div" className="relative inline-block">
+                          <Menu.Button className="p-2 rounded hover:bg-gray-100">
+                            <EllipsisVerticalIcon className="w-6 h-6 text-gray-600" />
+                          </Menu.Button>
+                          <Menu.Items className="absolute right-0 mt-2 w-32 bg-white shadow-lg rounded-md py-1 z-50">
+                            <Menu.Item>
+                              {({ active }) => (
+                                <button
+                                  onClick={() => setEditingCategory(cat)}
+                                  className={`${
+                                    active ? "bg-gray-100" : ""
+                                  } block w-full text-left px-4 py-2 text-sm text-gray-700`}
+                                >
+                                  Edit
+                                </button>
+                              )}
+                            </Menu.Item>
+                            <Menu.Item>
+                              {({ active }) => (
+                                <button
+                                  onClick={() => handleDelete(cat.id, cat.category_name)}
+                                  className={`${
+                                    active ? "bg-gray-100" : ""
+                                  } block w-full text-left px-4 py-2 text-sm text-gray-700`}
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </Menu.Item>
+                          </Menu.Items>
+                        </Menu>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+              {paginatedCategories.map((cat) => (
+                <div
+                  key={cat.id}
+                  className="bg-white rounded-lg shadow p-4 space-y-3"
+                >
+                  <div className="flex justify-end">
+                    <Menu as="div" className="relative">
+                      <Menu.Button className="p-1.5 rounded-full hover:bg-gray-100">
+                        <EllipsisVerticalIcon className="w-5 h-5 text-gray-600" />
+                      </Menu.Button>
+                      <Menu.Items className="absolute right-0 mt-2 w-32 bg-white shadow-lg rounded-md py-1 z-50">
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              onClick={() => setEditingCategory(cat)}
+                              className={`${
+                                active ? "bg-gray-100" : ""
+                              } block w-full text-left px-4 py-2 text-sm text-gray-700`}
+                            >
+                              Edit
+                            </button>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              onClick={() => handleDelete(cat.id, cat.category_name)}
+                              className={`${
+                                active ? "bg-gray-100" : ""
+                              } block w-full text-left px-4 py-2 text-sm text-gray-700`}
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </Menu.Item>
+                      </Menu.Items>
+                    </Menu>
+                  </div>
+                  <h3 className="text-lg font-semibold">{cat.category_name}</h3>
+                  <p className="text-sm text-gray-500">{cat.description || "—"}</p>
+                  <p
+                    className={`text-sm ${
                       cat.is_active ? "text-green-600" : "text-red-500"
                     }`}
                   >
                     {cat.is_active ? "Active" : "Inactive"}
-                  </span>
-                </p>
-              </div>
-              <div className="relative">
-                <button
-                  onClick={() => toggleDropdown(cat.id)}
-                  className="p-2 rounded-full hover:bg-gray-100"
-                >
-                  <TbDotsVertical className="w-5 h-5 text-gray-600" />
-                </button>
-                {activeDropdown === cat.id && (
-                  <div className="absolute right-0 mt-1 w-28 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-20 overflow-hidden">
-                    <button
-                      onClick={() => openEditModal(cat)}
-                      className="block w-full px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] hover:text-white"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(cat.id, cat.category_name)}
-                      className="block w-full px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] hover:text-white"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
-              </div>
+                  </p>
+                </div>
+              ))}
             </div>
-          </div>
-        ))}
+          </>
+        )}
       </div>
+
+      {/* Pagination */}
+      {!loading && categories.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
+          <div>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600 focus:ring-2 focus:ring-[#ef7e1b] outline-none"
+            >
+              {[5, 10, 20, 50].map((num) => (
+                <option key={num} value={num}>
+                  Show {num}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-3 py-1 rounded-lg border ${
+                currentPage === 1
+                  ? "text-gray-400 border-gray-200 bg-gray-100 cursor-not-allowed"
+                  : "text-[#ef7e1b] border-[#ef7e1b] hover:bg-[#ef7e1b] hover:text-white"
+              } transition`}
+            >
+              Previous
+            </button>
+            <span className="text-sm text-gray-600">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() =>
+                setCurrentPage((prev) =>
+                  prev < totalPages ? prev + 1 : totalPages
+                )
+              }
+              disabled={currentPage === totalPages}
+              className={`px-3 py-1 rounded-lg border ${
+                currentPage === totalPages
+                  ? "text-gray-400 border-gray-200 bg-gray-100 cursor-not-allowed"
+                  : "text-[#ef7e1b] border-[#ef7e1b] hover:bg-[#ef7e1b] hover:text-white"
+              } transition`}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Add Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div
-            className="absolute inset-0 bg-gray-50/10 backdrop-blur-sm"
-            onClick={() => setIsAddModalOpen(false)}
-          />
-          <div className="w-11/12 max-w-[600px] p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-xl relative z-10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-2 sm:p-4">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 w-full max-w-[calc(100%-2rem)] sm:max-w-md mx-auto relative">
             <button
               onClick={() => setIsAddModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-500"
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white bg-red-500 w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600"
             >
               ✕
             </button>
-            <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">
-              Add Product Category
-            </h2>
-            <form onSubmit={handleAddSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-[#4B5563] mb-1">
-                    Category Name
-                  </label>
-                  <input
-                    name="category_name"
-                    value={newCategory.category_name}
-                    onChange={handleAddChange}
-                    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#4B5563] mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    name="description"
-                    value={newCategory.description}
-                    onChange={handleAddChange}
-                    className="w-full h-[80px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="is_active"
-                    checked={newCategory.is_active}
-                    onChange={handleAddChange}
-                  />
-                  <label>Active</label>
-                </div>
-                <div className="flex justify-center mt-10">
-                  <button
-                    type="submit"
-                    className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition"
-                  >
-                    Add Product Category
-                  </button>
-                </div>
+            <h1 className="text-[22px] font-medium text-[#1F2837] mb-6">
+              Create Categories 
+            </h1>
+            <form onSubmit={handleAddSubmit} className="space-y-4">
+              <div>
+                <label className="block text-[#4B5563] mb-1">Categories Name</label>
+                <input
+                  type="text"
+                  name="category_name"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
+                />
               </div>
+              <div>
+                <label className="block text-[#4B5563] mb-1">Description</label>
+                <textarea
+                  name="description"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
+                ></textarea>
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" name="is_active" defaultChecked />
+                <label>Active</label>
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-[#ef7e1b] text-white py-2 rounded-xl hover:bg-[#ee7f1b] transition"
+              >
+                Create Categories
+              </button>
             </form>
           </div>
         </div>
       )}
 
       {/* Edit Modal */}
-      {isEditModalOpen && editingCategory && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div
-            className="absolute inset-0 bg-gray-50/10 backdrop-blur-sm"
-            onClick={() => setIsEditModalOpen(false)}
-          />
-          <div className="w-11/12 max-w-[600px] p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-xl relative z-10">
+      {editingCategory && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-2 sm:p-4">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 w-full max-w-[calc(100%-2rem)] sm:max-w-md mx-auto relative">
             <button
-              onClick={() => setIsEditModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-500"
+              onClick={() => setEditingCategory(null)}
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white bg-red-500 w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600"
             >
               ✕
             </button>
-            <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">
-              Edit Category
-            </h2>
-            <form onSubmit={handleEditSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-[#4B5563] mb-1">
-                    Category Name
-                  </label>
-                  <input
-                    name="category_name"
-                    value={formData.category_name}
-                    onChange={handleEditChange}
-                    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#4B5563] mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleEditChange}
-                    className="w-full h-[80px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="is_active"
-                    checked={formData.is_active}
-                    onChange={handleEditChange}
-                  />
-                  <label>Active</label>
-                </div>
-                <div className="flex justify-center mt-10">
-                  <button
-                    type="submit"
-                    className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition"
-                  >
-                    Update Category
-                  </button>
-                </div>
+            <h1 className="text-[22px] font-medium text-[#1F2837] mb-6">
+              Edit Categories
+            </h1>
+            <form onSubmit={handleUpdateSubmit} className="space-y-4">
+              <div>
+                <label className="block text-[#4B5563] mb-1">Categories Name</label>
+                <input
+                  type="text"
+                  name="category_name"
+                  defaultValue={editingCategory.category_name}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
+                />
               </div>
+              <div>
+                <label className="block text-[#4B5563] mb-1">Description</label>
+                <textarea
+                  name="description"
+                  defaultValue={editingCategory.description}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
+                ></textarea>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="is_active"
+                  defaultChecked={editingCategory.is_active}
+                />
+                <label>Active</label>
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-[#ef7e1b] text-white py-2 rounded-xl hover:bg-[#ee7f1b] transition"
+              >
+                Update Categories
+              </button>
             </form>
           </div>
         </div>
@@ -450,4 +503,4 @@ const Categories = () => {
   );
 };
 
-export default Categories;
+export default CategoriesView;

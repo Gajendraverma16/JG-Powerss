@@ -166,23 +166,48 @@ useEffect(() => {
         onSubmit={handleSubmit}
         className="bg-white shadow-md rounded-2xl p-4 sm:p-6 w-full max-w-lg mx-auto space-y-4 sm:space-y-6"
       >
-        {/* Category Dropdown */}
-        <div>
-          <label className="block text-[#4B5563] text-[16px] mb-2">Select Product Category</label>
-          <select
-            name="category_id"
-            value={formData.category_id}
-            onChange={handleInputChange}
-            className="w-full h-[44px] sm:h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
-          >
-            <option value="">Select Product Category</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.category_name}
-              </option>
-            ))}
-          </select>
-        </div>
+       {/* Category Dropdown (Mobile Safe & Fixed Width Dropdown) */}
+<div className="w-full">
+  <label className="block text-[#4B5563] text-[15px] sm:text-[16px] mb-2">
+    Select Product Category
+  </label>
+
+  <div className="relative w-full">
+    <select
+      name="category_id"
+      value={formData.category_id}
+      onChange={handleInputChange}
+      className="block w-full max-w-full h-[42px] sm:h-[46px] md:h-[48px] px-3 pr-10 rounded-[10px] bg-[#E7EFF8] border border-gray-200 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] text-[14px] sm:text-[15px] appearance-none truncate"
+      style={{
+        maxWidth: "100%",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+      }}
+    >
+      <option value="">Select Product Category</option>
+      {categories.map((cat) => (
+        <option key={cat.id} value={cat.id}>
+          {cat.category_name}
+        </option>
+      ))}
+    </select>
+
+    {/* Custom dropdown arrow */}
+    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-4 h-4 text-gray-500"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
+  </div>
+</div>
+
 
         {/* Item Name */}
         <div>
