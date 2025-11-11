@@ -6,25 +6,19 @@ import Swal from "sweetalert2";
 const Branch = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-   const [branches, setBranches] = useState([]);
- 
+  const [branches, setBranches] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [activeDropdown, setActiveDropdown] = useState(null);
-  const [formData, setFormData] = useState({ branch_name: "" , branch_code : "" });
-  const [editId, setEditId] = useState(null);
-
-
-    // State for Add Status Modal
-   
-    const [newBranchData, setNewBranchData] = useState({
-      status_name: "",
-    });
-
-const fetchBranches = useCallback(async () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    code: "",
+  });
+  const fetchBranches = useCallback(async () => {
     try {
       const response = await api.get("/branches");
       if (response.data.status) {
-        setBranches(response.data.data); 
+        setBranches(response.data.data);
       } else {
         console.error("Failed to fetch branches:", response.data.message);
       }
@@ -39,45 +33,57 @@ const fetchBranches = useCallback(async () => {
     fetchBranches();
   }, [fetchBranches]);
 
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const handleInputChange = (name, value) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const { branch_name , branch_code } = formData;
-
- 
   // Handle Add / Edit
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+    setLoading(true);
     e.preventDefault();
-    if (!formData_name || !formData_code ) return alert("Please fill all fields");
+    if (!formData.name || !formData.code)
+      return alert("Please fill all fields");
 
     if (isEditing) {
-      setBranches((prev) =>
-        prev.map((branch) =>
-          branch.id === editId ? { ...branch, name: formData_name  , code: formData_code} : branch
-        )
+      await api.put(
+        `/branches/${formData.id}`,
+        { branch_name: formData.name, branch_code: formData.code },
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
+      setLoading(false);
     } else {
-      const newbranch = {
-      id: branches.length + 1,
-        name: formData_name,
-        code: formData_code,
-      };
-      setBranches([...branches, newbranch]);
+      await api.post(
+        `/branches`,
+        {
+          branch_name: formData.name,
+          branch_code: formData.code,
+        },
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      await fetchBranches();
+      setLoading(false);
     }
-
     handleCancel();
   };
 
   // Edit branch (open modal)
   const handleEdit = (branch) => {
-    setFormData({ name: branch_name , code : branch_code });
-    setEditId(branch.id);
+    setFormData({
+      id: branch.id,
+      name: branch.branch_name,
+      code: branch.branch_code,
+    });
     setIsEditing(true);
     setIsModalOpen(true);
     setActiveDropdown(null);
@@ -95,7 +101,9 @@ const fetchBranches = useCallback(async () => {
       confirmButtonText: "Yes, delete it!",
     });
     if (result.isConfirmed) {
-      setBranches((prev) => prev.filter((branch) => branch.id !== id));
+      setLoading(true);
+      await api.delete(`/branches/${id}`);
+      await fetchBranches();
       await Swal.fire({
         icon: "success",
         title: "Deleted!",
@@ -104,14 +112,14 @@ const fetchBranches = useCallback(async () => {
         timer: 1200,
         showConfirmButton: false,
       });
+      setLoading(false);
     }
     setActiveDropdown(null);
   };
 
   // Cancel Modal/Form
   const handleCancel = () => {
-    setFormData({ name: "" });
-    setEditId(null);
+    setFormData({ name: "", code: "" });
     setIsEditing(false);
     setIsModalOpen(false);
   };
@@ -120,7 +128,7 @@ const fetchBranches = useCallback(async () => {
     setActiveDropdown(activeDropdown === id ? null : id);
   };
 
-    if (loading) {
+  if (loading) {
     return (
       <div className="w-full min-h-[797px] flex items-center justify-center">
         Loading...
@@ -142,7 +150,7 @@ const fetchBranches = useCallback(async () => {
             onClick={() => {
               setIsModalOpen(true);
               setIsEditing(false);
-              setFormData({ name: "" , code :"" });
+              setFormData({ name: "", code: "" });
             }}
             className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] transition-colors hover:bg-[#ee7f1b]"
           >
@@ -198,27 +206,28 @@ const fetchBranches = useCallback(async () => {
                       Branch Name
                     </label>
                     <input
-                        type="text"
-                        name="branch_name"
-                        value={formData.branch_name}
-                        onChange={handleInputChange}
-                        className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
-                        placeholder="Enter branch name"
-                        required
-                      />
-                      <label className="block text-[#4B5563] text-[16px] mb-2">
-                        Branch Code
-                      </label>
-                      <input
-                        type="text"
-                        name="branch_code"
-                        value={formData.branch_code}
-                        onChange={handleInputChange}
-                        className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
-                        placeholder="Enter branch code"
-                        required
-                      />
-                   
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) =>
+                        handleInputChange("name", e.target.value)
+                      }
+                      className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
+                      placeholder="Enter branch name"
+                      required
+                    />
+                    <label className="block text-[#4B5563] text-[16px] mb-2">
+                      Branch Code
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.code}
+                      onChange={(e) =>
+                        handleInputChange("code", e.target.value)
+                      }
+                      className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
+                      placeholder="Enter branch code"
+                      required
+                    />
                   </div>
                 </div>
                 <div className="mt-10 flex justify-center">
@@ -241,8 +250,8 @@ const fetchBranches = useCallback(async () => {
             <div className="w-full rounded-lg overflow-hidden">
               <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563]">
                 <div className="font-medium text-sm text-left">Branch ID</div>
-                   <div className="font-medium text-sm text-left">Branch Code</div>
-                <div className="font-medium text-sm text-left">Branch Name</div>               
+                <div className="font-medium text-sm text-left">Branch Code</div>
+                <div className="font-medium text-sm text-left">Branch Name</div>
                 <div className="font-medium text-sm text-left">Actions</div>
                 <div /> {/* spacer */}
                 <div /> {/* spacer */}
@@ -254,25 +263,23 @@ const fetchBranches = useCallback(async () => {
                     <div className="lg:col-span-5">No branch available.</div>
                   </div>
                 ) : (
-                  branches.map((branch , index) => (
+                  branches.map((branch, index) => (
                     <div
-                      key={branch.branch_id}
+                      key={branch.id}
                       className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-4 border-b border-gray-200 items-center last:border-b-0 transition-colors"
                     >
                       <div className="text-sm text-[#4B5563] text-left">
                         {index + 1}
                       </div>
-                       <div className="text-sm text-[#4B5563] text-left whitespace-nowrap">
+                      <div className="text-sm text-[#4B5563] text-left whitespace-nowrap">
                         {branch.branch_code}
                       </div>
                       <div className="text-sm text-[#4B5563] text-left whitespace-nowrap">
                         {branch.branch_name}
                       </div>
-                     
-
                       <div className="relative text-left">
                         <button
-                          onClick={() => toggleDropdown(branch.branch_id)}
+                          onClick={() => toggleDropdown(branch.id)}
                           className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full transition-colors"
                         >
                           <TbDotsVertical className="w-4 h-4" />
@@ -302,10 +309,13 @@ const fetchBranches = useCallback(async () => {
                                 preserveAspectRatio="none"
                                 xmlns="http://www.w3.org/2000/svg"
                               >
-                                <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
+                                <polygon
+                                  points="0,0 50,1 100,0"
+                                  fill="#E5E7EB"
+                                />
                               </svg>
                               <button
-                                onClick={() => handleDelete(branch.branch_id)}
+                                onClick={() => handleDelete(branch.id)}
                                 className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
                               >
                                 Delete
@@ -325,29 +335,37 @@ const fetchBranches = useCallback(async () => {
           {/* Mobile cards */}
           <div className="md:hidden w-full space-y-4 pb-32 flex-grow">
             {branches.length === 0 ? (
-              <div className="py-8 px-6 text-center text-[#4B5563]">No branch available.</div>
+              <div className="py-8 px-6 text-center text-[#4B5563]">
+                No branch available.
+              </div>
             ) : (
               branches.map((branch) => (
                 <div
-                  key={branch.branch_id}
+                  key={branch.id}
                   className="rounded-lg shadow p-4 border border-gray-200/80"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                       <div className="space-y-1 pr-2">
-                        <p className="font-bold text-lg text-[#1F2837]">{branch.branch_name}</p>
-                            <p className="font-bold text-lg text-[#1F2837]">{branch.branch_code}</p>
-                        <p className="text-sm text-gray-500 break-all">ID: {branch.branch_id}</p>
+                        <p className="font-bold text-lg text-[#1F2837]">
+                          {branch.branch_name}
+                        </p>
+                        <p className="font-bold text-lg text-[#1F2837]">
+                          {branch.branch_code}
+                        </p>
+                        <p className="text-sm text-gray-500 break-all">
+                          ID: {branch.id}
+                        </p>
                       </div>
                     </div>
                     <div className="relative">
                       <button
-                        onClick={() => toggleDropdown(branch.branch_id)}
+                        onClick={() => toggleDropdown(branch.id)}
                         className="p-2 text-[#4B5563] rounded-full hover:bg-gray-100"
                       >
                         <TbDotsVertical className="w-5 h-5" />
                       </button>
-                      {activeDropdown === branch.branch_id && (
+                      {activeDropdown === branch.id && (
                         <div className="absolute right-0 mt-1 w-28 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-20 overflow-hidden">
                           <div
                             ref={(el) => {
@@ -374,7 +392,7 @@ const fetchBranches = useCallback(async () => {
                               <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
                             </svg>
                             <button
-                              onClick={() => handleDelete(branch.branch_id)}
+                              onClick={() => handleDelete(branch.id)}
                               className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
                             >
                               Delete
@@ -395,11 +413,3 @@ const fetchBranches = useCallback(async () => {
 };
 
 export default Branch;
-
-
-
-
-
-
-
-
