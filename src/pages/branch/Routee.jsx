@@ -17,7 +17,7 @@ const Routee = ({ branchId = null }) => {
     route_name: "",
   });
 
-  // ✅ Fetch Routes
+  //  Fetch Routes
   const fetchRoutes = useCallback(async () => {
     try {
       setLoading(true);
@@ -31,7 +31,7 @@ const Routee = ({ branchId = null }) => {
     }
   }, []);
 
-  // ✅ Fetch Branches
+  //  Fetch Branches
   const fetchBranches = useCallback(async () => {
     try {
       const res = await api.get("/branches");
@@ -216,7 +216,7 @@ const Routee = ({ branchId = null }) => {
         </div>
       </div>
 
-      {/* 🟠 Modal (same as Area) */}
+      {/*  Modal (same as Area) */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50 border-white/30">
           <div
