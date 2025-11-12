@@ -17,7 +17,7 @@ const Routee = ({ branchId = null }) => {
     route_name: "",
   });
 
-  //  Fetch Routes
+  // Fetch all routes
   const fetchRoutes = useCallback(async () => {
     try {
       setLoading(true);
@@ -31,7 +31,7 @@ const Routee = ({ branchId = null }) => {
     }
   }, []);
 
-  //  Fetch Branches
+  // Fetch all branches
   const fetchBranches = useCallback(async () => {
     try {
       const res = await api.get("/branches");
@@ -159,64 +159,114 @@ const Routee = ({ branchId = null }) => {
           </button>
         </div>
 
-        {/* Table */}
-        <div className="flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF]">
-          <div className="hidden md:block">
-            <div className="grid md:grid-cols-[1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] font-medium text-sm">
-              <div>Branch</div>
-              <div>Route ID</div>
-              <div>Route Name</div>
-              <div>Actions</div>
-            </div>
-
-            <div className="pb-20">
-              {routes.length === 0 ? (
-                <div className="text-center py-6 text-gray-500">
-                  No routes available.
-                </div>
-              ) : (
-                routes.map((route) => (
-                  <div
-                    key={route.id}
-                    className="grid md:grid-cols-[1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
-                  >
-                    <div>{getBranchName(route.branch_id)}</div>
-                    <div>{route.id}</div>
-                    <div>{route.route_name}</div>
-                    <div className="relative">
-                      <button
-                        onClick={() => toggleDropdown(route.id)}
-                        className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
-                      >
-                        <TbDotsVertical className="w-4 h-4" />
-                      </button>
-
-                      {activeDropdown === route.id && (
-                        <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10">
-                          <button
-                            onClick={() => handleEdit(route)}
-                            className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(route.id)}
-                            className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+        {/* Desktop Table */}
+        <div className="hidden md:block flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF]">
+          <div className="grid md:grid-cols-[1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] font-medium text-sm">
+            <div>Branch</div>
+            <div>Route ID</div>
+            <div>Route Name</div>
+            <div>Actions</div>
           </div>
+
+          <div className="pb-20">
+            {routes.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
+                No routes available.
+              </div>
+            ) : (
+              routes.map((route) => (
+                <div
+                  key={route.id}
+                  className="grid md:grid-cols-[1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
+                >
+                  <div>{getBranchName(route.branch_id)}</div>
+                  <div>{route.id}</div>
+                  <div>{route.route_name}</div>
+                  <div className="relative">
+                    <button
+                      onClick={() => toggleDropdown(route.id)}
+                      className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
+                    >
+                      <TbDotsVertical className="w-4 h-4" />
+                    </button>
+
+                    {activeDropdown === route.id && (
+                      <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10">
+                        <button
+                          onClick={() => handleEdit(route)}
+                          className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(route.id)}
+                          className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="block md:hidden space-y-4">
+          {routes.length === 0 ? (
+            <div className="text-center py-6 text-gray-500">
+              No routes available.
+            </div>
+          ) : (
+            routes.map((route) => (
+              <div
+                key={route.id}
+                className="p-4 rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] shadow-sm relative"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="text-[17px] font-semibold text-[#1F2837]">
+                      {route.route_name}
+                    </h3>
+                    <p className="text-sm text-[#4B5563]">
+                      Branch: {getBranchName(route.branch_id)}
+                    </p>
+                    <p className="text-sm text-[#4B5563]">ID: {route.id}</p>
+                  </div>
+
+                  <button
+                    onClick={() => toggleDropdown(route.id)}
+                    className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
+                  >
+                    <TbDotsVertical className="w-5 h-5" />
+                  </button>
+
+                  {activeDropdown === route.id && (
+                    <div className="absolute right-4 top-10 w-24 rounded-md shadow-md bg-white z-10">
+                      <button
+                        onClick={() => handleEdit(route)}
+                        className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(route.id)}
+                        className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
-      {/*  Modal (same as Area) */}
+      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50 border-white/30">
           <div
@@ -224,7 +274,7 @@ const Routee = ({ branchId = null }) => {
             onClick={handleCancel}
           />
           <div className="w-11/12 max-w-[600px] max-h-[90vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-lg relative z-10">
-            {/* Close Button (same as Area) */}
+            {/* Close Button */}
             <button
               onClick={handleCancel}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"

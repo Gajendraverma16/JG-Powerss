@@ -26,9 +26,10 @@ import SalesmanOrderFlow from "@/pages/Orders/neworder";
 import Website from "@/Website/website";
 import TestOrder from "@/pages/Orders/TestOrder";
 import Categories from "../pages/quotation/Categories";
-import Branch from "@/pages/branch/Branch";
-import Routee from "@/pages/branch/Routee";
-import Area from "@/pages/branch/Area";
+import Branch from "../pages/branch/Branch";
+import Routee from "../pages/branch/Routee";
+import Area from "../pages/branch/Area";
+import Villag from "@/pages/branch/Village";
 import Village from "@/pages/branch/Village";
 
 function PrivateRoute({ children, roles }) {
@@ -260,12 +261,12 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
-          <Route
-          path="/village"
+         <Route
+          path="/Village"
           element={
             <PrivateRoute>
               <PermissionRoute>
-                < Village />
+                < Village/>
               </PermissionRoute>
             </PrivateRoute>
           }
