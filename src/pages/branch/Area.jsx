@@ -15,6 +15,10 @@ const Area = () => {
   const [editId, setEditId] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
 
+  // pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
   const [formData, setFormData] = useState({
     branch_id: "",
     route_id: "",
@@ -73,6 +77,12 @@ const Area = () => {
       setFilteredRoutes([]);
     }
   }, [formData.branch_id, routes]);
+
+  // Pagination logic
+  const indexOfLast = currentPage * rowsPerPage;
+  const indexOfFirst = indexOfLast - rowsPerPage;
+  const currentData = areas.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(areas.length / rowsPerPage);
 
   const getBranchName = (id) => {
     const branch = branches.find((b) => b.id === id);
@@ -173,13 +183,32 @@ const Area = () => {
   return (
     <div className="w-full px-4 py-6 md:px-10 md:py-10">
       <div className="relative mx-auto flex min-h-[440px] max-w-5xl flex-col rounded-[18px] border border-white/60 bg-gradient-to-br from-white via-[#F5FAFF] to-[#E7F4FF] p-6 shadow-[0px_20px_45px_rgba(20,84,182,0.08)] md:p-8">
+
         {/* Header */}
-        <div className="mb-8 flex flex-row gap-3 items-center justify-between">
+        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <h1 className="text-[20px] md:text-[24px] font-semibold text-[#1F2837]">
             <span className="inline-block border-b-2 border-[#0e4053] pb-1">
               Areas
             </span>
           </h1>
+
+          {/* Pagination Top */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-[#4B5563]">Show</label>
+            <select
+              className="border border-gray-300 rounded-md text-sm px-2 py-1"
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+            </select>
+        
+          </div>
 
           <button
             onClick={() => {
@@ -193,7 +222,7 @@ const Area = () => {
           </button>
         </div>
 
-        {/* Table (Desktop) */}
+        {/* Table */}
         <div className="hidden md:block flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF]">
           <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] font-medium text-sm">
             <div>Branch</div>
@@ -203,13 +232,13 @@ const Area = () => {
             <div>Actions</div>
           </div>
 
-          <div className="pb-20">
-            {areas.length === 0 ? (
+          <div className="pb-6">
+            {currentData.length === 0 ? (
               <div className="text-center py-6 text-gray-500">
                 No areas available.
               </div>
             ) : (
-              areas.map((area) => (
+              currentData.map((area) => (
                 <div
                   key={area.id}
                   className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
@@ -225,7 +254,6 @@ const Area = () => {
                     >
                       <TbDotsVertical className="w-4 h-4" />
                     </button>
-
                     {activeDropdown === area.id && (
                       <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10">
                         <button
@@ -251,7 +279,7 @@ const Area = () => {
 
         {/* Mobile Cards */}
         <div className="block md:hidden space-y-4">
-          {areas.map((area) => (
+          {currentData.map((area) => (
             <div
               key={area.id}
               className="p-4 rounded-[12px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] shadow-sm"
@@ -270,7 +298,9 @@ const Area = () => {
               <p className="text-sm text-gray-600 mt-1">
                 Branch: {getBranchName(area.branch_id)}
               </p>
-              <p className="text-sm text-gray-600">Route: {getRouteName(area.route_id)}</p>
+              <p className="text-sm text-gray-600">
+                Route: {getRouteName(area.route_id)}
+              </p>
               <p className="text-sm text-gray-600">ID: {area.id}</p>
 
               {activeDropdown === area.id && (
@@ -292,6 +322,35 @@ const Area = () => {
             </div>
           ))}
         </div>
+
+        {/* Pagination Bottom */}
+        {areas.length > 0 && (
+          <div className="flex flex-col md:flex-row justify-between items-center mt-6">
+            <div className="text-sm text-gray-600 mb-3 md:mb-0">
+              Showing {indexOfFirst + 1} to{" "}
+              {Math.min(indexOfLast, areas.length)} of {areas.length} entries
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <span className="text-sm">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(currentPage + 1)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal */}
@@ -307,28 +366,7 @@ const Area = () => {
               onClick={handleCancel}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
             >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M13 1L1 13"
-                  stroke="#1F2837"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M1 1L13 13"
-                  stroke="#1F2837"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              ✕
             </button>
 
             <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">

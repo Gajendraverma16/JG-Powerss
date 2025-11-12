@@ -17,7 +17,11 @@ const Routee = ({ branchId = null }) => {
     route_name: "",
   });
 
-  // Fetch all routes
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Fetch routes
   const fetchRoutes = useCallback(async () => {
     try {
       setLoading(true);
@@ -31,7 +35,7 @@ const Routee = ({ branchId = null }) => {
     }
   }, []);
 
-  // Fetch all branches
+  // Fetch branches
   const fetchBranches = useCallback(async () => {
     try {
       const res = await api.get("/branches");
@@ -128,6 +132,24 @@ const Routee = ({ branchId = null }) => {
     setActiveDropdown((prev) => (prev === id ? null : id));
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(routes.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentRoutes = routes.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage((p) => p - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage((p) => p + 1);
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
   if (loading) {
     return (
       <div className="w-full min-h-[797px] flex items-center justify-center">
@@ -139,13 +161,30 @@ const Routee = ({ branchId = null }) => {
   return (
     <div className="w-full px-4 py-6 md:px-10 md:py-10">
       <div className="relative mx-auto flex min-h-[440px] max-w-5xl flex-col rounded-[18px] border border-white/60 bg-gradient-to-br from-white via-[#F5FAFF] to-[#E7F4FF] p-6 shadow-[0px_20px_45px_rgba(20,84,182,0.08)] md:p-8">
+        
         {/* Header */}
-        <div className="mb-8 flex flex-row gap-3 items-center justify-between">
+        <div className="mb-8 flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
           <h1 className="text-[20px] md:text-[24px] font-semibold text-[#1F2837]">
             <span className="inline-block border-b-2 border-[#0e4053] pb-1">
               Routes
             </span>
           </h1>
+
+          {/* Pagination Top Control */}
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <span>Show</span>
+            <select
+              value={itemsPerPage}
+              onChange={handleItemsPerPageChange}
+              className="border rounded px-2 py-1 text-sm focus:ring-[#0e4053]"
+            >
+              {[5, 10, 25].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+                   </div>
 
           <button
             onClick={() => {
@@ -168,13 +207,13 @@ const Routee = ({ branchId = null }) => {
             <div>Actions</div>
           </div>
 
-          <div className="pb-20">
+          <div className="pb-4">
             {routes.length === 0 ? (
               <div className="text-center py-6 text-gray-500">
                 No routes available.
               </div>
             ) : (
-              routes.map((route) => (
+              currentRoutes.map((route) => (
                 <div
                   key={route.id}
                   className="grid md:grid-cols-[1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
@@ -214,13 +253,13 @@ const Routee = ({ branchId = null }) => {
         </div>
 
         {/* Mobile Cards */}
-        <div className="block md:hidden space-y-4">
+        <div className="block md:hidden space-y-4 mt-4">
           {routes.length === 0 ? (
             <div className="text-center py-6 text-gray-500">
               No routes available.
             </div>
           ) : (
-            routes.map((route) => (
+            currentRoutes.map((route) => (
               <div
                 key={route.id}
                 className="p-4 rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] shadow-sm relative"
@@ -264,6 +303,37 @@ const Routee = ({ branchId = null }) => {
             ))
           )}
         </div>
+
+        {/* Bottom Pagination */}
+        {routes.length > 0 && (
+          <div className="flex justify-between items-center mt-4 px-2">
+            <p className="text-sm text-gray-600">
+              Showing {startIndex + 1} to{" "}
+              {Math.min(startIndex + itemsPerPage, routes.length)} of{" "}
+              {routes.length} entries
+            </p>
+
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                className="text-sm px-3 py-1 border rounded disabled:opacity-40"
+              >
+                Prev
+              </button>
+              <span className="text-sm text-gray-700">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className="text-sm px-3 py-1 border rounded disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal */}
@@ -274,33 +344,11 @@ const Routee = ({ branchId = null }) => {
             onClick={handleCancel}
           />
           <div className="w-11/12 max-w-[600px] max-h-[90vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-lg relative z-10">
-            {/* Close Button */}
             <button
               onClick={handleCancel}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
             >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M13 1L1 13"
-                  stroke="#1F2837"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M1 1L13 13"
-                  stroke="#1F2837"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              ✕
             </button>
 
             <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">
@@ -309,7 +357,6 @@ const Routee = ({ branchId = null }) => {
 
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 gap-6">
-                {/* Branch */}
                 <div className="space-y-2">
                   <label className="block text-[#4B5563] text-[16px] mb-2">
                     Select Branch
@@ -330,7 +377,6 @@ const Routee = ({ branchId = null }) => {
                     ))}
                   </select>
 
-                  {/* Route Name */}
                   <label className="block text-[#4B5563] text-[16px] mb-2">
                     Route Name
                   </label>
