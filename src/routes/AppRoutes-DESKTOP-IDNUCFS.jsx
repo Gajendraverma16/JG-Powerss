@@ -26,14 +26,11 @@ import SalesmanOrderFlow from "@/pages/Orders/neworder";
 import Website from "@/Website/website";
 import TestOrder from "@/pages/Orders/TestOrder";
 import Categories from "../pages/quotation/Categories";
-import Branch from "@/pages/branch/Branch";
-import Routee from "@/pages/branch/Routee";
-import Area from "@/pages/branch/Area";
-import Village from "@/pages/branch/Village";
 import Branch from "../pages/branch/Branch";
 import Routee from "../pages/branch/Routee";
-import Area from "../pages/branch/Area"; 
-import Villagees from "../pages/leads/Villagees";
+import Area from "../pages/branch/Area";
+import Villag from "@/pages/branch/Village";
+import Village from "@/pages/branch/Village";
 
 function PrivateRoute({ children, roles }) {
   const { user, loading, rolePermissions } = useAuth();
@@ -141,16 +138,6 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/allVillages"
-          element={
-            <PrivateRoute>
-              <PermissionRoute moduleName="Leads">
-                <Villagees />
-              </PermissionRoute>
-            </PrivateRoute>
-          }
-        />
 
         {/* Quotation routes (flattened) */}
         <Route
@@ -249,7 +236,7 @@ export default function AppRoutes() {
           element={
             <PrivateRoute>
               <PermissionRoute>
-                <Branch/>
+                < Branch />
               </PermissionRoute>
             </PrivateRoute>
           }
@@ -274,13 +261,12 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
-          <Route
-        <Route
-          path="/village"
+         <Route
+          path="/Village"
           element={
             <PrivateRoute>
               <PermissionRoute>
-                < Village />
+                < Village/>
               </PermissionRoute>
             </PrivateRoute>
           }

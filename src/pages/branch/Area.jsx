@@ -7,6 +7,8 @@ const Area = () => {
   const [areas, setAreas] = useState([]);
   const [branches, setBranches] = useState([]);
   const [routes, setRoutes] = useState([]);
+  const [filteredRoutes, setFilteredRoutes] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -19,7 +21,7 @@ const Area = () => {
     area_name: "",
   });
 
-  // Fetch Areas
+  // Fetch all areas
   const fetchAreas = useCallback(async () => {
     try {
       setLoading(true);
@@ -33,7 +35,7 @@ const Area = () => {
     }
   }, []);
 
-  // Fetch Branches
+  // Fetch branches
   const fetchBranches = useCallback(async () => {
     try {
       const res = await api.get("/branches");
@@ -43,7 +45,7 @@ const Area = () => {
     }
   }, []);
 
-  // Fetch Routes
+  // Fetch routes
   const fetchRoutes = useCallback(async () => {
     try {
       const res = await api.get("/routes");
@@ -59,6 +61,18 @@ const Area = () => {
     fetchRoutes();
     fetchAreas();
   }, [fetchBranches, fetchRoutes, fetchAreas]);
+
+  // Filter routes by branch
+  useEffect(() => {
+    if (formData.branch_id) {
+      const filtered = routes.filter(
+        (route) => String(route.branch_id) === String(formData.branch_id)
+      );
+      setFilteredRoutes(filtered);
+    } else {
+      setFilteredRoutes([]);
+    }
+  }, [formData.branch_id, routes]);
 
   const getBranchName = (id) => {
     const branch = branches.find((b) => b.id === id);
@@ -92,15 +106,14 @@ const Area = () => {
       setLoading(true);
       if (isEditing) {
         await api.put(`/areas/${editId}`, formData);
-        Swal.fire("Updated!", "Area has been updated.", "success");
+        Swal.fire("Updated!", "Area updated successfully!", "success");
       } else {
         await api.post("/areas", formData);
-        Swal.fire("Created!", "New area has been added.", "success");
+        Swal.fire("Created!", "New area added successfully!", "success");
       }
       await fetchAreas();
       handleCancel();
     } catch (err) {
-      console.error("Error saving area:", err);
       Swal.fire("Error", "Failed to save area", "error");
     } finally {
       setLoading(false);
@@ -135,31 +148,27 @@ const Area = () => {
         setLoading(true);
         await api.delete(`/areas/${id}`);
         await fetchAreas();
-        Swal.fire({
-          icon: "success",
-          title: "Deleted!",
-          text: "Area has been removed.",
-          timer: 1200,
-          showConfirmButton: false,
-        });
-      } catch {
+        Swal.fire("Deleted!", "Area has been removed.", "success");
+      } catch (err) {
         Swal.fire("Error", "Failed to delete area", "error");
       } finally {
         setLoading(false);
       }
     }
+    setActiveDropdown(null);
   };
 
   const toggleDropdown = (id) => {
     setActiveDropdown((prev) => (prev === id ? null : id));
   };
 
-  if (loading)
+  if (loading) {
     return (
       <div className="w-full min-h-[797px] flex items-center justify-center">
         Loading areas...
       </div>
     );
+  }
 
   return (
     <div className="w-full px-4 py-6 md:px-10 md:py-10">
@@ -168,84 +177,120 @@ const Area = () => {
         <div className="mb-8 flex flex-row gap-3 items-center justify-between">
           <h1 className="text-[20px] md:text-[24px] font-semibold text-[#1F2837]">
             <span className="inline-block border-b-2 border-[#0e4053] pb-1">
-              Area
+              Areas
             </span>
           </h1>
+
           <button
             onClick={() => {
               setIsModalOpen(true);
               setIsEditing(false);
               setFormData({ branch_id: "", route_id: "", area_name: "" });
             }}
-            className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] transition-colors hover:bg-[#ee7f1b]"
+            className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
           >
             Add Area
           </button>
         </div>
 
-        {/* Table */}
-        <div className="flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF]">
-          <div className="hidden md:block">
-            <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] font-medium text-sm">
-              <div>Branch</div>
-              <div>Route</div>
-              <div>Area ID</div>
-              <div>Area Name</div>
-              <div>Actions</div>
-            </div>
+        {/* Table (Desktop) */}
+        <div className="hidden md:block flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF]">
+          <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] font-medium text-sm">
+            <div>Branch</div>
+            <div>Route</div>
+            <div>Area ID</div>
+            <div>Area Name</div>
+            <div>Actions</div>
+          </div>
 
-            <div className="pb-20">
-              {areas.length === 0 ? (
-                <div className="text-center py-6 text-gray-500">
-                  No areas available.
-                </div>
-              ) : (
-                areas.map((area, index) => (
-                  <div
-                    key={area.id}
-                    className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
-                  >
-                    <div>{getBranchName(area.branch_id)}</div>
-                    <div>{getRouteName(area.route_id)}</div>
-                    <div>{index + 1}</div>
-                    <div>{area.area_name}</div>
-                    <div className="relative text-left">
-                      <button
-                        onClick={() => toggleDropdown(area.id)}
-                        className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full transition-colors"
-                      >
-                        <TbDotsVertical className="w-4 h-4" />
-                      </button>
-                      {activeDropdown === area.id && (
-                        <div className="absolute left-0 w-24 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-10 overflow-hidden">
-                          <button
-                            onClick={() => handleEdit(area)}
-                            className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
-                          >
-                            Edit
-                          </button>
-                          <svg
-                            className="w-full h-[1px]"
-                            viewBox="0 0 100 1"
-                            preserveAspectRatio="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
-                          </svg>
-                          <button
-                            onClick={() => handleDelete(area.id)}
-                            className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
+          <div className="pb-20">
+            {areas.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
+                No areas available.
+              </div>
+            ) : (
+              areas.map((area) => (
+                <div
+                  key={area.id}
+                  className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
+                >
+                  <div>{getBranchName(area.branch_id)}</div>
+                  <div>{getRouteName(area.route_id)}</div>
+                  <div>{area.id}</div>
+                  <div>{area.area_name}</div>
+                  <div className="relative">
+                    <button
+                      onClick={() => toggleDropdown(area.id)}
+                      className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
+                    >
+                      <TbDotsVertical className="w-4 h-4" />
+                    </button>
+
+                    {activeDropdown === area.id && (
+                      <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10">
+                        <button
+                          onClick={() => handleEdit(area)}
+                          className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(area.id)}
+                          className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </div>
-                ))
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="block md:hidden space-y-4">
+          {areas.map((area) => (
+            <div
+              key={area.id}
+              className="p-4 rounded-[12px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] shadow-sm"
+            >
+              <div className="flex justify-between">
+                <h3 className="font-medium text-[#1F2837] text-lg">
+                  {area.area_name}
+                </h3>
+                <button
+                  onClick={() => toggleDropdown(area.id)}
+                  className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
+                >
+                  <TbDotsVertical className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 mt-1">
+                Branch: {getBranchName(area.branch_id)}
+              </p>
+              <p className="text-sm text-gray-600">Route: {getRouteName(area.route_id)}</p>
+              <p className="text-sm text-gray-600">ID: {area.id}</p>
+
+              {activeDropdown === area.id && (
+                <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => handleEdit(area)}
+                    className="px-3 py-1 text-sm rounded-md bg-[#ef7e1b] text-white"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(area.id)}
+                    className="px-3 py-1 text-sm rounded-md bg-gray-300 text-[#1F2837]"
+                  >
+                    Delete
+                  </button>
+                </div>
               )}
             </div>
-          </div>
+          ))}
         </div>
       </div>
 
@@ -257,6 +302,7 @@ const Area = () => {
             onClick={handleCancel}
           />
           <div className="w-11/12 max-w-[600px] max-h-[90vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-lg relative z-10">
+            {/* Close Button */}
             <button
               onClick={handleCancel}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
@@ -325,7 +371,7 @@ const Area = () => {
                     required
                   >
                     <option value="">Select Route</option>
-                    {routes.map((r) => (
+                    {filteredRoutes.map((r) => (
                       <option key={r.id} value={r.id}>
                         {r.route_name}
                       </option>

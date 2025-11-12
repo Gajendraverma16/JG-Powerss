@@ -8,6 +8,8 @@ const Village = () => {
   const [branches, setBranches] = useState([]);
   const [routes, setRoutes] = useState([]);
   const [areas, setAreas] = useState([]);
+  const [filteredRoutes, setFilteredRoutes] = useState([]);
+  const [filteredAreas, setFilteredAreas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -21,21 +23,48 @@ const Village = () => {
     village_name: "",
   });
 
-  //  Fetch Villages
-  const fetchVillages = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await api.get("/villages");
-      if (Array.isArray(res.data)) setVillages(res.data);
-      else if (res.data.data) setVillages(res.data.data);
-    } catch (err) {
-      console.error("Error fetching villages:", err.message);
-    } finally {
-      setLoading(false);
+  // Filter routes by selected branch
+  useEffect(() => {
+    if (formData.branch_id) {
+      const filtered = routes.filter(
+        (route) => String(route.branch_id) === String(formData.branch_id)
+      );
+      setFilteredRoutes(filtered);
+    } else {
+      setFilteredRoutes([]);
     }
-  }, []);
+  }, [formData.branch_id, routes]);
 
-  //  Fetch Branches
+  // Filter areas by selected route
+  useEffect(() => {
+    if (formData.route_id) {
+      const filtered = areas.filter(
+        (area) => String(area.route_id) === String(formData.route_id)
+      );
+      setFilteredAreas(filtered);
+    } else {
+      setFilteredAreas([]);
+    }
+  }, [formData.route_id, areas]);
+
+  // Fetch Villages
+  const fetchVillages = useCallback(async () => {
+  try {
+    setLoading(true);
+    const res = await api.get("/villages");
+    const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
+    setVillages(data);
+  } catch (err) {
+    console.error("Error fetching villages:", err.response?.data || err.message);
+    Swal.fire("Error", "Failed to fetch villages", "error");
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
+
+
+  // Fetch Branches
   const fetchBranches = useCallback(async () => {
     try {
       const res = await api.get("/branches");
@@ -45,7 +74,7 @@ const Village = () => {
     }
   }, []);
 
-  //  Fetch Routes
+  // Fetch Routes
   const fetchRoutes = useCallback(async () => {
     try {
       const res = await api.get("/routes");
@@ -56,7 +85,7 @@ const Village = () => {
     }
   }, []);
 
-  //  Fetch Areas
+  // Fetch Areas
   const fetchAreas = useCallback(async () => {
     try {
       const res = await api.get("/areas");
@@ -90,35 +119,44 @@ const Village = () => {
     setIsModalOpen(false);
   };
 
-  //  Add / Update
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const { branch_id, route_id, area_id, village_name } = formData;
-    if (!branch_id || !route_id || !area_id || !village_name) {
-      Swal.fire("Warning", "Please fill all fields", "warning");
-      return;
+  e.preventDefault();
+
+  const { branch_id, route_id, area_id, village_name } = formData;
+
+  if (!branch_id || !route_id || !area_id || !village_name) {
+    Swal.fire("Warning", "Please fill all fields", "warning");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const payload = {
+      branch_id: Number(branch_id),
+      route_id: Number(route_id),
+      area_id: Number(area_id),
+      village_name: village_name.trim(),
+    };
+
+    if (isEditing) {
+      await api.put(`/villages/${editId}`, payload);
+      Swal.fire("Updated!", "Village updated successfully!", "success");
+    } else {
+      await api.post("/villages", payload);
+      Swal.fire("Created!", "Village created successfully!", "success");
     }
 
-    try {
-      setLoading(true);
-      if (isEditing) {
-        await api.put(`/villages/${editId}`, formData);
-        Swal.fire("Updated!", "Village updated successfully!", "success");
-      } else {
-        await api.post("/villages", formData);
-        Swal.fire("Created!", "Village created successfully!", "success");
-      }
-      await fetchVillages();
-      handleCancel();
-    } catch (err) {
-      console.error("Error saving village:", err.message);
-      Swal.fire("Error", "Failed to save village", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+    await fetchVillages();
+    handleCancel();
+  } catch (err) {
+    console.error("Error saving village:", err.response?.data || err.message);
+    Swal.fire("Error", "Failed to save village", "error");
+  } finally {
+    setLoading(false);
+  }
+};
 
-  //  Edit
   const handleEdit = (village) => {
     setFormData({
       branch_id: village.branch_id,
@@ -132,7 +170,6 @@ const Village = () => {
     setActiveDropdown(null);
   };
 
-  //  Delete
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -196,71 +233,121 @@ const Village = () => {
           </button>
         </div>
 
-        {/* Table */}
-        <div className="flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF]">
-          <div className="hidden md:block">
-            <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] font-medium text-sm">
-              <div>Branch</div>
-              <div>Route</div>
-              <div>Area</div>
-              <div>Village ID</div>
-              <div>Village Name</div>
-              <div>Actions</div>
-            </div>
-
-            <div className="pb-20">
-              {villages.length === 0 ? (
-                <div className="text-center py-6 text-gray-500">
-                  No villages available.
-                </div>
-              ) : (
-                villages.map((v, index) => (
-                  <div
-                    key={v.id}
-                    className="grid md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
-                  >
-                    <div>{v.branch?.branch_name || "N/A"}</div>
-                    <div>{v.route?.route_name || "N/A"}</div>
-                    <div>{v.area?.area_name || "N/A"}</div>
-                    <div>{index + 1}</div>
-                    <div>{v.village_name}</div>
-                    <div className="relative text-left">
-                      <button
-                        onClick={() => toggleDropdown(v.id)}
-                        className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full transition-colors"
-                      >
-                        <TbDotsVertical className="w-4 h-4" />
-                      </button>
-                      {activeDropdown === v.id && (
-                        <div className="absolute left-0 w-24 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-10 overflow-hidden">
-                          <button
-                            onClick={() => handleEdit(v)}
-                            className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
-                          >
-                            Edit
-                          </button>
-                          <svg
-                            className="w-full h-[1px]"
-                            viewBox="0 0 100 1"
-                            preserveAspectRatio="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
-                          </svg>
-                          <button
-                            onClick={() => handleDelete(v.id)}
-                            className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+        {/* Desktop Table */}
+        <div className="hidden md:block flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF]">
+          <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] font-medium text-sm">
+            <div>Branch</div>
+            <div>Route</div>
+            <div>Area</div>
+            <div>Village ID</div>
+            <div>Village Name</div>
+            <div>Actions</div>
           </div>
+
+          <div className="pb-20">
+            {villages.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
+                No villages available.
+              </div>
+            ) : (
+              villages.map((v, index) => (
+                <div
+                  key={v.id}
+                  className="grid md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
+                >
+                  <div>{v.branch?.branch_name || "N/A"}</div>
+                  <div>{v.route?.route_name || "N/A"}</div>
+                  <div>{v.area?.area_name || "N/A"}</div>
+                  <div>{index + 1}</div>
+                  <div>{v.village_name}</div>
+                  <div className="relative text-left">
+                    <button
+                      onClick={() => toggleDropdown(v.id)}
+                      className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full transition-colors"
+                    >
+                      <TbDotsVertical className="w-4 h-4" />
+                    </button>
+                    {activeDropdown === v.id && (
+                      <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10">
+                        <button
+                          onClick={() => handleEdit(v)}
+                          className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(v.id)}
+                          className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="block md:hidden space-y-4">
+          {villages.length === 0 ? (
+            <div className="text-center py-6 text-gray-500">
+              No villages available.
+            </div>
+          ) : (
+            villages.map((v, index) => (
+              <div
+                key={v.id}
+                className="p-4 rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] shadow-sm relative"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="text-[17px] font-semibold text-[#1F2837]">
+                      {v.village_name}
+                    </h3>
+                    <p className="text-sm text-[#4B5563]">
+                      Branch: {v.branch?.branch_name || "N/A"}
+                    </p>
+                    <p className="text-sm text-[#4B5563]">
+                      Route: {v.route?.route_name || "N/A"}
+                    </p>
+                    <p className="text-sm text-[#4B5563]">
+                      Area: {v.area?.area_name || "N/A"}
+                    </p>
+                    <p className="text-sm text-[#4B5563]">
+                      ID: {index + 1}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => toggleDropdown(v.id)}
+                    className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
+                  >
+                    <TbDotsVertical className="w-5 h-5" />
+                  </button>
+
+                  {activeDropdown === v.id && (
+                    <div className="absolute right-4 top-10 w-24 rounded-md shadow-md bg-white z-10">
+                      <button
+                        onClick={() => handleEdit(v)}
+                        className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(v.id)}
+                        className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -272,6 +359,7 @@ const Village = () => {
             onClick={handleCancel}
           />
           <div className="w-11/12 max-w-[600px] max-h-[90vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-lg relative z-10">
+            {/* Close Button */}
             <button
               onClick={handleCancel}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
@@ -340,7 +428,7 @@ const Village = () => {
                     required
                   >
                     <option value="">Select Route</option>
-                    {routes.map((r) => (
+                    {filteredRoutes.map((r) => (
                       <option key={r.id} value={r.id}>
                         {r.route_name}
                       </option>
@@ -360,7 +448,7 @@ const Village = () => {
                     required
                   >
                     <option value="">Select Area</option>
-                    {areas.map((a) => (
+                    {filteredAreas.map((a) => (
                       <option key={a.id} value={a.id}>
                         {a.area_name}
                       </option>
