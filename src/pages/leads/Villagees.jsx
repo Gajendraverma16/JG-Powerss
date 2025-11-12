@@ -169,7 +169,7 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
       } md:mx-auto`}
     >
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div className="flex flex-wrap items-center justify-between  mb-8">
         <h1 className="text-[20px] md:text-[22px] font-medium text-[#1F2837] whitespace-nowrap">
           Villages
         </h1>
@@ -212,7 +212,7 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
               </div>
               <input
                 type="search"
-                placeholder="Search by village, route, area or branch"
+                placeholder="Search by village Name"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onBlur={() => isMobile && setIsSearchExpanded(false)}
