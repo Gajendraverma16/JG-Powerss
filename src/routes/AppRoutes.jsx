@@ -30,6 +30,10 @@ import Branch from "@/pages/branch/Branch";
 import Routee from "@/pages/branch/Routee";
 import Area from "@/pages/branch/Area";
 import Village from "@/pages/branch/Village";
+import Branch from "../pages/branch/Branch";
+import Routee from "../pages/branch/Routee";
+import Area from "../pages/branch/Area"; 
+import Villagees from "../pages/leads/Villagees";
 
 function PrivateRoute({ children, roles }) {
   const { user, loading, rolePermissions } = useAuth();
@@ -137,6 +141,16 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/allVillages"
+          element={
+            <PrivateRoute>
+              <PermissionRoute moduleName="Leads">
+                <Villagees />
+              </PermissionRoute>
+            </PrivateRoute>
+          }
+        />
 
         {/* Quotation routes (flattened) */}
         <Route
@@ -235,7 +249,7 @@ export default function AppRoutes() {
           element={
             <PrivateRoute>
               <PermissionRoute>
-                < Branch />
+                <Branch/>
               </PermissionRoute>
             </PrivateRoute>
           }
@@ -261,6 +275,7 @@ export default function AppRoutes() {
           }
         />
           <Route
+        <Route
           path="/village"
           element={
             <PrivateRoute>

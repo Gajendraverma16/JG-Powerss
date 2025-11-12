@@ -32,6 +32,7 @@ const initialMenu = [
     ),
     children: [
       { label: "All Shop Owners", path: "/leads/all" },
+      { label: "Villages", path: "/allVillages" },
       // Dynamic lead statuses will be inserted here
     ],
      
@@ -71,7 +72,7 @@ const initialMenu = [
     // ],
      children: [
       { label: "All Orders", path: "/Order/testorder" },
-       { label: "Create Orders", path: "/Order/new" },
+      //  { label: "Create Orders", path: "/Order/new" },
     ],
   },
   // {
@@ -105,7 +106,7 @@ const initialMenu = [
     icon: (
       <div className="w-6 h-6 flex items-center justify-center">
         <img
-          src="/Invoice.svg"
+          src="/calendar-2.svg"
           alt="leads"
           className="w-5 h-5 transition-all [filter:invert(12%)_sepia(6%)_saturate(285%)_hue-rotate(353deg)_brightness(94%)_contrast(89%)] group-[.active]:brightness-0 group-[.active]:invert"
         />
