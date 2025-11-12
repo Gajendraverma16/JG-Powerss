@@ -1667,9 +1667,9 @@ const handleDelete = async (id) => {
           </td>
 
           {/* ✅ Order Status */}
-<select
-  value={order?.order_type || ""}
-  onChange={async (e) => {
+ <select
+    value={order?.order_type || ""}
+    onChange={async (e) => {
     const newStatus = e.target.value;
     const orderId = order?.id;
 
@@ -1679,10 +1679,10 @@ const handleDelete = async (id) => {
     try {
       // ✅ Optimistic UI update (instant without refresh)
      setQuotations((prev) =>
-  prev.map((o) =>
-    o.id === orderId ? { ...o, order_type: newStatus } : o
+   prev.map((o) =>
+     o.id === orderId ? { ...o, order_type: newStatus } : o
   )
-);
+ );
 
 
       // 🛰️ Send update to backend
@@ -1721,7 +1721,7 @@ const handleDelete = async (id) => {
     }
   }}
   className={`block mt-4 mb-4 w-[120px] rounded-full text-center text-sm font-medium px-3 py-2 border border-gray-300 bg-white cursor-pointer outline-none transition-all
-    focus:ring-2 focus:ring-[#EF7E1B]/40 focus:border-[#EF7E1B] hover:shadow-sm
+    focus:ring-2 focus:ring-[#EF7E1B]/40 focus:border-[#EF7E1B] hover:shadow-sm outline-none
     ${
       order?.order_type === "completed"
         ? "text-green-600"
@@ -1734,21 +1734,40 @@ const handleDelete = async (id) => {
         : "text-gray-700"
     }
   `}
->
-  <option value="" disabled>
-    Select Status
-  </option>
-  <option value="new" className="text-gray-700">New</option>
-  <option value="hold" className="text-yellow-600">Hold</option>
-  <option value="process" className="text-blue-600">Process</option>
-  <option value="completed" className="text-green-600">Completed</option>
-  <option value="cancel" className="text-red-600">Cancel</option>
-</select>
 
-
-
-
-
+      // className={`block mt-4 mb-4 w-[140px] rounded-full text-center text-sm font-medium px-3 py-2 border border-gray-300 bg-white cursor-pointer outline-none transition-all
+      //   focus:ring-2 focus:ring-[#EF7E1B]/40 focus:border-[#EF7E1B] hover:shadow-sm
+      //   ${
+      //      order?.order_type === "completed"
+      //       ? "text-green-600"
+      //       :  order?.order_type=== "hold"
+      //       ? "text-yellow-600"
+      //       :  order?.order_type === "cancel"
+      //       ? "text-red-600"
+      //       :  order?.order_type === "process"
+      //       ? "text-blue-600"
+      //       : "text-gray-700"
+      //   }`}
+    >
+      <option value="" disabled className="text-gray-400">
+        Select Status
+      </option>
+      <option value="new" className="text-gray-700">
+        New
+      </option>
+      <option value="hold" className="text-yellow-600">
+        Hold
+      </option>
+      <option value="process" className="text-blue-600">
+        Process
+      </option>
+      <option value="completed" className="text-green-600">
+        Completed
+      </option>
+      <option value="cancel" className="text-red-600">
+        Cancel
+      </option>
+       </select>
 
           {/* ✅ Order Number */}
           <td className="py-4 px-3 text-sm text-[#4B5563] overflow-hidden truncate">
@@ -1983,7 +2002,7 @@ const handleDelete = async (id) => {
       console.error("Status Update Error:", error);
     }
   }}
-  className={`block mt-4 mb-4 w-[120px] rounded-full text-center text-sm font-medium px-3 py-2 border border-gray-300 bg-white cursor-pointer outline-none transition-all
+   className={`block mt-4 mb-4 w-[120px] rounded-full text-center text-sm font-medium px-3 py-2 border border-gray-300 bg-white cursor-pointer outline-none transition-all
     focus:ring-2 focus:ring-[#EF7E1B]/40 focus:border-[#EF7E1B] hover:shadow-sm
     ${
       order?.order_type === "completed"
@@ -1998,17 +2017,16 @@ const handleDelete = async (id) => {
     }
   `}
 >
-  <option value="" disabled>
-    Select Status
-  </option>
-  <option value="new" className="text-gray-700">New</option>
-  <option value="hold" className="text-yellow-600">Hold</option>
-  <option value="process" className="text-blue-600">Process</option>
-  <option value="completed" className="text-green-600">Completed</option>
-  <option value="cancel" className="text-red-600">Cancel</option>
-</select>
-
-                <h3 className="text-base font-semibold text-gray-900">
+     <option value="" disabled>
+          Select Status
+     </option>
+    <option value="new" className="text-gray-700">New</option>
+    <option value="hold" className="text-yellow-600">Hold</option>
+    <option value="process" className="text-blue-600">Process</option>
+    <option value="completed" className="text-green-600">Completed</option>
+    <option value="cancel" className="text-red-600">Cancel</option>
+ </select>
+                  <h3 className="text-base font-semibold text-gray-900">
                   {order?.shop_owner?.customer_name || "-"}
                 </h3>
                 <p className="text-xs text-gray-500">
