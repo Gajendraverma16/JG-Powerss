@@ -1264,7 +1264,7 @@ useEffect(() => {
   };
 
   // Function to handle submission of the Create Lead form:
- const handleCreateSubmit = async (e) => {
+const handleCreateSubmit = async (e) => {
   e.preventDefault();
 
   const validationErrors = validateFormData(createFormData);
@@ -1336,37 +1336,29 @@ useEffect(() => {
     villageId = Number(villageObj?.village_id) || 0;
 
     // --- branchdetail object ---
- // --- branchdetail object (correct key names) ---
-const branchDetailObject = {
-  branch: createFormData.branch_code || "",
-  route: createFormData.route || "",
-  area: createFormData.area || "",
-  village_id: villageId || "",
-};
+    // --- branchdetail object (correct key names) ---
+    const branchDetailObject = {
+      branch: createFormData.branch_code || "",
+      route: createFormData.route || "",
+      area: createFormData.area || "",
+      village_id: villageId || "",
+    };
 
-
-
+    // ⭐ UPDATED: Always stringify, even if empty
     const finalBranchDetail = JSON.stringify(branchDetailObject);
 
     // --- address object ---
-   // --- address object (correct key name = pincode) ---
-const addressObject = {
-  street: createFormData.blockUnitStreetName || "",
-  city: createFormData.city || "",
-  state: createFormData.state || "",
-  country: createFormData.country || "",
-  pincode: createFormData.pincode || "",  // FIXED
-};
+    // --- address object (correct key name = pincode) ---
+    const addressObject = {
+      street: createFormData.blockUnitStreetName || "",
+      city: createFormData.city || "",
+      state: createFormData.state || "",
+      country: createFormData.country || "",
+      pincode: createFormData.pincode || "", // FIXED
+    };
 
-
-    const isAddressEmpty =
-      !addressObject.street &&
-      !addressObject.city &&
-      !addressObject.state &&
-      (!addressObject.country || addressObject.country === "India") &&
-      !addressObject.pincode;
-
-    const finalAddress = isAddressEmpty ? "" : JSON.stringify(addressObject);
+    // ⭐ UPDATED: Removed isAddressEmpty check. Always stringify.
+    const finalAddress = JSON.stringify(addressObject);
 
     // --- FINAL PAYLOAD ---
     const formattedData = {
@@ -1403,10 +1395,9 @@ const addressObject = {
 
       village_assigned_to: 1,
 
-
       // ⭐ CORRECT JSON STRINGS
-       address: finalAddress,
-     branchdetail: finalBranchDetail,
+      address: finalAddress,
+      branchdetail: finalBranchDetail,
     };
 
     console.log(formattedData);
@@ -1434,113 +1425,113 @@ const addressObject = {
       didOpen: () => Swal.showLoading(),
     });
 
-      const response = await api.post("/addcustomer", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+    const response = await api.post("/addcustomer", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-      if (response.data.status || response.data.success) {
-        const newLead = response.data.data;
-        setLeads((prev) =>
-          Array.isArray(prev) ? [...prev, newLead] : [newLead]
-        );
-        setIsModalOpenCreate(false);
+    if (response.data.status || response.data.success) {
+      const newLead = response.data.data;
+      setLeads((prev) =>
+        Array.isArray(prev) ? [...prev, newLead] : [newLead]
+      );
+      setIsModalOpenCreate(false);
 
-        await loadingAlert.close();
-
-        await Swal.fire({
-          icon: "success",
-          title: "Shop Owner Created Successfully",
-          text:  `Shop Owner has been added to the system.`,
-          confirmButtonColor: "#0e4053",
-        });
-
-        // Fetch leads again instead of reloading the page
-        await fetchLeads();
-
-        setCreateFormData({
-          name: "",
-          email: "",
-          phoneno: "",
-          city: "",
-          whatsapp: "",
-          requirements: "",
-          source: "",
-          route:"",
-           near_location:"",
-    branch_code:"",
-    area:"",
-    village:"",
-    customer_relationship:"",
-    source_column:"",
-    latitude:"",
-    longitude:"",
-    Join_date:"",
-    shop_image:"",
-          assigned_to: "",
-          follow_up_date_input: "", // Changed from follow_up
-          follow_up_time_input: "", // New field for time
-          status: "new",
-          message: "",
-          role: "User",
-          is_approved: false,
-          profile_pic: null,
-          // New address fields
-          blockUnitStreetName: "",
-          state: "",
-          country: "India",
-          pincode: "",
-        });
-        if (createImagePreview) {
-          URL.revokeObjectURL(createImagePreview);
-        }
-        setCreateImagePreview(null);
-
-        // Clear address fields
-        clearAddressFields();
-      } else {
-        throw new Error(response.data.message || "Failed to create shop owner.");
-      }
-    } catch (err) {
-      if (loadingAlert) {
-        await loadingAlert.close();
-      }
-
-      let errorTitle = "Error Creating Shop Owners";
-      let errorMessage =
-        err.response && err.response.data && err.response.data.message
-          ? err.response.data.message
-          : "An error occurred while creating the shop owner. Please try again.";
-
-      if (err.response) {
-        if (err.response.status === 422) {
-          const errors = err.response.data.errors;
-          if (errors) {
-            const firstError = Object.values(errors)[0];
-            if (Array.isArray(firstError) && firstError.length > 0) {
-              errorMessage = firstError[0];
-            }
-          }
-        } else if (err.response.data?.message) {
-          errorMessage = err.response.data.message;
-        }
-      } else if (err.request) {
-        errorTitle = "Network Error";
-        errorMessage =
-          "Unable to connect to the server. Please check your internet connection.";
-      } else {
-        errorMessage = err.message;
-      }
+      await loadingAlert.close();
 
       await Swal.fire({
-        icon: "error",
-        title: errorTitle,
-        text: errorMessage,
-        confirmButtonColor: "#DD6B55",
+        icon: "success",
+        title: "Shop Owner Created Successfully",
+        text: `Shop Owner has been added to the system.`,
+        confirmButtonColor: "#0e4053",
       });
+
+      // Fetch leads again instead of reloading the page
+      await fetchLeads();
+
+      setCreateFormData({
+        name: "",
+        email: "",
+        phoneno: "",
+        city: "",
+        whatsapp: "",
+        requirements: "",
+        source: "",
+        route: "",
+        near_location: "",
+        branch_code: "",
+        area: "",
+        village: "",
+        customer_relationship: "",
+        source_column: "",
+        latitude: "",
+        longitude: "",
+        Join_date: "",
+        shop_image: "",
+        assigned_to: "",
+        follow_up_date_input: "", // Changed from follow_up
+        follow_up_time_input: "", // New field for time
+        status: "new",
+        message: "",
+        role: "User",
+        is_approved: false,
+        profile_pic: null,
+        // New address fields
+        blockUnitStreetName: "",
+        state: "",
+        country: "India",
+        pincode: "",
+      });
+      if (createImagePreview) {
+        URL.revokeObjectURL(createImagePreview);
+      }
+      setCreateImagePreview(null);
+
+      // Clear address fields
+      clearAddressFields();
+    } else {
+      throw new Error(response.data.message || "Failed to create shop owner.");
     }
-  };
+  } catch (err) {
+    if (loadingAlert) {
+      await loadingAlert.close();
+    }
+
+    let errorTitle = "Error Creating Shop Owners";
+    let errorMessage =
+      err.response && err.response.data && err.response.data.message
+        ? err.response.data.message
+        : "An error occurred while creating the shop owner. Please try again.";
+
+    if (err.response) {
+      if (err.response.status === 422) {
+        const errors = err.response.data.errors;
+        if (errors) {
+          const firstError = Object.values(errors)[0];
+          if (Array.isArray(firstError) && firstError.length > 0) {
+            errorMessage = firstError[0];
+          }
+        }
+      } else if (err.response.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+    } else if (err.request) {
+      errorTitle = "Network Error";
+      errorMessage =
+        "Unable to connect to the server. Please check your internet connection.";
+    } else {
+      errorMessage = err.message;
+    }
+
+    await Swal.fire({
+      icon: "error",
+      title: errorTitle,
+      text: errorMessage,
+      confirmButtonColor: "#DD6B55",
+    });
+  }
+};
 
   // New handler for file selection (drag/drop or input)
   const handleFileChange = (e) => {
@@ -2096,22 +2087,6 @@ const handleEdit = (lead) => {
   setEditingLeadIndex(idx);
 };
 
-
-const handleCreateOrder = (customerId) => {
-  navigate(`/Order/new?type=order&customer=${customerId}`);
-  
-  // your logic here
-};
-
-const handleCreateReturn = (customerId) => {
-  navigate(`/quotation/create?type=order&customer=${customerId}`);
-  // your logic here
-};
-
-const handleCreateExchange = (customerId) => {
-navigate(`/quotation/create?type=order&customer=${customerId}`);
-  // your logic here
-};
 
 const handleInputChange = (e) => {
   const { name, value, files } = e.target;
