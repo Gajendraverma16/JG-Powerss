@@ -19,7 +19,7 @@ const Routee = ({ branchId = null }) => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   // Fetch routes
   const fetchRoutes = useCallback(async () => {
@@ -132,23 +132,13 @@ const Routee = ({ branchId = null }) => {
     setActiveDropdown((prev) => (prev === id ? null : id));
   };
 
-  // Pagination logic
-  const totalPages = Math.ceil(routes.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentRoutes = routes.slice(startIndex, startIndex + itemsPerPage);
+   // Pagination logic
+  const indexOfLast = currentPage * rowsPerPage;
+  const indexOfFirst = indexOfLast - rowsPerPage;
+  const currentData = routes.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(routes.length / rowsPerPage);
 
-  const handlePreviousPage = () => {
-    if (currentPage > 1) setCurrentPage((p) => p - 1);
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage((p) => p + 1);
-  };
-
-  const handleItemsPerPageChange = (e) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1);
-  };
+  
 
   if (loading) {
     return (
@@ -163,28 +153,31 @@ const Routee = ({ branchId = null }) => {
       <div className="relative mx-auto flex min-h-[440px] max-w-5xl flex-col rounded-[18px] border border-white/60 bg-gradient-to-br from-white via-[#F5FAFF] to-[#E7F4FF] p-6 shadow-[0px_20px_45px_rgba(20,84,182,0.08)] md:p-8">
         
         {/* Header */}
-        <div className="mb-8 flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
+        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3 ">
           <h1 className="text-[20px] md:text-[24px] font-semibold text-[#1F2837]">
             <span className="inline-block border-b-2 border-[#0e4053] pb-1">
               Routes
             </span>
           </h1>
 
-          {/* Pagination Top Control */}
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span>Show</span>
+         
+          {/* Pagination Top */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-[#4B5563]">Show</label>
             <select
-              value={itemsPerPage}
-              onChange={handleItemsPerPageChange}
-              className="border rounded px-2 py-1 text-sm focus:ring-[#0e4053]"
+              className="border border-gray-300 rounded-md text-sm px-2 py-1"
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
             >
-              {[5, 10, 25].map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
             </select>
-                   </div>
+        
+          </div>
 
           <button
             onClick={() => {
@@ -192,7 +185,7 @@ const Routee = ({ branchId = null }) => {
               setIsEditing(false);
               setFormData({ branch_id: "", route_name: "" });
             }}
-            className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
+          className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
           >
             Add Route
           </button>
@@ -207,13 +200,13 @@ const Routee = ({ branchId = null }) => {
             <div>Actions</div>
           </div>
 
-          <div className="pb-4">
-            {routes.length === 0 ? (
+          <div className="pb-6">
+            {currentData.length === 0 ? (
               <div className="text-center py-6 text-gray-500">
                 No routes available.
               </div>
             ) : (
-              currentRoutes.map((route) => (
+              currentData.map((route) => (
                 <div
                   key={route.id}
                   className="grid md:grid-cols-[1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
@@ -253,81 +246,73 @@ const Routee = ({ branchId = null }) => {
         </div>
 
         {/* Mobile Cards */}
-        <div className="block md:hidden space-y-4 mt-4">
-          {routes.length === 0 ? (
-            <div className="text-center py-6 text-gray-500">
-              No routes available.
-            </div>
-          ) : (
-            currentRoutes.map((route) => (
+        <div className="block md:hidden space-y-4">
+          {
+            currentData.map((route) => (
               <div
                 key={route.id}
-                className="p-4 rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] shadow-sm relative"
+                className="p-4 rounded-[12px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] shadow-sm"
               >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-[17px] font-semibold text-[#1F2837]">
+                <div className="flex justify-between ">
+               <h3 className="font-medium text-[#1F2837] text-lg">
                       {route.route_name}
                     </h3>
-                    <p className="text-sm text-[#4B5563]">
+                     <button
+                   onClick={() => toggleDropdown(route.id)}
+                                      className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
+                                    >
+                                      <TbDotsVertical className="w-5 h-5" />
+                                    </button>
+                                      </div>
+                  <p className="text-sm text-gray-600 mt-1">
                       Branch: {getBranchName(route.branch_id)}
                     </p>
-                    <p className="text-sm text-[#4B5563]">ID: {route.id}</p>
-                  </div>
-
-                  <button
-                    onClick={() => toggleDropdown(route.id)}
-                    className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
-                  >
-                    <TbDotsVertical className="w-5 h-5" />
-                  </button>
+                   <p className="text-sm text-gray-600">ID: {route.id}</p>
+                                
 
                   {activeDropdown === route.id && (
-                    <div className="absolute right-4 top-10 w-24 rounded-md shadow-md bg-white z-10">
+                    <div className="mt-2 flex gap-2">
                       <button
                         onClick={() => handleEdit(route)}
-                        className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                           className="px-3 py-1 text-sm rounded-md bg-[#ef7e1b] text-white"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(route.id)}
-                        className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                            className="px-3 py-1 text-sm rounded-md bg-[#ef7e1b] text-white"
                       >
                         Delete
                       </button>
                     </div>
                   )}
-                </div>
-              </div>
-            ))
-          )}
+                
+        </div>
+          ))}
         </div>
 
         {/* Bottom Pagination */}
         {routes.length > 0 && (
-          <div className="flex justify-between items-center mt-4 px-2">
-            <p className="text-sm text-gray-600">
-              Showing {startIndex + 1} to{" "}
-              {Math.min(startIndex + itemsPerPage, routes.length)} of{" "}
-              {routes.length} entries
-            </p>
-
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-center mt-6">
+            <div className="text-sm text-gray-600 mb-3 md:mb-0">
+              Showing {indexOfFirst + 1} to{" "}
+              {Math.min(indexOfLast, routes.length)} of {routes.length} entries
+            </div>
+            <div className="flex items-center gap-2">
               <button
-                onClick={handlePreviousPage}
                 disabled={currentPage === 1}
-                className="text-sm px-3 py-1 border rounded disabled:opacity-40"
+                onClick={() => setCurrentPage(currentPage - 1)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
               >
                 Prev
               </button>
-              <span className="text-sm text-gray-700">
+              <span className="text-sm">
                 Page {currentPage} of {totalPages}
               </span>
               <button
-                onClick={handleNextPage}
                 disabled={currentPage === totalPages}
-                className="text-sm px-3 py-1 border rounded disabled:opacity-40"
+                onClick={() => setCurrentPage(currentPage + 1)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
               >
                 Next
               </button>

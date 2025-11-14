@@ -246,20 +246,34 @@ const Branch = () => {
                   <TbDotsVertical className="w-5 h-5" />
                 </button>
                 {activeDropdown === branch.id && (
-                  <div className="absolute top-10 right-4 w-24 rounded-md shadow-md bg-white z-10">
-                    <button
-                      onClick={() => handleEdit(branch)}
-                      className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(branch.id)}
-                      className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                    <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => handleEdit(branch)}
+                    className="px-3 py-1 text-sm rounded-md bg-[#ef7e1b] text-white"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(branch.id)}
+                    className="px-3 py-1 text-sm rounded-md bg-gray-300 text-[#1F2837]"
+                  >
+                    Delete
+                  </button>
+                </div>
+                  // <div className="absolute top-10 right-4 w-24 rounded-md shadow-md bg-white z-10">
+                  //   <button
+                  //     onClick={() => handleEdit(branch)}
+                  //     className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                  //   >
+                  //     Edit
+                  //   </button>
+                  //   <button
+                  //     onClick={() => handleDelete(branch.id)}
+                  //     className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                  //   >
+                  //     Delete
+                  //   </button>
+                  // </div>
                 )}
               </div>
               <div className="text-sm text-gray-600">ID: {branch.id}</div>

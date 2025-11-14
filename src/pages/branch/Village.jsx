@@ -80,9 +80,7 @@ const Village = () => {
   useEffect(() => {
     if (formData.branch_id) {
       setFilteredRoutes(
-        routes.filter(
-          (r) => String(r.branch_id) === String(formData.branch_id)
-        )
+        routes.filter((r) => String(r.branch_id) === String(formData.branch_id))
       );
     } else setFilteredRoutes([]);
   }, [formData.branch_id, routes]);
@@ -192,8 +190,10 @@ const Village = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentVillages = villages.slice(startIndex, startIndex + itemsPerPage);
 
-  const handlePreviousPage = () => currentPage > 1 && setCurrentPage((p) => p - 1);
-  const handleNextPage = () => currentPage < totalPages && setCurrentPage((p) => p + 1);
+  const handlePreviousPage = () =>
+    currentPage > 1 && setCurrentPage((p) => p - 1);
+  const handleNextPage = () =>
+    currentPage < totalPages && setCurrentPage((p) => p + 1);
   const handleItemsPerPageChange = (e) => {
     setItemsPerPage(Number(e.target.value));
     setCurrentPage(1);
@@ -218,7 +218,6 @@ const Village = () => {
             </span>
           </h1>
 
-          {/* Rows per page */}
           {villages.length > 0 && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span>Show</span>
@@ -247,7 +246,7 @@ const Village = () => {
                 village_name: "",
               });
             }}
-            className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
+            className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b] mt-4 md:mt-0"
           >
             Add Village
           </button>
@@ -266,7 +265,9 @@ const Village = () => {
 
           <div className="pb-20">
             {villages.length === 0 ? (
-              <div className="text-center py-6 text-gray-500">No villages available.</div>
+              <div className="text-center py-6 text-gray-500">
+                No villages available.
+              </div>
             ) : (
               currentVillages.map((v, index) => (
                 <div
@@ -278,6 +279,7 @@ const Village = () => {
                   <div>{v.area?.area_name || "N/A"}</div>
                   <div>{startIndex + index + 1}</div>
                   <div>{v.village_name}</div>
+
                   <div className="relative text-left">
                     <button
                       onClick={() => toggleDropdown(v.id)}
@@ -285,6 +287,7 @@ const Village = () => {
                     >
                       <TbDotsVertical className="w-4 h-4" />
                     </button>
+
                     {activeDropdown === v.id && (
                       <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10">
                         <button
@@ -308,57 +311,73 @@ const Village = () => {
           </div>
         </div>
 
- {/* Mobile Cards */}
-        <div className="grid grid-cols-1 gap-4 md:hidden">
-          {currentVillages.map((village) => (
-            <div
-              key={village.id}
-              className="p-4 rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] shadow-sm relative"
-            >
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="font-semibold text-[#1F2837] text-[18px]">
-                    {village.village_name}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Code: {village.vilalge_code}
+        {/* Mobile View*/}
+        <div className="grid grid-cols-1 gap-4 md:hidden mt-4">
+          {currentVillages.length === 0 ? (
+            <div className="text-center py-6 text-gray-500">No villages available.</div>
+          ) : (
+            currentVillages.map((v) => (
+              <div
+                key={v.id}
+                className="p-4 rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] shadow-sm relative"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-semibold text-[#1F2837] text-[18px]">
+                      {v.village_name}
+                    </h3>
+                    <p className="text-sm text-gray-500">Village ID: {v.id}</p>
+                  </div>
+
+                  <button
+                    onClick={() => toggleDropdown(v.id)}
+                    className="p-1 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
+                  >
+                    <TbDotsVertical className="w-5 h-5" />
+                  </button>
+
+                  {activeDropdown === v.id && (
+                      <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => handleEdit(v)}
+                    className="px-3 py-1 text-sm rounded-md bg-[#ef7e1b] text-white"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(v.id)}
+                    className="px-3 py-1 text-sm rounded-md bg-gray-300 text-[#1F2837]"
+                  >
+                    Delete
+                  </button>
+                </div>
+                                  
+                  )}
+                </div>
+
+                <div className="text-sm text-gray-700 space-y-1">
+                  <p>
+                    <strong>Branch:</strong> {v.branch?.branch_name || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Route:</strong> {v.route?.route_name || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Area:</strong> {v.area?.area_name || "N/A"}
                   </p>
                 </div>
-                <button
-                  onClick={() => toggleDropdown(village.id)}
-                  className="p-1 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
-                >
-                  <TbDotsVertical className="w-5 h-5" />
-                </button>
-                {activeDropdown === village.id && (
-                  <div className="absolute top-10 right-4 w-24 rounded-md shadow-md bg-white z-10">
-                    <button
-                      onClick={() => handleEdit(village)}
-                      className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(village.id)}
-                      className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
               </div>
-              <div className="text-sm text-gray-600">ID: {village.id}</div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
-
-        {/* Bottom Pagination */}
+        {/* Pagination */}
         {villages.length > 0 && (
           <div className="flex flex-col md:flex-row items-center justify-between mt-4 text-sm text-gray-600 px-2">
             <span>
               Showing {startIndex + 1} to{" "}
-              {Math.min(startIndex + itemsPerPage, villages.length)} of {villages.length} entries
+              {Math.min(startIndex + itemsPerPage, villages.length)} of{" "}
+              {villages.length} entries
             </span>
 
             <div className="flex items-center gap-3 mt-2 md:mt-0">
@@ -369,9 +388,11 @@ const Village = () => {
               >
                 Prev
               </button>
+
               <span>
                 Page {currentPage} of {totalPages}
               </span>
+
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
@@ -383,6 +404,127 @@ const Village = () => {
           </div>
         )}
       </div>
+
+      {/* MODAL */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="absolute inset-0 bg-gray-50/10 backdrop-blur-sm"
+            onClick={handleCancel}
+          />
+
+          <div className="w-11/12 max-w-[600px] max-h-[90vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-lg relative z-10">
+            <button
+              onClick={handleCancel}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+            >
+              ✕
+            </button>
+
+            <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">
+              {isEditing ? "Edit Village" : "Add New Village"}
+            </h2>
+
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 gap-6">
+
+                {/* Branch */}
+                <div className="space-y-2">
+                  <label className="block text-[#4B5563] text-[16px] mb-2">
+                    Select Branch
+                  </label>
+                  <select
+                    value={formData.branch_id}
+                    onChange={(e) =>
+                      handleInputChange("branch_id", e.target.value)
+                    }
+                    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                    required
+                  >
+                    <option value="">Select Branch</option>
+                    {branches.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.branch_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Route */}
+                <div className="space-y-2">
+                  <label className="block text-[#4B5563] text-[16px] mb-2">
+                    Select Route
+                  </label>
+                  <select
+                    value={formData.route_id}
+                    onChange={(e) =>
+                      handleInputChange("route_id", e.target.value)
+                    }
+                    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                    required
+                  >
+                    <option value="">Select Route</option>
+                    {filteredRoutes.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.route_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Area */}
+                <div className="space-y-2">
+                  <label className="block text-[#4B5563] text-[16px] mb-2">
+                    Select Area
+                  </label>
+                  <select
+                    value={formData.area_id}
+                    onChange={(e) =>
+                      handleInputChange("area_id", e.target.value)
+                    }
+                    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                    required
+                  >
+                    <option value="">Select Area</option>
+                    {filteredAreas.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.area_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Village Name */}
+                <div className="space-y-2">
+                  <label className="block text-[#4B5563] text-[16px] mb-2">
+                    Village Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.village_name}
+                    onChange={(e) =>
+                      handleInputChange("village_name", e.target.value)
+                    }
+                    className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                    placeholder="Enter Village name"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="mt-10 flex justify-center">
+                <button
+                  type="submit"
+                  className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                >
+                  {isEditing ? "Save changes" : "Add Village"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
