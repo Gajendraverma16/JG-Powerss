@@ -313,13 +313,16 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
               </th>
               <th className="py-4 px-6 text-sm font-medium">Village ID</th>
               <th className="py-4 px-6 text-sm font-medium">Village Name</th>
-               <th className="py-4 px-6 text-sm font-medium">Assigned Member</th>
+              <th className="py-4 px-6 text-sm font-medium">Total Shops</th>
+              <th className="py-4 px-6 text-sm font-medium">Active Shops</th>
+              <th className="py-4 px-6 text-sm font-medium">Inactive Shops</th>
+              <th className="py-4 px-6 text-sm font-medium">Assigned Member</th>
             </tr>
           </thead>
           <tbody>
             {currentVillages.length === 0 ? (
               <tr>
-                <td colSpan="6" className="py-8 px-6 text-center text-[#4B5563]">
+                <td colSpan="7" className="py-8 px-6 text-center text-[#4B5563]">
                   {searchTerm ? "No Villages found." : "No Villages available."}
                 </td>
               </tr>
@@ -338,7 +341,16 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
                   <td className="py-4 px-6 text-sm text-[#4B5563]">
                     {village.village_name}
                   </td>
-                   <td className="py-4 px-6 text-sm text-[#4B5563]">
+                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+                    {village.total_shops || 0}
+                  </td>
+                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+                    {village.active_shops || 0}
+                  </td>
+                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+                    {village.inactive_shops || 0}
+                  </td>
+                  <td className="py-4 px-6 text-sm text-[#4B5563]">
                     {village.user?.name || "Not Assigned"}
                   </td>
                 </tr>
@@ -368,12 +380,23 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
                 className="w-5 h-5 rounded border-gray-300 cursor-pointer"
               />
             </div>
-            <p className="text-sm text-gray-600">
-              Assigned Member:{" "}
-              <span className="font-medium">
-                {village.user?.name || "Not Assigned"}
-              </span>
-            </p>
+            <div className="space-y-1">
+              <p className="text-sm text-gray-600">
+                Total Shops: <span className="font-medium">{village.total_shops || 0}</span>
+              </p>
+              <p className="text-sm text-gray-600">
+                Active Shops: <span className="font-medium">{village.active_shops || 0}</span>
+              </p>
+              <p className="text-sm text-gray-600">
+                Inactive Shops: <span className="font-medium">{village.inactive_shops || 0}</span>
+              </p>
+              <p className="text-sm text-gray-600">
+                Assigned Member:{" "}
+                <span className="font-medium">
+                  {village.user?.name || "Not Assigned"}
+                </span>
+              </p>
+            </div>
           </div>
         ))}
       </div>
