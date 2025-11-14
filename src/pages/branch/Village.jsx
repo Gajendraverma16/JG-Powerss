@@ -217,14 +217,15 @@ const Village = () => {
               Villages
             </span>
           </h1>
-
+             <div className="flex items-center gap-2">
+          {/* Pagination top */}
           {villages.length > 0 && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span>Show</span>
+           <div className="flex items-center gap-2 ">
+            <label className="text-sm text-[#4B5563]">Show</label>
               <select
                 value={itemsPerPage}
                 onChange={handleItemsPerPageChange}
-                className="border rounded px-2 py-1 text-sm focus:ring-[#0e4053]"
+                   className="border border-gray-300 rounded-md text-sm px-2 py-1"
               >
                 {[5, 10, 25].map((num) => (
                   <option key={num} value={num}>
@@ -246,11 +247,13 @@ const Village = () => {
                 village_name: "",
               });
             }}
-            className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b] mt-4 md:mt-0"
+           className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
           >
             Add Village
           </button>
         </div>
+        </div>
+
 
         {/* Desktop Table */}
         <div className="hidden md:block flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF]">

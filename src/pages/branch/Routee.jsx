@@ -160,7 +160,7 @@ const Routee = ({ branchId = null }) => {
             </span>
           </h1>
 
-         
+           <div className="flex items-center gap-2">
           {/* Pagination Top */}
           <div className="flex items-center gap-2">
             <label className="text-sm text-[#4B5563]">Show</label>
@@ -189,6 +189,7 @@ const Routee = ({ branchId = null }) => {
           >
             Add Route
           </button>
+        </div>
         </div>
 
         {/* Desktop Table */}

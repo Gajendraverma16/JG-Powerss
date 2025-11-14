@@ -191,7 +191,7 @@ const Area = () => {
               Areas
             </span>
           </h1>
-
+              <div className="flex items-center gap-2">
           {/* Pagination Top */}
           <div className="flex items-center gap-2">
             <label className="text-sm text-[#4B5563]">Show</label>
@@ -220,6 +220,9 @@ const Area = () => {
           >
             Add Area
           </button>
+          
+        </div>
+
         </div>
 
         {/* Table */}

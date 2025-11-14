@@ -139,10 +139,12 @@ const Branch = () => {
             <span className="inline-block border-b-2 border-[#0e4053] pb-1">
               Branches
             </span>
-          </h1>
+            </h1>
 
+
+            <div className="flex items-center gap-2">
           {/* Pagination top */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ">
             <label className="text-sm text-[#4B5563]">Show</label>
             <select
               className="border border-gray-300 rounded-md text-sm px-2 py-1"
@@ -158,6 +160,7 @@ const Branch = () => {
             </select>
           </div>
 
+
           <button
             onClick={() => {
               setIsModalOpen(true);
@@ -168,6 +171,7 @@ const Branch = () => {
           >
             Add Branch
           </button>
+          </div> 
         </div>
 
         {/* Desktop Table */}
@@ -260,20 +264,7 @@ const Branch = () => {
                     Delete
                   </button>
                 </div>
-                  // <div className="absolute top-10 right-4 w-24 rounded-md shadow-md bg-white z-10">
-                  //   <button
-                  //     onClick={() => handleEdit(branch)}
-                  //     className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
-                  //   >
-                  //     Edit
-                  //   </button>
-                  //   <button
-                  //     onClick={() => handleDelete(branch.id)}
-                  //     className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
-                  //   >
-                  //     Delete
-                  //   </button>
-                  // </div>
+                
                 )}
               </div>
               <div className="text-sm text-gray-600">ID: {branch.id}</div>
