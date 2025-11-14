@@ -18,7 +18,6 @@ const Villagees = () => {
  const { isCollapsed } = useContext(SidebarContext);
 const assigneeDropdownRef = useRef(null);
 
-// Dummy salesman list for now
 const [users, setUsers] = useState([]);
 const [selectedAssignee, setSelectedAssignee] = useState("");
 const [assigneeSearchTerm, setAssigneeSearchTerm] = useState("");
@@ -46,8 +45,28 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
     }
   };
 
+  // ✅ Fetch Users/Salesman
+  const fetchUsers = async () => {
+    try {
+      const response = await api.get("/userlist");
+      const userData = response.data?.result || response.data?.data || response.data;
+      
+      if (userData && Array.isArray(userData)) {
+        setUsers(userData);
+      } else if (Array.isArray(response.data)) {
+        setUsers(response.data);
+      } else {
+        setUsers([]);
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      setUsers([]);
+    }
+  };
+
   useEffect(() => {
     fetchVillages();
+    fetchUsers();
   }, []);
 
   // ✅ Responsive handler
@@ -69,6 +88,12 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
         !itemsPerPageDropdownRef.current.contains(e.target)
       ) {
         setIsItemsPerPageDropdownOpen(false);
+      }
+      if (
+        assigneeDropdownRef.current &&
+        !assigneeDropdownRef.current.contains(e.target)
+      ) {
+        setIsAssigneeDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -125,7 +150,7 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
     if (currentPage < totalPages) setCurrentPage((p) => p + 1);
   };
 
-   const handleBulkAssign = () => {
+  const handleBulkAssign = async () => {
     if (selectedVillages.length === 0) {
       Swal.fire("No Villages Selected", "Please select villages first.", "info");
       return;
@@ -135,17 +160,58 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
       return;
     }
 
-    Swal.fire({
-      icon: "success",
-      title: "Villages Assigned!",
-      text: `${selectedVillages.length} villages assigned to ${selectedAssignee}.`,
-      confirmButtonColor: "#ef7e1b",
-    });
+    try {
+      // Find the selected user's ID
+      const selectedUser = users.find(u => u.name === selectedAssignee);
+      if (!selectedUser) {
+        Swal.fire("Error", "Selected user not found.", "error");
+        return;
+      }
 
-    setIsBulkAssignModalOpen(false);
-    setSelectedAssignee("");
-    setAssigneeSearchTerm("");
-    setSelectedVillages([]);
+      // Show loading
+      Swal.fire({
+        title: "Assigning Villages...",
+        text: "Please wait",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      // Assign multiple villages to the user in single API call
+      const response = await api.post("/villages/assign-multiple", {
+        user_id: selectedUser.id,
+        village_ids: selectedVillages,
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "Villages Assigned!",
+        text: response.data?.message || `${selectedVillages.length} villages assigned to ${selectedAssignee}.`,
+        confirmButtonColor: "#ef7e1b",
+      });
+
+      // Refresh villages list
+      fetchVillages();
+
+      setIsBulkAssignModalOpen(false);
+      setSelectedAssignee("");
+      setAssigneeSearchTerm("");
+      setSelectedVillages([]);
+    } catch (error) {
+      console.error("Error assigning villages:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Assignment Failed",
+        text: error.response?.data?.message || "Failed to assign villages.",
+        confirmButtonColor: "#ef7e1b",
+      });
+    }
+  };
+
+  const handleOpenBulkModal = () => {
+    console.log("Opening modal, users available:", users.length);
+    setIsBulkAssignModalOpen(true);
   };
 
   if (loading) {
@@ -273,7 +339,7 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
                     {village.village_name}
                   </td>
                    <td className="py-4 px-6 text-sm text-[#4B5563]">
-                    {village.village_name}
+                    {village.user?.name || "Not Assigned"}
                   </td>
                 </tr>
               ))
@@ -305,7 +371,7 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
             <p className="text-sm text-gray-600">
               Assigned Member:{" "}
               <span className="font-medium">
-                {village.assigned_to || "Unassigned"}
+                {village.user?.name || "Not Assigned"}
               </span>
             </p>
           </div>
@@ -363,6 +429,7 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
                 type="text"
                 placeholder="Search salesman..."
                 value={assigneeSearchTerm}
+                onFocus={() => setIsAssigneeDropdownOpen(true)}
                 onChange={(e) => {
                   setAssigneeSearchTerm(e.target.value);
                   setIsAssigneeDropdownOpen(true);
@@ -371,26 +438,40 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
               />
               {isAssigneeDropdownOpen && (
                 <div className="absolute top-full left-0 w-full mt-1 bg-white rounded-[12px] shadow-lg border border-gray-200 z-50 max-h-[200px] overflow-y-auto">
-                  {users
-                    .filter((user) =>
-                      user.name
+                  {(() => {
+                    if (users.length === 0) {
+                      return <div className="px-3 py-2 text-[#545454]">Loading users...</div>;
+                    }
+
+                    const filteredUsers = users.filter((user) => {
+                      const userName = user.name || user.username || user.full_name || "";
+                      return userName
                         .toLowerCase()
-                        .includes(assigneeSearchTerm.toLowerCase())
-                    )
-                    .map((user) => (
-                      <button
-                        key={user.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedAssignee(user.name);
-                          setAssigneeSearchTerm(user.name);
-                          setIsAssigneeDropdownOpen(false);
-                        }}
-                        className="w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-[#545454]"
-                      >
-                        {user.name}
-                      </button>
-                    ))}
+                        .includes(assigneeSearchTerm.toLowerCase());
+                    });
+
+                    if (filteredUsers.length === 0) {
+                      return <div className="px-3 py-2 text-[#545454]">No matching users</div>;
+                    }
+
+                    return filteredUsers.map((user) => {
+                      const displayName = user.name || user.username || user.full_name || "Unknown";
+                      return (
+                        <button
+                          key={user.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedAssignee(displayName);
+                            setAssigneeSearchTerm(displayName);
+                            setIsAssigneeDropdownOpen(false);
+                          }}
+                          className="w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-[#545454]"
+                        >
+                          {displayName}
+                        </button>
+                      );
+                    });
+                  })()}
                 </div>
               )}
             </div>

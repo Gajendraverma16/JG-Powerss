@@ -4566,7 +4566,7 @@ useEffect(() => {
               <th className="py-4 px-6 font-medium text-sm">Contact</th>
               <th className="py-4 px-6 font-medium text-sm">City</th>
               <th className="py-4 px-6 font-medium text-sm">WhatsApp</th>
-              {/* <th className="py-4 px-6 font-medium text-sm">Shop Name</th> */}
+              <th className="py-4 px-6 font-medium text-sm">Shop Name</th>
               {/* <th className="py-4 px-6 font-medium text-sm">Categories</th> */}
               <th className="py-4 px-6 font-medium text-sm whitespace-nowrap">
                 Assigned Member
