@@ -1264,243 +1264,184 @@ useEffect(() => {
   };
 
   // Function to handle submission of the Create Lead form:
-  const handleCreateSubmit = async (e) => {
-    e.preventDefault();
+const handleCreateSubmit = async (e) => {
+  e.preventDefault();
 
-    const validationErrors = validateFormData(createFormData);
-    if (validationErrors.length > 0) {
-      Swal.fire({
-        icon: "error",
-        title: "Validation Error",
-        html: validationErrors.map((err) => `<div>${err}</div>`).join(""),
-        confirmButtonColor: "#DD6B55",
-      });
-      return;
+  const validationErrors = validateFormData(createFormData);
+  if (validationErrors.length > 0) {
+    Swal.fire({
+      icon: "error",
+      title: "Validation Error",
+      html: validationErrors.map((err) => `<div>${err}</div>`).join(""),
+      confirmButtonColor: "#DD6B55",
+    });
+    return;
+  }
+
+  let loadingAlert;
+
+  try {
+    const formData = new FormData();
+
+    // --- FIX assigned_to ---
+    let assignedToId = createFormData.assigned_to;
+    if (user?.role === "admin") {
+      const assignedUser = users.find(
+        (u) => u.name === createFormData.assigned_to
+      );
+      assignedToId = assignedUser ? assignedUser.id : "";
+    } else {
+      assignedToId = user.id;
     }
 
-    let loadingAlert;
-
-    try {
-      const formData = new FormData();
-
-      // --- FIX: Convert assigned_to (name) to user ID (int) ---
-      let assignedToId = createFormData.assigned_to;
-      // REMOVE: Validation for assigned_to user
-      if (user?.role === "admin") {
-        const assignedUser = users.find(
-          (u) => u.name === createFormData.assigned_to
-        );
-        // If not found, just leave as is (no error)
-        assignedToId = assignedUser ? assignedUser.id : "";
-      } else {
-        assignedToId = user.id;
-      }
-
-      // Find the selected status object from statuses array
-      const selectedStatus = statuses.find(
+    // Status Fix
+    const selectedStatus =
+      statuses.find(
         (status) =>
           status.status_name.toLowerCase().replace(/\s+/g, "_") ===
           createFormData.status
-      );
-      // REMOVE: Validation for status
-      // If not found, just leave as is (no error)
+      ) || { status_name: "", status_id: 1 };
 
-      // Define the address object
-      const addressObject = {
-        name: createFormData.blockUnitStreetName,
-        city: createFormData.city,
-        state: createFormData.state,
-        country: createFormData.country,
-        pin: createFormData.pincode,
-      };
-      // If all address fields are empty (or country is default 'India'), send empty string
-      const isAddressEmpty =
-        !addressObject.name &&
-        !addressObject.city &&
-        !addressObject.state &&
-        (!addressObject.country || addressObject.country === "India") &&
-        !addressObject.pin;
+    // Follow Up Combine
+    let combinedFollowUpDate = "";
+    if (createFormData.follow_up_date_input) {
+      const datePart = createFormData.follow_up_date_input;
+      const timePart = createFormData.follow_up_time_input
+        ? createFormData.follow_up_time_input + ":00"
+        : "00:00:00";
+      combinedFollowUpDate = `${datePart} ${timePart}`;
+    }
 
-      // Combine follow_up_date_input and follow_up_time_input
-      let combinedFollowUpDate = null;
-      if (createFormData.follow_up_date_input) {
-        const datePart = createFormData.follow_up_date_input;
-        const timePart = createFormData.follow_up_time_input
-          ? createFormData.follow_up_time_input + ":00"
-          : createFormData.follow_up_time_input;
-        combinedFollowUpDate = `${datePart} ${timePart}`;
+    // ⭐ FIND village_id
+    let villageId = 0;
+
+    const branchObj = branchHierarchy.find(
+      (b) => b.branch_name === createFormData.branch_code
+    );
+
+    const routeObj = branchObj?.routes?.find(
+      (r) => r.route_name === createFormData.route
+    );
+
+    const areaObj = routeObj?.areas?.find(
+      (a) => a.area_name === createFormData.area
+    );
+
+    const villageObj = areaObj?.villages?.find(
+      (v) => v.village_name === createFormData.village
+    );
+
+    villageId = Number(villageObj?.village_id) || 0; // FIXED
+    const safeVillageId = villageId;
+
+    // ⭐ FORMAT FINAL PAYLOAD (PLAIN TEXT)
+    const formattedData = {
+      customer_name: createFormData.name,
+      email: createFormData.email,
+      contact_number: createFormData.phoneno,
+      whatsapp_number: createFormData.whatsapp,
+      shop_name: createFormData.requirements || "",
+      source: createFormData.source,
+
+      assigned_to: Number(assignedToId) || 0,
+
+      route: createFormData.route,
+      near_location: createFormData.near_location,
+      branch_code: createFormData.branch_code,
+      area: createFormData.area,
+
+      // ⭐ final village
+      village: safeVillageId,
+      village_id: safeVillageId,
+
+      customer_relationship: createFormData.customer_relationship,
+      source_column: createFormData.source_column,
+      Join_date: createFormData.Join_date,
+      shop_image: createFormData.shop_image,
+
+      follow_up_date: combinedFollowUpDate,
+      category: selectedStatus.status_name,
+      status_id: selectedStatus.status_id,
+
+      message: createFormData.message,
+      profile_image: createFormData.profile_pic,
+      vilage_assigned_to: 1 || "",
+
+       // ⭐ JSON STRING address
+address: JSON.stringify({
+  street: createFormData.blockUnitStreetName || "",
+  city: createFormData.city || "",
+  state: createFormData.state || "",
+  country: createFormData.country || "",
+  pincode: createFormData.pincode || "",
+  district: createFormData.district || ""   // OPTIONAL IF YOU USE IT
+}),
+
+
+branchdetail: JSON.stringify({
+  branch_code: createFormData.branch_code || "",
+  route: createFormData.route || "",
+  area: createFormData.area || "",
+  village: createFormData.village || "",
+  village_id: villageId || ""
+}),
+
+    };
+
+    console.log(formattedData);
+
+    // Not admin override
+    if (user?.role !== "admin") {
+      formattedData.assigned_to = user.id;
+    }
+
+    formattedData.assigned_to = Number(formattedData.assigned_to);
+
+    // Append all fields
+    Object.keys(formattedData).forEach((key) => {
+      if (key === "profile_image" && formattedData[key]) {
+        formData.append("profile_image", formattedData[key]);
+      } else {
+        formData.append(key, formattedData[key] ?? "");
       }
+    });
 
-      // Format the data to match API keys
-     const formattedData = {
-  customer_name: createFormData.name,
-  email: createFormData.email,
-  contact_number: createFormData.phoneno,
-  whatsapp_number: createFormData.whatsapp,
-  requirements: createFormData.requirements,
-  source: createFormData.source,
-  assigned_to:
-    assignedToId && !isNaN(parseInt(assignedToId, 10))
-      ? parseInt(assignedToId, 10)
-      : 0,
-  route: createFormData.route,
-  near_location: createFormData.near_location,
-  branch_code: createFormData.branch_code,
-  area: createFormData.area,
-  village: createFormData.village,
-  customer_relationship: createFormData.customer_relationship,
-  source_column: createFormData.source_column,
-  latitude: createFormData.latitude,
-  longitude: createFormData.longitude,
-  Join_date: createFormData.Join_date,
-  shop_image: createFormData.shop_image, // ✅ keep only one
-  follow_up_date: combinedFollowUpDate,
-  status: selectedStatus ? selectedStatus.status_name : "",
-  status_id: selectedStatus ? selectedStatus.status_id : "",
-  message: createFormData.message,
-  profile_image: createFormData.profile_pic,
-  city: isAddressEmpty ? "" : JSON.stringify(addressObject),
+    loadingAlert = Swal.fire({
+      title: "Creating Shop Owner...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    const response = await api.post("/addcustomer", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.data.status || response.data.success) {
+      setIsModalOpenCreate(false);
+      await loadingAlert.close();
+
+      await Swal.fire({
+        icon: "success",
+        title: "Shop Owner Created Successfully",
+        confirmButtonColor: "#0e4053",
+      });
+
+      await fetchLeads();
+    }
+  } catch (err) {
+    if (loadingAlert) await loadingAlert.close();
+    await Swal.fire({
+      icon: "error",
+      title: "Error Creating Shop Owners",
+      text: err.response?.data?.message || err.message,
+      confirmButtonColor: "#DD6B55",
+    });
+  }
 };
 
 
-      // If not admin, force assigned_to to user.id
-      if (user?.role !== "admin") {
-        formattedData.assigned_to = user.id;
-      }
-      // Ensure assigned_to is always an integer
-      formattedData.assigned_to = parseInt(formattedData.assigned_to, 10);
-
-      // Append all formatted fields
-      Object.keys(formattedData).forEach((key) => {
-        if (key === "profile_image" && formattedData[key]) {
-          formData.append("profile_image", formattedData[key]);
-        } else if (
-          formattedData[key] !== null &&
-          formattedData[key] !== undefined
-        ) {
-          // If value is null or undefined, send empty string instead
-          formData.append(
-            key,
-            formattedData[key] === null ? "" : formattedData[key]
-          );
-        }
-      });
-
-      // Show loading state
-      loadingAlert = Swal.fire({
-        title: "Creating Shop Owner...",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-
-      const response = await api.post("/addcustomer", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (response.data.status || response.data.success) {
-        const newLead = response.data.data;
-        setLeads((prev) =>
-          Array.isArray(prev) ? [...prev, newLead] : [newLead]
-        );
-        setIsModalOpenCreate(false);
-
-        await loadingAlert.close();
-
-        await Swal.fire({
-          icon: "success",
-          title: "Shop Owner Created Successfully",
-          text:  `Shop Owner has been added to the system.`,
-          confirmButtonColor: "#0e4053",
-        });
-        // Fetch leads again instead of reloading the page
-        await fetchLeads();
-
-        setCreateFormData({
-          name: "",
-          email: "",
-          phoneno: "",
-          city: "",
-          whatsapp: "",
-          requirements: "",
-          source: "",
-          route:"",
-           near_location:"",
-    branch_code:"",
-    area:"",
-    village:"",
-    customer_relationship:"",
-    source_column:"",
-    latitude:"",
-    longitude:"",
-    Join_date:"",
-    shop_image:"",
-          assigned_to: "",
-          follow_up_date_input: "", // Changed from follow_up
-          follow_up_time_input: "", // New field for time
-          status: "new",
-          message: "",
-          role: "User",
-          is_approved: false,
-          profile_pic: null,
-          // New address fields
-          blockUnitStreetName: "",
-          state: "",
-          country: "India",
-          pincode: "",
-        });
-        if (createImagePreview) {
-          URL.revokeObjectURL(createImagePreview);
-        }
-        setCreateImagePreview(null);
-
-        // Clear address fields
-        clearAddressFields();
-      } else {
-        throw new Error(response.data.message || "Failed to create shop owner.");
-      }
-    } catch (err) {
-      if (loadingAlert) {
-        await loadingAlert.close();
-      }
-
-      let errorTitle = "Error Creating Shop Owners";
-      let errorMessage =
-        err.response && err.response.data && err.response.data.message
-          ? err.response.data.message
-          : "An error occurred while creating the shop owner. Please try again.";
-
-      if (err.response) {
-        if (err.response.status === 422) {
-          const errors = err.response.data.errors;
-          if (errors) {
-            const firstError = Object.values(errors)[0];
-            if (Array.isArray(firstError) && firstError.length > 0) {
-              errorMessage = firstError[0];
-            }
-          }
-        } else if (err.response.data?.message) {
-          errorMessage = err.response.data.message;
-        }
-      } else if (err.request) {
-        errorTitle = "Network Error";
-        errorMessage =
-          "Unable to connect to the server. Please check your internet connection.";
-      } else {
-        errorMessage = err.message;
-      }
-
-      await Swal.fire({
-        icon: "error",
-        title: errorTitle,
-        text: errorMessage,
-        confirmButtonColor: "#DD6B55",
-      });
-    }
-  };
 
   // New handler for file selection (drag/drop or input)
   const handleFileChange = (e) => {
@@ -2017,7 +1958,7 @@ const handleEdit = (lead) => {
     email: lead.email || "",
     phoneno: lead.contact || lead.phoneno || "",
     whatsapp: lead.whatsapp_number || lead.whatsapp || "",
-    requirements: lead.requirements || "",
+    requirements: lead.shop_name || "",
     source: lead.source || "",
     route: lead.route || "",
     near_location: lead.near_location || "",
@@ -2590,8 +2531,6 @@ const handleSubmit = async (e) => {
 
   let loadingAlert;
   try {
-    // console.log("🛠 Updating Shop Owner ID:", formData.id);
-
     loadingAlert = Swal.fire({
       title: "Updating Shop Owner...",
       html: "Please wait, this may take a moment.",
@@ -2630,7 +2569,7 @@ const handleSubmit = async (e) => {
     }
     safeAppend(formDataToSend, "assigned_to", assignedToId);
 
-    // 📍 Optional fields (some might not be required)
+    // 📍 Optional fields
     safeAppend(formDataToSend, "customer_relationship", formData.customer_relationship);
     safeAppend(formDataToSend, "source_column", formData.source_column);
     safeAppend(formDataToSend, "latitude", formData.latitude);
@@ -2644,12 +2583,57 @@ const handleSubmit = async (e) => {
       safeAppend(formDataToSend, "shop_image", formData.shop_image);
     }
 
-    // 🏠 Address info (if accepted by backend)
+    // 🏠 Address info basic fields
     safeAppend(formDataToSend, "blockUnitStreetName", formData.blockUnitStreetName);
     safeAppend(formDataToSend, "city", formData.city);
     safeAppend(formDataToSend, "state", formData.state);
     safeAppend(formDataToSend, "country", formData.country);
     safeAppend(formDataToSend, "pincode", formData.pincode);
+
+    // ✅ ADD NESTED ADDRESS
+    const nestedAddress = {
+      name: formData.blockUnitStreetName,
+      city: formData.city,
+      state: formData.state,
+      country: formData.country,
+      pin: formData.pincode,
+    };
+    safeAppend(formDataToSend, "address", JSON.stringify(nestedAddress));
+
+    // ✅ ADD NESTED BRANCHDETAIL
+    const nestedBranchDetail = {
+      branch_code: formData.branch_code,
+      route: formData.route,
+      area: formData.area,
+      village: formData.village,
+    };
+    safeAppend(formDataToSend, "branchdetail", JSON.stringify(nestedBranchDetail));
+
+    // ✅ FIND VILLAGE ID
+    let villageId = "";
+    try {
+      const branch = branchHierarchy.find(
+        (b) => b.branch_code === formData.branch_code
+      );
+
+      const route = branch?.routes.find(
+        (r) => r.route_name === formData.route
+      );
+
+      const area = route?.areas.find(
+        (a) => a.area_name === formData.area
+      );
+
+      const village = area?.villages.find(
+        (v) => v.village_name === formData.village
+      );
+
+      villageId = village?.village_id || "";
+    } catch (err) {
+      villageId = "";
+    }
+
+    safeAppend(formDataToSend, "village_id", villageId);
 
     // 🔥 Send API request
     const response = await api.post(
@@ -2662,7 +2646,6 @@ const handleSubmit = async (e) => {
 
     const { data } = response;
     await loadingAlert.close();
-    // console.log("✅ Edit API Response:", data);
 
     if (data.status || data.success) {
       await Swal.fire({

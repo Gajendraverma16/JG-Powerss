@@ -32,7 +32,7 @@ const initialMenu = [
     ),
     children: [
       { label: "All Shop Owners", path: "/leads/all" },
-      // { label: "Villages", path: "/allVillages" },
+      { label: "Villages", path: "/allVillages" },
       // Dynamic lead statuses will be inserted here
     ],
      
@@ -72,7 +72,7 @@ const initialMenu = [
     // ],
      children: [
       { label: "All Orders", path: "/Order/testorder" },
-      //  { label: "Create Orders", path: "/Order/new" },
+       { label: "Create Orders", path: "/Order/new" },
     ],
   },
   // {
