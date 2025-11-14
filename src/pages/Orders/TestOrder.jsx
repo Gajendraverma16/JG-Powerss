@@ -445,9 +445,7 @@ switch (filters.contact) {
     );
   });
 
-
-
-  
+ 
   // Helper function for form validation
   const validateFormData = (data) => {
     const errors = [];
@@ -1026,7 +1024,7 @@ const handleDelete = async (id) => {
         </div>
       </div>
       {/* Filter Section */}
-      <div className="grid grid-cols-2 gap-3 mb-2 md:grid-cols-2 lg:grid-cols-4 md:gap-6 w-full">
+      <div className="grid grid-cols-1 gap-3 mb-2 md:grid-cols-2 lg:grid-cols-4 md:gap-6 w-full">
         {/* Customer Name Dropdown */}
         <div className="relative" ref={customerNameDropdownRef}>
           <button
@@ -1720,53 +1718,56 @@ const handleDelete = async (id) => {
       console.error("Status Update Error:", error);
     }
   }}
-  className={`block mt-4 mb-4 w-[120px] rounded-full text-center text-sm font-medium px-3 py-2 border border-gray-300 bg-white cursor-pointer outline-none transition-all
-    focus:ring-2 focus:ring-[#EF7E1B]/40 focus:border-[#EF7E1B] hover:shadow-sm outline-none
-    ${
-      order?.order_type === "completed"
-        ? "text-green-600"
-        : order?.order_type === "hold"
-        ? "text-yellow-600"
-        : order?.order_type === "cancel"
-        ? "text-red-600"
-        : order?.order_type === "process"
-        ? "text-blue-600"
-        : "text-gray-700"
-    }
-  `}
-
-      // className={`block mt-4 mb-4 w-[140px] rounded-full text-center text-sm font-medium px-3 py-2 border border-gray-300 bg-white cursor-pointer outline-none transition-all
-      //   focus:ring-2 focus:ring-[#EF7E1B]/40 focus:border-[#EF7E1B] hover:shadow-sm
-      //   ${
-      //      order?.order_type === "completed"
-      //       ? "text-green-600"
-      //       :  order?.order_type=== "hold"
-      //       ? "text-yellow-600"
-      //       :  order?.order_type === "cancel"
-      //       ? "text-red-600"
-      //       :  order?.order_type === "process"
-      //       ? "text-blue-600"
-      //       : "text-gray-700"
-      //   }`}
-    >
-      <option value="" disabled className="text-gray-400">
-        Select Status
-      </option>
-      <option value="new" className="text-gray-700">
-        New
-      </option>
-      <option value="hold" className="text-yellow-600">
-        Hold
-      </option>
-      <option value="process" className="text-blue-600">
-        Process
-      </option>
-      <option value="completed" className="text-green-600">
-        Completed
-      </option>
-      <option value="cancel" className="text-red-600">
-        Cancel
-      </option>
+className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medium px-4 py-2 border
+  transition-all duration-300 ease-in-out cursor-pointer select-none
+  focus:ring-2 focus:ring-offset-2 
+  hover:shadow-md hover:-translate-y-0.5 active:scale-95 outline-none
+  ${
+    order?.order_type === "completed"
+      ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+      : order?.order_type === "hold"
+      ? "border-yellow-300 bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
+      : order?.order_type === "cancel"
+      ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+      : order?.order_type === "process"
+      ? "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
+      : "border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
+  }
+`}
+  >
+     <option value="" disabled className="text-black bg-white">
+    Select Status
+  </option>
+  <option
+    value="new"
+    className="text-gray-800 bg-white text-center"
+  >
+    New
+  </option>
+  <option
+    value="hold"
+    className="text-yellow-800 bg-white  text-center"
+  >
+    Hold
+  </option>
+  <option
+    value="process"
+    className="text-blue-800 bg-white  text-center"
+  >
+    Process
+  </option>
+  <option
+    value="completed"
+    className="text-green-800 bg-white  text-center"
+  >
+    Completed
+  </option>
+  <option
+    value="cancel"
+    className="text-red-800 bg-white  text-center"
+  >
+    Cancel
+  </option>
        </select>
 
           {/* ✅ Order Number */}
@@ -1949,83 +1950,7 @@ const handleDelete = async (id) => {
                 className="w-5 h-5 rounded border-gray-300 text-gray-900 focus:ring-gray-500 focus:ring-2"
               />
               <div>
-<select
-  value={order?.order_type || ""}
-  onChange={async (e) => {
-    const newStatus = e.target.value;
-    const orderId = order?.id;
 
-    // keep old value in case of error
-    const prevStatus = order?.order_type;
-
-    try {
-      // ✅ Optimistic UI update (instant without refresh)
-     setQuotations((prev) =>
-  prev.map((o) =>
-    o.id === orderId ? { ...o, order_type: newStatus } : o
-  )
-);
-
-
-      // 🛰️ Send update to backend
-      const res = await api.put(`/orders/${orderId}/status`, {
-        order_type: newStatus,
-      });
-
-      if (res.data?.success) {
-        Swal.fire({
-          icon: "success",
-          title: "Updated",
-          text: `Order marked as "${newStatus}"`,
-          timer: 1000,
-          showConfirmButton: false,
-        });
-      } else {
-        // ❌ Revert on error
-        setQuotations((prev) =>
-  prev.map((o) =>
-    o.id === orderId ? { ...o, order_type: prevStatus } : o
-  )
-);
-
-        Swal.fire("Error", res.data?.message || "Failed to update status", "error");
-      }
-    } catch (error) {
-      // ❌ Revert on network error
-      setQuotations((prev) =>
-  prev.map((o) =>
-    o.id === orderId ? { ...o, order_type: prevStatus } : o
-  )
-);
-
-      Swal.fire("Error", "Network or server error while updating.", "error");
-      console.error("Status Update Error:", error);
-    }
-  }}
-   className={`block mt-4 mb-4 w-[120px] rounded-full text-center text-sm font-medium px-3 py-2 border border-gray-300 bg-white cursor-pointer outline-none transition-all
-    focus:ring-2 focus:ring-[#EF7E1B]/40 focus:border-[#EF7E1B] hover:shadow-sm
-    ${
-      order?.order_type === "completed"
-        ? "text-green-600"
-        : order?.order_type === "hold"
-        ? "text-yellow-600"
-        : order?.order_type === "cancel"
-        ? "text-red-600"
-        : order?.order_type === "process"
-        ? "text-blue-600"
-        : "text-gray-700"
-    }
-  `}
->
-     <option value="" disabled>
-          Select Status
-     </option>
-    <option value="new" className="text-gray-700">New</option>
-    <option value="hold" className="text-yellow-600">Hold</option>
-    <option value="process" className="text-blue-600">Process</option>
-    <option value="completed" className="text-green-600">Completed</option>
-    <option value="cancel" className="text-red-600">Cancel</option>
- </select>
                   <h3 className="text-base font-semibold text-gray-900">
                   {order?.shop_owner?.customer_name || "-"}
                 </h3>
@@ -2223,7 +2148,91 @@ const handleDelete = async (id) => {
               </p>
             </div>
           </div>
+
         </div>
+        <select
+  value={order?.order_type || ""}
+  onChange={async (e) => {
+    const newStatus = e.target.value;
+    const orderId = order?.id;
+
+    // keep old value in case of error
+    const prevStatus = order?.order_type;
+
+    try {
+      // ✅ Optimistic UI update (instant without refresh)
+     setQuotations((prev) =>
+  prev.map((o) =>
+    o.id === orderId ? { ...o, order_type: newStatus } : o
+  )
+);
+
+
+      // 🛰️ Send update to backend
+      const res = await api.put(`/orders/${orderId}/status`, {
+        order_type: newStatus,
+      });
+
+      if (res.data?.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Updated",
+          text: `Order marked as "${newStatus}"`,
+          timer: 1000,
+          showConfirmButton: false,
+        });
+      } else {
+        // ❌ Revert on error
+        setQuotations((prev) =>
+  prev.map((o) =>
+    o.id === orderId ? { ...o, order_type: prevStatus } : o
+  )
+);
+
+        Swal.fire("Error", res.data?.message || "Failed to update status", "error");
+      }
+    } catch (error) {
+      // ❌ Revert on network error
+      setQuotations((prev) =>
+  prev.map((o) =>
+    o.id === orderId ? { ...o, order_type: prevStatus } : o
+  )
+);
+
+      Swal.fire("Error", "Network or server error while updating.", "error");
+      console.error("Status Update Error:", error);
+    }
+  }}
+  className={`
+  mb-4 ml-4 w-full
+  max-w-[200px] mx-auto    
+  rounded-full text-center text-sm font-medium px-4 py-2 border
+  transition-all duration-300 ease-in-out cursor-pointer select-none
+  focus:ring-2 focus:ring-offset-2 
+  hover:shadow-md hover:-translate-y-0.5 active:scale-95 outline-none
+  ${
+    order?.order_type === "completed"
+      ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+      : order?.order_type === "hold"
+      ? "border-yellow-300 bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
+      : order?.order_type === "cancel"
+      ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+      : order?.order_type === "process"
+      ? "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
+      : "border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
+  }
+`}
+
+>
+     <option value="" disabled>
+          Select Status
+     </option>
+    <option value="new" className="text-gray-700">New</option>
+    <option value="hold" className="text-yellow-600">Hold</option>
+    <option value="process" className="text-blue-600">Process</option>
+    <option value="completed" className="text-green-600">Completed</option>
+    <option value="cancel" className="text-red-600">Cancel</option>
+ </select>
       </div>
     ))
   )}
