@@ -12,7 +12,7 @@ import { Country, State, City } from "country-state-city";
 import { useAuth } from "../../auth/AuthContext";
 import { useLocation } from "react-router-dom";
 import { RxCross2 } from "react-icons/rx";
-
+  
 import "../../styles/scrollbar.css";
 import { SidebarContext } from "../../components/Layout";
 
@@ -1264,7 +1264,7 @@ useEffect(() => {
   };
 
   // Function to handle submission of the Create Lead form:
-const handleCreateSubmit = async (e) => {
+ const handleCreateSubmit = async (e) => {
   e.preventDefault();
 
   const validationErrors = validateFormData(createFormData);
@@ -1283,123 +1283,156 @@ const handleCreateSubmit = async (e) => {
   try {
     const formData = new FormData();
 
-      // --- FIX: Convert assigned_to (name) to user ID (int) ---
-      let assignedToId = createFormData.assigned_to;
-      // REMOVE: Validation for assigned_to user
-      if (user?.role === "admin") {
-        const assignedUser = users.find(
-          (u) => u.name === createFormData.assigned_to
-        );
-        // If not found, just leave as is (no error)
-        assignedToId = assignedUser ? assignedUser.id : "";
-      } else {
-        assignedToId = user.id;
-      }
+    // --- assigned_to fix ---
+    let assignedToId = createFormData.assigned_to;
 
-      // Find the selected status object from statuses array
-      const selectedStatus = statuses.find(
+    if (user?.role === "admin") {
+      const assignedUser = users.find(
+        (u) => u.name === createFormData.assigned_to
+      );
+      assignedToId = assignedUser ? assignedUser.id : "";
+    } else {
+      assignedToId = user.id;
+    }
+
+    // --- status fix ---
+    const selectedStatus =
+      statuses.find(
         (status) =>
           status.status_name.toLowerCase().replace(/\s+/g, "_") ===
           createFormData.status
-      );
-      // REMOVE: Validation for status
-      // If not found, just leave as is (no error)
+      ) || { status_name: "", status_id: 1 };
 
-      // Define the address object
-      const addressObject = {
-        name: createFormData.blockUnitStreetName,
-        city: createFormData.city,
-        state: createFormData.state,
-        country: createFormData.country,
-        pin: createFormData.pincode,
-      };
-      // If all address fields are empty (or country is default 'India'), send empty string
-      const isAddressEmpty =
-        !addressObject.name &&
-        !addressObject.city &&
-        !addressObject.state &&
-        (!addressObject.country || addressObject.country === "India") &&
-        !addressObject.pin;
+    // --- follow up merge ---
+    let combinedFollowUpDate = "";
+    if (createFormData.follow_up_date_input) {
+      const datePart = createFormData.follow_up_date_input;
+      const timePart = createFormData.follow_up_time_input
+        ? createFormData.follow_up_time_input + ":00"
+        : "00:00:00";
 
-      // Combine follow_up_date_input and follow_up_time_input
-      let combinedFollowUpDate = null;
-      if (createFormData.follow_up_date_input) {
-        const datePart = createFormData.follow_up_date_input;
-        const timePart = createFormData.follow_up_time_input
-          ? createFormData.follow_up_time_input + ":00"
-          : createFormData.follow_up_time_input;
-        combinedFollowUpDate = `${datePart} ${timePart}`;
+      combinedFollowUpDate = `${datePart} ${timePart}`;
+    }
+
+    // --- find village_id ---
+    let villageId = 0;
+
+    const branchObj = branchHierarchy.find(
+      (b) => b.branch_name === createFormData.branch_code
+    );
+
+    const routeObj = branchObj?.routes?.find(
+      (r) => r.route_name === createFormData.route
+    );
+
+    const areaObj = routeObj?.areas?.find(
+      (a) => a.area_name === createFormData.area
+    );
+
+    const villageObj = areaObj?.villages?.find(
+      (v) => v.village_name === createFormData.village
+    );
+
+    villageId = Number(villageObj?.village_id) || 0;
+
+    // --- branchdetail object ---
+    const branchDetailObject = {
+      branch: createFormData.branch_code || "",
+      route: createFormData.route || "",
+      area: createFormData.area || "",
+      village_id: villageId || "",
+    };
+
+    const finalBranchDetail = JSON.stringify(branchDetailObject);
+
+    // --- address object ---
+    const addressObject = {
+      street: createFormData.blockUnitStreetName || "",
+      city: createFormData.city || "",
+      state: createFormData.state || "",
+      country: createFormData.country || "",
+      pincode: createFormData.pincode || "", // ✅ Changed from "pin" to "pincode" to match backend
+    };
+
+    const isAddressEmpty =
+      !addressObject.street &&
+      !addressObject.city &&
+      !addressObject.state &&
+      (!addressObject.country || addressObject.country === "India") &&
+      !addressObject.pincode; // ✅ Changed from "pin" to "pincode"
+
+    const finalAddress = isAddressEmpty ? "" : JSON.stringify(addressObject);
+
+    // --- FINAL PAYLOAD ---
+    const formattedData = {
+      customer_name: createFormData.name,
+      email: createFormData.email,
+      contact_number: createFormData.phoneno,
+      whatsapp_number: createFormData.whatsapp,
+
+      route: createFormData.route,
+      shop_name: createFormData.requirements || "",
+      source: createFormData.source,
+
+      assigned_to: Number(assignedToId) || 0,
+
+      near_location: createFormData.near_location,
+      branch_code: createFormData.branch_code,
+      area: createFormData.area,
+
+      village: villageId,
+      village_id: villageId,
+
+      customer_relationship: createFormData.customer_relationship,
+      source_column: createFormData.source_column,
+      Join_date: createFormData.Join_date,
+
+      shop_image: createFormData.shop_image,
+      profile_image: createFormData.profile_pic,
+
+      follow_up_date: combinedFollowUpDate,
+      category: selectedStatus.status_name,
+      status_id: selectedStatus.status_id,
+
+      message: createFormData.message,
+
+      vilage_assigned_to: 1 || "",
+
+      // ⭐ CORRECT JSON STRINGS
+     address: finalAddress,
+     branchdetail: finalBranchDetail,
+    };
+
+    console.log(formattedData);
+
+    // If not admin, force own assignment
+    if (user?.role !== "admin") {
+      formattedData.assigned_to = user.id;
+    }
+
+    formattedData.assigned_to = Number(formattedData.assigned_to);
+
+    // Append fields
+    Object.keys(formattedData).forEach((key) => {
+      if (key === "profile_image" && formattedData[key]) {
+        formData.append("profile_image", formattedData[key]);
+      } else {
+        formData.append(key, formattedData[key] ?? "");
       }
+    });
 
-      // Format the data to match API keys
-     const formattedData = {
-  customer_name: createFormData.name,
-  email: createFormData.email,
-  contact_number: createFormData.phoneno,
-  whatsapp_number: createFormData.whatsapp,
-  requirements: createFormData.requirements,
-  source: createFormData.source,
-  assigned_to:
-    assignedToId && !isNaN(parseInt(assignedToId, 10))
-      ? parseInt(assignedToId, 10)
-      : 0,
-  route: createFormData.route,
-  near_location: createFormData.near_location,
-  branch_code: createFormData.branch_code,
-  area: createFormData.area,
-  village: createFormData.village,
-  customer_relationship: createFormData.customer_relationship,
-  source_column: createFormData.source_column,
-  latitude: createFormData.latitude,
-  longitude: createFormData.longitude,
-  Join_date: createFormData.Join_date,
-  shop_image: createFormData.shop_image, // ✅ keep only one
-  follow_up_date: combinedFollowUpDate,
-  status: selectedStatus ? selectedStatus.status_name : "",
-  status_id: selectedStatus ? selectedStatus.status_id : "",
-  message: createFormData.message,
-  profile_image: createFormData.profile_pic,
-  city: isAddressEmpty ? "" : JSON.stringify(addressObject),
-};
+    // Loader
+    loadingAlert = Swal.fire({
+      title: "Creating Shop Owner...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
 
-
-      // If not admin, force assigned_to to user.id
-      if (user?.role !== "admin") {
-        formattedData.assigned_to = user.id;
-      }
-      // Ensure assigned_to is always an integer
-      formattedData.assigned_to = parseInt(formattedData.assigned_to, 10);
-
-      // Append all formatted fields
-      Object.keys(formattedData).forEach((key) => {
-        if (key === "profile_image" && formattedData[key]) {
-          formData.append("profile_image", formattedData[key]);
-        } else if (
-          formattedData[key] !== null &&
-          formattedData[key] !== undefined
-        ) {
-          // If value is null or undefined, send empty string instead
-          formData.append(
-            key,
-            formattedData[key] === null ? "" : formattedData[key]
-          );
-        }
-      });
-
-      // Show loading state
-      loadingAlert = Swal.fire({
-        title: "Creating Shop Owner...",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
+      const response = await api.post("/addcustomer", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
       });
-
-    const response = await api.post("/addcustomer", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
 
       if (response.data.status || response.data.success) {
         const newLead = response.data.data;
@@ -1416,6 +1449,7 @@ const handleCreateSubmit = async (e) => {
           text:  `Shop Owner has been added to the system.`,
           confirmButtonColor: "#0e4053",
         });
+
         // Fetch leads again instead of reloading the page
         await fetchLeads();
 
@@ -1966,7 +2000,9 @@ const handleCreateSubmit = async (e) => {
   };
 
 const handleEdit = (lead) => {
-  // console.log("Editing lead:", lead);
+  console.log("🔍 Editing lead:", lead);
+  console.log("🏠 Address data (lead.city):", lead.city);
+  console.log("🏠 Address data (lead.address):", lead.address);
 
   setEditingLead(lead);
 
@@ -1981,20 +2017,45 @@ const handleEdit = (lead) => {
   setStateSearchTerm("");
   setCitySearchTerm("");
 
-  // Parse address
+  // ✅ Parse address - handle both backend formats
+  // Backend may return address in "city" or "address" field
   let parsedAddress = {};
-  if (lead.city) {
-    if (typeof lead.city === "string" && lead.city.startsWith("{")) {
+  const addressData = lead.address || lead.city;
+  
+  if (addressData) {
+    if (typeof addressData === "string" && addressData.startsWith("{")) {
       try {
-        parsedAddress = JSON.parse(lead.city);
+        const parsed = JSON.parse(addressData);
+        console.log("📦 Parsed address from JSON:", parsed);
+        // Backend may return "street" or "name", "pincode" or "pin"
+        parsedAddress = {
+          name: parsed.name || parsed.street || "",
+          city: parsed.city || "",
+          state: parsed.state || "",
+          country: parsed.country || "",
+          pin: parsed.pin || parsed.pincode || "",
+        };
+        console.log("✅ Normalized address:", parsedAddress);
       } catch (err) {
-        console.warn("Error parsing city JSON:", err);
+        console.warn("❌ Error parsing address JSON:", err);
       }
-    } else if (typeof lead.city === "object") {
-      parsedAddress = lead.city;
+    } else if (typeof addressData === "object") {
+      // If already an object, normalize the field names
+      parsedAddress = {
+        name: addressData.name || addressData.street || "",
+        city: addressData.city || "",
+        state: addressData.state || "",
+        country: addressData.country || "",
+        pin: addressData.pin || addressData.pincode || "",
+      };
+      console.log("✅ Normalized address from object:", parsedAddress);
     } else {
-      parsedAddress = { city: lead.city };
+      // If it's just a string, treat it as city name
+      parsedAddress = { city: addressData };
+      console.log("📝 Address is plain string:", parsedAddress);
     }
+  } else {
+    console.log("⚠️ No address data (both lead.city and lead.address are null/undefined)");
   }
 
   // Date/time split
@@ -2010,6 +2071,56 @@ const handleEdit = (lead) => {
     joinDate = joinDateObj.toISOString().split("T")[0];
   }
 
+  const getVillageName = (villageId) => {
+    if (!villageId) return "";
+
+    for (const branch of branchHierarchy) {
+      for (const route of branch.routes || []) {
+        for (const area of route.areas || []) {
+          const village = area.villages?.find(
+            (v) => v.village_id == villageId
+          );
+          if (village) return village.village_name;
+        }
+      }
+    }
+
+    return "";
+  };
+
+  // ✅ FIX: Find the matching status from statuses array
+  // Backend returns: status: "Kirana store", status_id: 1
+  // We need to convert to: status: "kirana_store" (for form), status_name: "Kirana store", status_id: 1
+  let statusForForm = "";
+  let statusName = "";
+  let statusId = lead.status_id || "";
+
+  // Try to find status by status_id first (most reliable)
+  if (lead.status_id) {
+    const matchedStatus = statuses.find((s) => s.status_id === lead.status_id);
+    if (matchedStatus) {
+      statusForForm = matchedStatus.status_name.toLowerCase().replace(/\s+/g, "_");
+      statusName = matchedStatus.status_name;
+      statusId = matchedStatus.status_id;
+    }
+  }
+  
+  // Fallback: try to match by status name
+  if (!statusForForm && lead.status) {
+    const matchedStatus = statuses.find(
+      (s) => s.status_name.toLowerCase() === lead.status.toLowerCase()
+    );
+    if (matchedStatus) {
+      statusForForm = matchedStatus.status_name.toLowerCase().replace(/\s+/g, "_");
+      statusName = matchedStatus.status_name;
+      statusId = matchedStatus.status_id;
+    } else {
+      // If no match found, use the raw status value
+      statusForForm = lead.status.toLowerCase().replace(/\s+/g, "_");
+      statusName = lead.status;
+    }
+  }
+
   // Fill form with correct data + ID
   setFormData({
     id: lead.customer_id || "", // ✅ Critical: use customer_id for update API
@@ -2017,13 +2128,13 @@ const handleEdit = (lead) => {
     email: lead.email || "",
     phoneno: lead.contact || lead.phoneno || "",
     whatsapp: lead.whatsapp_number || lead.whatsapp || "",
-    requirements: lead.shop_name || "",
+    requirements: lead.requirements || "",
     source: lead.source || "",
     route: lead.route || "",
     near_location: lead.near_location || "",
     branch_code: lead.branch_code || "",
     area: lead.area || "",
-    village: lead.village || "",
+    village: getVillageName(lead.village) || "",
     customer_relationship: lead.customer_relationship || "",
     source_column: lead.source_column || "",
     latitude: lead.latitude || "",
@@ -2033,7 +2144,9 @@ const handleEdit = (lead) => {
     assigned_to: lead.assigned_to || "",
     follow_up_date_input: followUpDate,
     follow_up_time_input: followUpTime,
-    status: lead.status_name?.toLowerCase().replace(/\s+/g, "_") || "",
+    status: statusForForm, // ✅ Fixed: use "status" not "category", in correct format
+    status_name: statusName, // ✅ Added: store the display name
+    status_id: statusId, // ✅ Added: store the status ID
     message: lead.message || "",
     role: lead.role || "User",
     is_approved: lead.is_approved || false,
@@ -2572,9 +2685,8 @@ const handleSubmit = async (e) => {
   }
 
   let loadingAlert;
-  try {
-    // console.log("🛠 Updating Shop Owner ID:", formData.id);
 
+  try {
     loadingAlert = Swal.fire({
       title: "Updating Shop Owner...",
       allowOutsideClick: false,
@@ -2584,16 +2696,16 @@ const handleSubmit = async (e) => {
     const fd = new FormData();
     const safeAppend = (k, v) => fd.append(k, v ?? "");
 
-    // -----------------------------------
-    // ⭐ MATCH CREATE EXACTLY
-    // -----------------------------------
+    // -------------------------------
+    // ⭐ MATCH EXACTLY LIKE CREATE
+    // -------------------------------
 
     safeAppend("customer_name", formData.name);
     safeAppend("email", formData.email);
     safeAppend("contact_number", formData.phoneno);
     safeAppend("whatsapp_number", formData.whatsapp);
 
-    // SHOP NAME
+    // SHOP NAME (requirements)
     safeAppend("shop_name", formData.requirements);
 
     safeAppend("source", formData.source);
@@ -2603,8 +2715,33 @@ const handleSubmit = async (e) => {
     safeAppend("area", formData.area);
 
     // ---------- VILLAGE ----------
-    safeAppend("village", formData.village_id);
-    safeAppend("village_id", formData.village_id);
+    // safeAppend("village", Number(formData.village_id));
+// ------------------------------
+// ⭐ FIND VILLAGE ID (same as CREATE)
+// ------------------------------
+let villageId = 0;
+
+const branchObj = branchHierarchy.find(
+  (b) => b.branch_name === formData.branch_code
+);
+
+const routeObj = branchObj?.routes?.find(
+  (r) => r.route_name === formData.route
+);
+
+const areaObj = routeObj?.areas?.find(
+  (a) => a.area_name === formData.area
+);
+
+const villageObj = areaObj?.villages?.find(
+  (v) => v.village_name === formData.village
+);
+
+villageId = Number(villageObj?.village_id) || 0;
+
+
+safeAppend("village", villageId);
+
 
     safeAppend("customer_relationship", formData.customer_relationship);
     safeAppend("source_column", formData.source_column);
@@ -2612,8 +2749,8 @@ const handleSubmit = async (e) => {
     safeAppend("Join_date", formData.Join_date);
 
     // ---------- STATUS ----------
-    safeAppend("category", formData.status_name);
-    safeAppend("status_id", formData.status_id || 1);
+    safeAppend("category", formData.status_name || "");
+    safeAppend("status_id", Number(formData.status_id) || 1);
 
     safeAppend("message", formData.message);
 
@@ -2623,13 +2760,14 @@ const handleSubmit = async (e) => {
       const u = users.find((x) => x.name === assignedToId);
       assignedToId = u ? u.id : 0;
     }
-    safeAppend("assigned_to", assignedToId);
+    safeAppend("assigned_to", Number(assignedToId));
 
-    // 📍 Optional fields (some might not be required)
-    safeAppend(formDataToSend, "customer_relationship", formData.customer_relationship);
-    safeAppend(formDataToSend, "source_column", formData.source_column);
-    safeAppend(formDataToSend, "latitude", formData.latitude);
-    safeAppend(formDataToSend, "longitude", formData.longitude);
+    // ---------- FOLLOW UP ----------
+    const mergedFollowup = formData.follow_up_date_input
+      ? `${formData.follow_up_date_input} ${(formData.follow_up_time_input || "00:00")}:00`
+      : "";
+
+    safeAppend("follow_up_date", mergedFollowup);
 
     // ---------- IMAGES ----------
     if (formData.profile_pic instanceof File) {
@@ -2640,12 +2778,29 @@ const handleSubmit = async (e) => {
       fd.append("shop_image", formData.shop_image);
     }
 
-    // 🏠 Address info (if accepted by backend)
-    safeAppend(formDataToSend, "blockUnitStreetName", formData.blockUnitStreetName);
-    safeAppend(formDataToSend, "city", formData.city);
-    safeAppend(formDataToSend, "state", formData.state);
-    safeAppend(formDataToSend, "country", formData.country);
-    safeAppend(formDataToSend, "pincode", formData.pincode);
+    // ---------- ADDRESS JSON ----------
+    const addressJSON = JSON.stringify({
+      street: formData.blockUnitStreetName || "",
+      city: formData.city || "",
+      state: formData.state || "",
+      country: formData.country || "",
+      pincode: formData.pincode || "",
+    });
+
+    safeAppend("address", addressJSON);
+
+    // ---------- BRANCHDETAIL JSON ----------
+    const branchDetailJSON = JSON.stringify({
+      branch_code: formData.branch_code || "",
+      route: formData.route || "",
+      area: formData.area || "",
+      village_id:villageId || "",
+    });
+
+    safeAppend("branchdetail", branchDetailJSON);
+
+    // ---------- VILLAGE ASSIGNED ----------
+    safeAppend("village_assigned_to", formData.village_assigned_to || 1);
 
     // -----------------------------------
     // API CALL
@@ -2731,62 +2886,79 @@ const handleSubmit = async (e) => {
   };
 
   // Update the status dropdown in the create form
-  const renderStatusDropdown = () => (
-    <div className="relative" ref={statusDropdownRef}>
-      <button
-        type="button"
-        onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-        className="w-full  h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] text-left flex items-center justify-between cursor-pointer"
-      >
-        <span>
-          {statuses.find(
-            (status) =>
-              status.status_name.toLowerCase().replace(/\s+/g, "_") ===
-              createFormData.status
-          )?.status_name || "Select Categories"}
-        </span>
-        <svg
-          className={`w-4 h-4 transition-transform ${
-            isStatusDropdownOpen ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+  // ✅ Updated to accept parameters for reusability (create vs edit)
+  const renderStatusDropdown = (isEditMode = false) => {
+    const currentStatus = isEditMode ? formData.status : createFormData.status;
+    const isDropdownOpen = isEditMode ? isEditStatusDropdownOpen : isStatusDropdownOpen;
+    const setDropdownOpen = isEditMode ? setIsEditStatusDropdownOpen : setIsStatusDropdownOpen;
+    const dropdownRef = isEditMode ? editStatusDropdownRef : statusDropdownRef;
+    const handleChange = isEditMode ? handleInputChange : handleCreateInputChange;
+
+    return (
+      <div className="relative" ref={dropdownRef}>
+        <button
+          type="button"
+          onClick={() => setDropdownOpen(!isDropdownOpen)}
+          className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] text-left flex items-center justify-between cursor-pointer"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-      {isStatusDropdownOpen && (
-        <div className="absolute top-full custom-scrollbar left-0 w-full mt-1 bg-white rounded-[12px] shadow-lg border border-gray-200 z-50 max-h-[200px] overflow-y-auto cursor-pointer">
-          {statuses.map((status) => (
-            <button
-              key={status.status_id}
-              type="button"
-              onClick={() => {
-                handleCreateInputChange({
-                  target: {
-                    name: "status",
-                    value: status.status_name
-                      .toLowerCase()
-                      .replace(/\s+/g, "_"),
-                  },
-                });
-                setIsStatusDropdownOpen(false);
-              }}
-              className="w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-[#545454]"
-            >
-              {status.status_name}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+          <span>
+            {statuses.find(
+              (status) =>
+                status.status_name.toLowerCase().replace(/\s+/g, "_") ===
+                currentStatus
+            )?.status_name || "Select Categories"}
+          </span>
+          <svg
+            className={`w-4 h-4 transition-transform ${
+              isDropdownOpen ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+        {isDropdownOpen && (
+          <div className="absolute top-full custom-scrollbar left-0 w-full mt-1 bg-white rounded-[12px] shadow-lg border border-gray-200 z-50 max-h-[200px] overflow-y-auto cursor-pointer">
+            {statuses.map((status) => (
+              <button
+                key={status.status_id}
+                type="button"
+                onClick={() => {
+                  handleChange({
+                    target: {
+                      name: "status",
+                      value: status.status_name
+                        .toLowerCase()
+                        .replace(/\s+/g, "_"),
+                    },
+                  });
+                  // Also update status_name and status_id for edit mode
+                  if (isEditMode) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      status_name: status.status_name,
+                      status_id: status.status_id,
+                    }));
+                  }
+                  setDropdownOpen(false);
+                }}
+                className="w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-[#545454]"
+              >
+                {status.status_name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Modified to accept props for reusability
   const renderAssignToDropdown = (currentValue, onValueChange) => (
@@ -5412,7 +5584,7 @@ useEffect(() => {
               <label className="block text-[#4B5563] text-[16px] mb-2">
                 Categories
               </label>
-              {renderStatusDropdown()}
+              {renderStatusDropdown(true)}
             </div>
 
             {/* Assign To (Admin Only) */}

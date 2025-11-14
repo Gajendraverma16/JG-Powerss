@@ -19,11 +19,7 @@ const Villagees = () => {
 const assigneeDropdownRef = useRef(null);
 
 // Dummy salesman list for now
-const [users, setUsers] = useState([
-  { id: 1, name: "Ravi Sharma" },
-  { id: 2, name: "Ankit Verma" },
-  { id: 3, name: "Priya Patel" },
-]);
+const [users, setUsers] = useState([]);
 const [selectedAssignee, setSelectedAssignee] = useState("");
 const [assigneeSearchTerm, setAssigneeSearchTerm] = useState("");
 const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
