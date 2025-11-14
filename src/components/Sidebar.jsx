@@ -293,7 +293,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile }) {
           });
         }
       }
-    } else if (["Leads", "Quotation", "Product"].includes(item.label)) {
+    } else if (["Leads", "Quotation", "Product","Create New"].includes(item.label)) {
     // Only show if user has "view" permission for this module
     if (hasViewPermission(item.label)) {
       // For Quotation, filter 'Create New' child if no create permission

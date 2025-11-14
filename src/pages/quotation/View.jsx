@@ -602,7 +602,7 @@ const fetchCategories = async () => {
           <div>
             <label className="block text-[#4B5563] mb-1">Points</label>
             <input
-              type="number"
+              type="text"
               name="item_points"
               defaultValue={editingProduct.item_points}
               className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0e4053] outline-none"
