@@ -116,9 +116,6 @@ const slides = [
   },
 ];
 
-
-  
-
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
@@ -146,18 +143,19 @@ const slides = [
       <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
       
       {/* Navigation */}
-  <nav
-        className={`
-          z-50 w-full 
-          sm:bg-transparent sm:shadow-none sm:border-none sm:absolute sm:top shadow-lg border-b border-gray-100 sticky top-0
-          md:bg-transparent md:shadow-none md:border-none md:absolute md:top-0
-        `}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 sm:bg-transparent">
-          <div className="flex justify-between items-center h-20">
+   <nav
+    className={`
+    z-50 w-full 
+     shadow-lg border-b border-gray-100 sticky top-0
+    sm:bg-transparent sm:shadow-none sm:border-none sm:absolute sm:top-0
+    md:bg-transparent md:shadow-none md:border-none md:absolute md:top-0
+       `}
+>
+           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20t">
             
             {/* Logo */}
-            <div className="flex items-center">
+            <div className="flex items-center ">
               <img
                 style={{ height: "80px" }}
                 src={logo}
@@ -166,7 +164,7 @@ const slides = [
             </div>
 
             {/* Desktop Button */}
-             <div className="hidden md:flex items-center space-x-4">
+             <div className="hidden md:flex items-center space-x-4 ">
       <button
         type="button"
         onClick={() => navigate("/login")}
@@ -177,7 +175,7 @@ const slides = [
     </div>
 
             {/* Mobile Menu Button */}
-            <div className="md:hidden">
+            <div className="md:hidden bg-transparent">
          <button
                 type="button"
                  onClick={() => navigate("/login")}

@@ -282,7 +282,7 @@ const handleUpdateSubmit = async (e) => {
                                   onClick={() => handleDelete(cat.id, cat.category_name)}
                                   className={`${
                                     active ? "bg-gray-100" : ""
-                                  } block w-full text-left px-4 py-2 text-sm text-gray-700`}
+                                  } block w-full text-left px-4 py-2 text-sm text-gray-700 `}
                                 >
                                   Delete
                                 </button>
@@ -411,7 +411,7 @@ const handleUpdateSubmit = async (e) => {
       {/* Add Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-2 sm:p-4">
-          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 w-full max-w-[calc(100%-2rem)] sm:max-w-md mx-auto relative">
+          <div  className="w-11/12 max-w-[600px] max-h-[90vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-lg relative z-10">
             <button
               onClick={() => setIsAddModalOpen(false)}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
