@@ -180,14 +180,14 @@ const handleUpdateSubmit = async (e) => {
         } mx-auto`}
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center  justify-between mb-6 gap-6">
         <h1 className="text-[22px] font-medium text-[#1F2837]">All Product Categories</h1>
 
         {/* Add & Search Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-end items-center gap-3 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row sm:items-end items-center gap-6 w-full sm:w-auto">
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-[#ef7e1b] text-white px-6 py-2 rounded-lg hover:bg-[#ee7f1b]"
+            className="bg-[#ef7e1b]  text-white px-6 py-2 rounded-lg hover:bg-[#ee7f1b] w-full sm:w-auto"
           >
             Create Categories
           </button>
@@ -282,7 +282,7 @@ const handleUpdateSubmit = async (e) => {
                                   onClick={() => handleDelete(cat.id, cat.category_name)}
                                   className={`${
                                     active ? "bg-gray-100" : ""
-                                  } block w-full text-left px-4 py-2 text-sm text-gray-700`}
+                                  } block w-full text-left px-4 py-2 text-sm text-gray-700 `}
                                 >
                                   Delete
                                 </button>
@@ -299,7 +299,7 @@ const handleUpdateSubmit = async (e) => {
 
             {/* Mobile View */}
             <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
-              {paginatedCategories.map((cat) => (
+          {paginatedCategories.map((cat) => (
                 <div
                   key={cat.id}
                   className="bg-white rounded-lg shadow p-4 space-y-3"
@@ -347,7 +347,9 @@ const handleUpdateSubmit = async (e) => {
                     {cat.is_active ? "Active" : "Inactive"}
                   </p>
                 </div>
+                
               ))}
+                          
             </div>
           </>
         )}
@@ -409,11 +411,11 @@ const handleUpdateSubmit = async (e) => {
       {/* Add Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-2 sm:p-4">
-          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 w-full max-w-[calc(100%-2rem)] sm:max-w-md mx-auto relative">
+          <div  className="w-11/12 max-w-[600px] max-h-[90vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-lg relative z-10">
             <button
               onClick={() => setIsAddModalOpen(false)}
-              className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white bg-red-500 w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-600"
-            >
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+             >
               ✕
             </button>
             <h1 className="text-[22px] font-medium text-[#1F2837] mb-6">

@@ -411,7 +411,16 @@ const [isUpdating, setIsUpdating] = useState(false);
                   <td className="py-4 px-6 text-sm text-[#4B5563]">
                     {village.village_name}
                   </td>
-                   <td className="py-4 px-6 text-sm text-[#4B5563]">
+                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+                    {village.total_shops || 0}
+                  </td>
+                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+                    {village.active_shops || 0}
+                  </td>
+                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+                    {village.inactive_shops || 0}
+                  </td>
+                  <td className="py-4 px-6 text-sm text-[#4B5563]">
                     {village.user?.name || "Not Assigned"}
                   </td>
                   <td className="py-4 px-6 text-sm text-[#4B5563]">

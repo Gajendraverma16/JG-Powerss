@@ -11,6 +11,10 @@ const Branch = () => {
   const [editId, setEditId] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
 
+  // pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
   const [formData, setFormData] = useState({
     branch_code: "",
     branch_name: "",
@@ -33,6 +37,12 @@ const Branch = () => {
   useEffect(() => {
     fetchBranches();
   }, [fetchBranches]);
+
+  // pagination logic
+  const indexOfLast = currentPage * rowsPerPage;
+  const indexOfFirst = indexOfLast - rowsPerPage;
+  const currentData = branches.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(branches.length / rowsPerPage);
 
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -122,13 +132,34 @@ const Branch = () => {
   return (
     <div className="w-full px-4 py-6 md:px-10 md:py-10">
       <div className="relative mx-auto flex min-h-[440px] max-w-5xl flex-col rounded-[18px] border border-white/60 bg-gradient-to-br from-white via-[#F5FAFF] to-[#E7F4FF] p-6 shadow-[0px_20px_45px_rgba(20,84,182,0.08)] md:p-8">
+
         {/* Header */}
-        <div className="mb-8 flex flex-row gap-3 items-center justify-between">
+        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <h1 className="text-[20px] md:text-[24px] font-semibold text-[#1F2837]">
             <span className="inline-block border-b-2 border-[#0e4053] pb-1">
               Branches
             </span>
-          </h1>
+            </h1>
+
+
+            <div className="flex items-center gap-2">
+          {/* Pagination top */}
+          <div className="flex items-center gap-2 ">
+            <label className="text-sm text-[#4B5563]">Show</label>
+            <select
+              className="border border-gray-300 rounded-md text-sm px-2 py-1"
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+            </select>
+          </div>
+
 
           <button
             onClick={() => {
@@ -140,6 +171,7 @@ const Branch = () => {
           >
             Add Branch
           </button>
+          </div> 
         </div>
 
         {/* Desktop Table */}
@@ -151,13 +183,13 @@ const Branch = () => {
             <div>Actions</div>
           </div>
 
-          <div className="pb-20">
-            {branches.length === 0 ? (
+          <div className="pb-6">
+            {currentData.length === 0 ? (
               <div className="text-center py-6 text-gray-500">
                 No branches available.
               </div>
             ) : (
-              branches.map((branch) => (
+              currentData.map((branch) => (
                 <div
                   key={branch.id}
                   className="grid md:grid-cols-[1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
@@ -172,7 +204,6 @@ const Branch = () => {
                     >
                       <TbDotsVertical className="w-4 h-4" />
                     </button>
-
                     {activeDropdown === branch.id && (
                       <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10">
                         <button
@@ -198,7 +229,7 @@ const Branch = () => {
 
         {/* Mobile Cards */}
         <div className="grid grid-cols-1 gap-4 md:hidden">
-          {branches.map((branch) => (
+          {currentData.map((branch) => (
             <div
               key={branch.id}
               className="p-4 rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] shadow-sm relative"
@@ -218,28 +249,57 @@ const Branch = () => {
                 >
                   <TbDotsVertical className="w-5 h-5" />
                 </button>
-
                 {activeDropdown === branch.id && (
-                  <div className="absolute top-10 right-4 w-24 rounded-md shadow-md bg-white z-10">
-                    <button
-                      onClick={() => handleEdit(branch)}
-                      className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(branch.id)}
-                      className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                    <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => handleEdit(branch)}
+                    className="px-3 py-1 text-sm rounded-md bg-[#ef7e1b] text-white"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(branch.id)}
+                    className="px-3 py-1 text-sm rounded-md bg-gray-300 text-[#1F2837]"
+                  >
+                    Delete
+                  </button>
+                </div>
+                
                 )}
               </div>
               <div className="text-sm text-gray-600">ID: {branch.id}</div>
             </div>
           ))}
         </div>
+
+        {/* Pagination bottom */}
+        {branches.length > 0 && (
+          <div className="flex flex-col md:flex-row justify-between items-center mt-6">
+            <div className="text-sm text-gray-600 mb-3 md:mb-0">
+              Showing {indexOfFirst + 1} to{" "}
+              {Math.min(indexOfLast, branches.length)} of {branches.length} entries
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <span className="text-sm">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(currentPage + 1)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal */}
@@ -250,7 +310,6 @@ const Branch = () => {
             onClick={handleCancel}
           />
           <div className="w-11/12 max-w-[600px] max-h-[90vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-lg relative z-10">
-            {/* Close Button */}
             <button
               onClick={handleCancel}
               className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
@@ -285,7 +344,6 @@ const Branch = () => {
 
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 gap-6">
-                {/* Branch Code */}
                 <div className="space-y-2">
                   <label className="block text-[#4B5563] text-[16px] mb-2">
                     Branch Code
@@ -301,7 +359,6 @@ const Branch = () => {
                     required
                   />
 
-                  {/* Branch Name */}
                   <label className="block text-[#4B5563] text-[16px] mb-2">
                     Branch Name
                   </label>

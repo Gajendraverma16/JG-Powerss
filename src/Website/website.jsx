@@ -116,9 +116,6 @@ const slides = [
   },
 ];
 
-
-  
-
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
@@ -146,18 +143,19 @@ const slides = [
       <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
       
       {/* Navigation */}
-  <nav
-        className={`
-          z-50 w-full 
-          bg-white shadow-lg border-b border-gray-100 sticky top-0
-          md:bg-transparent md:shadow-none md:border-none md:absolute md:top-0
-        `}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
+   <nav
+    className={`
+    z-50 w-full 
+     shadow-lg border-b border-gray-100 sticky top-0
+    sm:bg-transparent sm:shadow-none sm:border-none sm:absolute sm:top-0
+    md:bg-transparent md:shadow-none md:border-none md:absolute md:top-0
+       `}
+>
+           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20t">
             
             {/* Logo */}
-            <div className="flex items-center">
+            <div className="flex items-center ">
               <img
                 style={{ height: "80px" }}
                 src={logo}
@@ -166,7 +164,7 @@ const slides = [
             </div>
 
             {/* Desktop Button */}
-             <div className="hidden md:flex items-center space-x-4">
+             <div className="hidden md:flex items-center space-x-4 ">
       <button
         type="button"
         onClick={() => navigate("/login")}
@@ -177,7 +175,7 @@ const slides = [
     </div>
 
             {/* Mobile Menu Button */}
-            <div className="md:hidden">
+            <div className="md:hidden bg-transparent">
          <button
                 type="button"
                  onClick={() => navigate("/login")}
@@ -208,10 +206,10 @@ const slides = [
         }}
       >
         <div className="absolute inset-0 bg-black/40"></div>
-        <div className="relative z-10 h-full flex items-center">
+        <div className="relative z-10 h-full flex items-center mt-20 ">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div className="max-w-3xl">
-              <h1 className="text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              <h1 className="text-5xl lg:text-6xl font-bold text-white  mb-6 leading-tight">
                 {slide.title}
               </h1>
               <h2 className="text-2xl lg:text-3xl text-white/90 mb-6 font-medium">
@@ -571,7 +569,7 @@ const slides = [
     </div>
 
     {/* Brought this div above image using higher z-index */}
-    <div className="absolute -bottom-8 -left-8 bg-white rounded-2xl shadow-xl p-6 border border-gray-100 z-20">
+    <div className="absolute bottom-8 left-8 bg-white rounded-2xl shadow-xl p-6 border border-gray-100 z-20">
       <div className="flex items-center space-x-4">
         <div className="w-12 h-12 bg-[#ef7e1b] rounded-xl flex items-center justify-center">
           <i className="ri-trophy-line text-white text-xl"></i>

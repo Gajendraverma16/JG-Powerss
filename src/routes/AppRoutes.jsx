@@ -30,7 +30,8 @@ import Branch from "@/pages/branch/Branch";
 import Routee from "@/pages/branch/Routee";
 import Area from "@/pages/branch/Area";
 import Village from "@/pages/branch/Village";
-import Villagees from "../pages/leads/Villagees";
+import Villagees from "@/pages/leads/Villagees";
+
 
 function PrivateRoute({ children, roles }) {
   const { user, loading, rolePermissions } = useAuth();
