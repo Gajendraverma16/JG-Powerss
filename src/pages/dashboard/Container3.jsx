@@ -1,11 +1,10 @@
 import React from "react";
 
-const Container1 = ({
+const Container3 = ({
   leads,
   gradient = "linear-gradient(45deg, white, #e6f4fb)",
   icon,
-  totalLeadsLabel = "Total Customers"
-  
+  totalLeadsLabel = "Assigned Villages",
 }) => {
   return (
     <div
@@ -58,4 +57,4 @@ const Container1 = ({
   );
 };
 
-export default Container1;
+export default Container3;

@@ -1,11 +1,13 @@
 import React from "react";
 
-const Container1 = ({
+const Container2 = ({
   leads,
+  newOrders,
+  returnOrders,
+  exchangeOrders,
   gradient = "linear-gradient(45deg, white, #e6f4fb)",
   icon,
-  totalLeadsLabel = "Total Customers"
-  
+  totalLeadsLabel = "Total Orders",
 }) => {
   return (
     <div
@@ -23,9 +25,9 @@ const Container1 = ({
         style={{ background: gradient }}
       >
         {/* Top Section */}
-        <div>
+        <div >
           <div className="flex justify-between">
-            <div>
+               <div>
               {leads !== undefined && leads !== null && (
                 <>
                   <div className="text-[#ef7e1b] text-[25px] font-extrabold font-quicksand">
@@ -38,24 +40,27 @@ const Container1 = ({
               )}
             </div>
 
-            {/* Icon */}
-            <div className="bg-[#3498DB33] rounded-full w-[60px] h-[60px] flex justify-center items-center -mt-1.5">
-              {icon && (
+       
+
+          {/* Icon */}
+          <div className="bg-[#3498DB33] rounded-full w-[60px] h-[60px] flex justify-center items-center -mt-1.5">
+            {icon && (
                 <span className="w-[30px] h-[30px] flex items-center justify-center text-[30px] text-[#ef7e1b]">
                   {icon}
                 </span>
               )}
-            </div>
           </div>
         </div>
-
-        {/* Bottom Empty Space */}
-        <div className="mt-4 text-[14px] font-semibold h-[20px] opacity-0">
-          Placeholder
+   </div>
+        {/* Bottom Row: New / Return / Exchange */}
+        <div className="flex justify-between mt-4 text-[14px] font-semibold">
+          <div className="text-[#ef7e1b]">New: {newOrders || 0}</div>
+          <div className="text-[#ef7e1b]">Return: {returnOrders || 0}</div>
+          <div className="text-[#ef7e1b]">Exchange: {exchangeOrders || 0}</div>
         </div>
       </div>
     </div>
   );
 };
 
-export default Container1;
+export default Container2;

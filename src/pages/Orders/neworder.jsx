@@ -5,6 +5,8 @@ import api from "../../api";
 import { useAuth } from "../../auth/AuthContext";
 import { FaPlus, FaMinus, FaTimes } from "react-icons/fa";
 
+
+
 /**
  * NewOrder - Create order for shop owners
  * Features:
@@ -523,10 +525,10 @@ const NewOrder = () => {
           );
         })()}
         <button
-          onClick={submitOrder}
+        
           className="bg-[#EF7E1B] text-white px-6 py-3 rounded-xl font-semibold text-lg"
         >
-          Create Order
+        Next
         </button>
       </div>
     </div>

@@ -11,52 +11,14 @@ import {
   BsFillPersonLinesFill,
   BsFillBuildingFill,
 } from "react-icons/bs";
-// import AvgLeads from "./AvgLeads";
-// import Quotation from "./Quotation";
 
 import api from "../../api";
 import { useAuth } from "../../auth/AuthContext";
 import { useNavigate } from "react-router-dom";
+import Container2 from "./Container2";
+import Container3 from "./Container3";
 
-const LEAD_STATUS_CARDS = [
-  // {
-  //   id: 2,
-  //   label: "Follow Ups",
-  //   icon: <BsCardChecklist />,
-  // },
-  // {
-  //   id: 3,
-  //   label: "Get Call Back Us",
-  //   icon: <BsFillTelephoneOutboundFill />,
-  // },
-  // {
-  //   id: 4,
-  //   label: "Contact In Future",
-  //   icon: <BsFillPersonCheckFill />,
-  // },
-  // {
-  //   id: 5,
-  //   label: "Next Day Payments",
-  //   icon: <BsFillClockFill />,
-  // },
-  // {
-  //   id: 6,
-  //   label: "Quote Send",
-  //   icon: <BsFillFileEarmarkTextFill />,
-  // },
-  // {
-  //   id: 7,
-  //   label: "Call Back",
-  //   icon: <BsFillReplyFill />,
-  // },
-  // {
-  //   id: 8,
-  //   label: "Construction",
-  //   icon: <BsFillBuildingFill />,
-  // },
-];
-
-
+const LEAD_STATUS_CARDS = [];
 
 const Dashboard = () => {
   const [leads, setLeads] = useState([]);
@@ -66,22 +28,19 @@ const Dashboard = () => {
   const [leadStatuses, setLeadStatuses] = useState([]);
   const [isItemsPerPageDropdownOpen, setIsItemsPerPageDropdownOpen] =
     useState(false);
-
-  // New: Ref for the items per page dropdown
   const itemsPerPageDropdownRef = useRef(null);
 
-  // New: State for lead counts by status
   const [leadCounts, setLeadCounts] = useState({});
-
-  // New: State for users and their today leads
   const [users, setUsers] = useState([]);
-  const [userTodayLeads, setUserTodayLeads] = useState({}); // for created today
-  const [userUpdatedLeads, setUserUpdatedLeads] = useState({}); // for updated today
+  const [userTodayLeads, setUserTodayLeads] = useState({});
+  const [userUpdatedLeads, setUserUpdatedLeads] = useState({});
 
-  
   const { user, rolePermissions } = useAuth();
   const navigate = useNavigate();
 
+ 
+
+  // Fetch Leads
   useEffect(() => {
     const fetchLeads = async () => {
       try {
@@ -91,14 +50,13 @@ const Dashboard = () => {
           setLeads(data.result);
         }
       } catch (error) {
-        // Optionally handle error
         console.error("Failed to fetch leads:", error);
       }
     };
     fetchLeads();
   }, []);
 
-  // Fetch all lead counts for the status cards
+  // Fetch Status counts
   useEffect(() => {
     const fetchLeadCounts = async () => {
       try {
@@ -117,179 +75,28 @@ const Dashboard = () => {
     fetchLeadCounts();
   }, []);
 
-  // Fetch all users and their todaycreated and todayupdated leads
+  // Fetch Lead Status Names
   useEffect(() => {
-    const fetchUsersAndTodayLeads = async () => {
+    const fetchLeadStatuses = async () => {
       try {
-        if (rolePermissions === "ALL") {
-          // Existing logic for ALL
-          const usersRes = await api.get("/allusers");
-          if (usersRes.data.success && Array.isArray(usersRes.data.result)) {
-            let filteredUsers = usersRes.data.result.filter(
-              (user) => user.role !== "admin"
-            );
-            const roleOrder = { sales_manager: 1, manager: 2, user: 3 };
-            filteredUsers.sort(
-              (a, b) => (roleOrder[a.role] || 99) - (roleOrder[b.role] || 99)
-            );
-            setUsers(filteredUsers);
+        const response = await api.get("/showleadstatus");
+        const data = response.data;
 
-            const todayLeadsResults = await Promise.all(
-              filteredUsers.map(async (user) => {
-                const created = await api
-                  .get(`/todaycreated/${user.id}`)
-                  .then((res) => res.data.total_leads || 0)
-                  .catch(() => 0);
-                const updated = await api
-                  .get(`/todayupdated/${user.id}`)
-                  .then((res) => res.data.total_leads || 0)
-                  .catch(() => 0);
-                return {
-                  id: user.id,
-                  name: user.name || user.username, // fallback to username
-                  role: user.role,
-                  today_leads: created,
-                  updated_leads: updated,
-                };
-              })
-            );
-            const todayLeadsMap = {};
-            const updatedLeadsMap = {};
-            todayLeadsResults.forEach((item) => {
-              todayLeadsMap[item.id] = {
-                today_leads: item.today_leads,
-                role: item.role,
-                name: item.name,
-              };
-              updatedLeadsMap[item.id] = {
-                updated_leads: item.updated_leads,
-              };
-            });
-            setUserTodayLeads(todayLeadsMap);
-            setUserUpdatedLeads(updatedLeadsMap);
-          }
-        } else if (user && user.id) {
-          // Only fetch for the current user
-          setUsers([user]);
-          const created = await api
-            .get(`/todaycreated/${user.id}`)
-            .then((res) => res.data.total_leads || 0)
-            .catch(() => 0);
-          const updated = await api
-            .get(`/todayupdated/${user.id}`)
-            .then((res) => res.data.total_leads || 0)
-            .catch(() => 0);
-
-          setUserTodayLeads({
-            [user.id]: {
-              today_leads: created,
-              role: user.role,
-              name: user.name || user.username, // fallback to username
-            },
-          });
-          setUserUpdatedLeads({
-            [user.id]: {
-              updated_leads: updated,
-            },
-          });
+        if (data.success && Array.isArray(data.data)) {
+          setLeadStatuses(data.data);
         }
-      } catch (err) {
-        console.error("Error fetching users/today Shop Owners:", err);
-      }
-    };
-    fetchUsersAndTodayLeads();
-  }, [rolePermissions, user]);
-
-
-  // Filtering and pagination logic
-  const filteredLeads = leads.filter((lead) => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    return (
-      (lead.customer_name && lead.customer_name.toLowerCase().includes(term)) ||
-      (lead.email && lead.email.toLowerCase().includes(term)) ||
-      (lead.contact && lead.contact.toLowerCase().includes(term))
-    );
-  });
-
-  const totalPages = Math.ceil(filteredLeads.length / itemsPerPage) || 1;
-  const currentLeads = filteredLeads.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const handlePreviousPage = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
-  const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
-  const handleItemsPerPageChange = (num) => {
-    setItemsPerPage(num);
-    setCurrentPage(1);
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        itemsPerPageDropdownRef.current &&
-        !itemsPerPageDropdownRef.current.contains(event.target)
-      ) {
-        setIsItemsPerPageDropdownOpen(false);
+      } catch (error) {
+        console.error("Failed to fetch leads:", error);
       }
     };
 
-    if (isItemsPerPageDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isItemsPerPageDropdownOpen]);
-
-  // Helper for date formatting
-  const formatDateTimeForTable = (dateString) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    if (isNaN(date)) return dateString;
-    return date.toLocaleString();
-  };
-
-  // Helper for role formatting
-  const formatRole = (role) => {
-    if (role === "sales_manager") return "Sales Manager";
-    if (role === "manager") return "Manager";
-    if (role === "user") return "User";
-    return role;
-  };
-  
-  //seperator
+    fetchLeadStatuses();
+  }, []);
 
   const [dashboardData, setDashboardData] = useState({});
   const [error, setError] = useState(null);
-  
 
- useEffect(() => {
-  const fetchLeadStatuses = async () => {
-    try {
-      const response = await api.get("/showleadstatus");
-      const data = response.data;
-
-      if (data.success && Array.isArray(data.data)) {
-        setLeadStatuses(data.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch leads:", error);
-    }
-  };
-
-  fetchLeadStatuses();
-}, []);
-
-
+  // Fetch Total Leads
   const fetchAllData = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -313,31 +120,54 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchAllData();
-  }, []); 
-  
-//  console.log(leadStatuses);
-  
+  }, []);
+
+
+const [dummy, setDummy] = useState({
+  villageCount: 45,
+  totalOrders: 120,
+
+  newOrders: 30,
+  returnOrders: 12,
+  exchangeOrders: 8,
+});
+
+
   
   return (
     <div className="box-border max-w-7xl w-full md:w-[95vw]  lg:max-w-[1180px] md:mx-auto px-2 sm:px-4 lg:px-0 overflow-x-hidden ">
       {/* Top Lead Status Cards */}
       <div className="flex flex-wrap justify-between md:justify-start gap-2 md:gap-7 sm:gap-4 mb-4 w-full lg:max-w-[85vw] custom-1322 custom-1400 ">
-        {/* Total Leads card at the very start */}
-        <Container1
-          leads={dashboardData?.leadsByStatus?.total_leads || 0}
-          icon={<BsFillPersonLinesFill />}
-          totalLeadsLabel="Total Shop Owners" 
-        />
-        {/* Render a Container1 for each status */}
-        {LEAD_STATUS_CARDS.map((status) => (
-          <Container1
-            key={status.id}
-            leads={leadCounts[status.id] || 0}
-            icon={status.icon}
-            totalLeadsLabel={status.label}
-          />
-        ))}
-      </div>
+
+  {/*  Total Shop Owners*/}
+  <Container1
+    leads={dashboardData?.leadsByStatus?.total_leads || 0}
+    icon={<BsFillPersonLinesFill />}
+    totalLeadsLabel="Total Shop Owners"
+  />
+
+  {/* CARD 2 → Village */}
+   {user.role !== "admin" && (
+  <Container3
+    leads={dummy.villageCount}
+    icon={<BsFillBuildingFill />}
+    totalLeadsLabel="Village"
+  />
+)}
+  {/* CARD 3 → Total Orders */}
+   {user.role !== "admin" && (
+  <Container2
+  leads={dummy.totalOrders}
+  icon={<BsCardChecklist />}
+  totalLeadsLabel="Total Orders"
+  newToday={dummy.newOrders}
+  returns={dummy.returnOrders}
+  exchanges={dummy.exchangeOrders}
+/>
+  )}
+</div>
+
+
 
       {/* User Activity Today Section */}
     <div>
