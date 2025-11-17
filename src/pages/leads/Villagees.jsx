@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useContext, useMemo } from "react";
 import api from "../../api";
 import Swal from "sweetalert2";
 import { SidebarContext } from "../../components/Layout";
+import { useAuth } from "../../auth/AuthContext";
 import "../../styles/scrollbar.css";
 
 const Villagees = () => {
@@ -16,12 +17,21 @@ const Villagees = () => {
   const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] = useState(false);
   const itemsPerPageDropdownRef = useRef(null);
  const { isCollapsed } = useContext(SidebarContext);
+const { user } = useAuth();
 const assigneeDropdownRef = useRef(null);
 
 const [users, setUsers] = useState([]);
 const [selectedAssignee, setSelectedAssignee] = useState("");
 const [assigneeSearchTerm, setAssigneeSearchTerm] = useState("");
 const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
+
+// Edit Shop Count Modal States
+const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+const [editingVillage, setEditingVillage] = useState(null);
+const [editTotalShops, setEditTotalShops] = useState(0);
+const [editActiveShops, setEditActiveShops] = useState(0);
+const [editInactiveShops, setEditInactiveShops] = useState(0);
+const [isUpdating, setIsUpdating] = useState(false);
 
 
 
@@ -61,6 +71,65 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
     } catch (err) {
       console.error("Error fetching users:", err);
       setUsers([]);
+    }
+  };
+
+  // ✅ Open Edit Modal
+  const handleOpenEditModal = (village) => {
+    setEditingVillage(village);
+    setEditTotalShops(village.total_shops || 0);
+    setEditActiveShops(village.active_shops || 0);
+    setEditInactiveShops(village.inactive_shops || 0);
+    setIsEditModalOpen(true);
+  };
+
+  // ✅ Update Shop Counts
+  const handleUpdateShopCounts = async () => {
+    if (!editingVillage) return;
+
+    try {
+      setIsUpdating(true);
+
+      // TODO: Replace with actual API endpoint when provided
+      const response = await api.post(`/villages/${editingVillage.id}/update-shop-counts`, {
+        total_shops: editTotalShops,
+        active_shops: editActiveShops,
+        inactive_shops: editInactiveShops,
+      });
+
+      // Update the village in the list
+      setVillages((prev) =>
+        prev.map((v) =>
+          v.id === editingVillage.id
+            ? {
+                ...v,
+                total_shops: editTotalShops,
+                active_shops: editActiveShops,
+                inactive_shops: editInactiveShops,
+              }
+            : v
+        )
+      );
+
+      Swal.fire({
+        icon: "success",
+        title: "Updated!",
+        text: "Shop counts updated successfully.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      setIsEditModalOpen(false);
+    } catch (err) {
+      console.error("Error updating shop counts:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: err.response?.data?.message || "Could not update shop counts.",
+        confirmButtonColor: "#ef7e1b",
+      });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -285,12 +354,12 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
         </div>
 
         {/* Bulk Edit */}
-        {selectedVillages.length > 0 && (
+        {selectedVillages.length > 0 && (user?.role === "admin" || user?.role === "superadmin") && (
           <button
             className="bg-[#ef7e1b] hover:bg-[#e86d00] text-white h-[44px] px-5 rounded-[8px]"
             onClick={() => setIsBulkAssignModalOpen(true)}
           >
-            Bulk Edit
+           Assigned Villages
           </button>
         )}
       </div>
@@ -313,16 +382,17 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
               </th>
               <th className="py-4 px-6 text-sm font-medium">Village ID</th>
               <th className="py-4 px-6 text-sm font-medium">Village Name</th>
+              <th className="py-4 px-6 text-sm font-medium">Assigned Member</th>
               <th className="py-4 px-6 text-sm font-medium">Total Shops</th>
               <th className="py-4 px-6 text-sm font-medium">Active Shops</th>
               <th className="py-4 px-6 text-sm font-medium">Inactive Shops</th>
-              <th className="py-4 px-6 text-sm font-medium">Assigned Member</th>
+              <th className="py-4 px-6 text-sm font-medium">Action</th>
             </tr>
           </thead>
           <tbody>
             {currentVillages.length === 0 ? (
               <tr>
-                <td colSpan="7" className="py-8 px-6 text-center text-[#4B5563]">
+                <td colSpan="8" className="py-8 px-6 text-center text-[#4B5563]">
                   {searchTerm ? "No Villages found." : "No Villages available."}
                 </td>
               </tr>
@@ -352,6 +422,23 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
                   </td>
                   <td className="py-4 px-6 text-sm text-[#4B5563]">
                     {village.user?.name || "Not Assigned"}
+                  </td>
+                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+                    {village.total_shops || 0}
+                  </td>
+                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+                    {village.active_shops || 0}
+                  </td>
+                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+                    {village.inactive_shops || 0}
+                  </td>
+                  <td className="py-4  text-sm">
+                    <button
+                      onClick={() => handleOpenEditModal(village)}
+                      className="bg-[#ef7e1b] hover:bg-[#e86d00] text-white px-3 py-1 rounded-md text-xs"
+                    >
+                      Edit Count
+                    </button>
                   </td>
                 </tr>
               ))
@@ -396,6 +483,12 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
                   {village.user?.name || "Not Assigned"}
                 </span>
               </p>
+              <button
+                onClick={() => handleOpenEditModal(village)}
+                className="mt-2 bg-[#ef7e1b] hover:bg-[#e86d00] text-white px-3 py-2 rounded-md text-xs"
+              >
+                Edit Count
+              </button>
             </div>
           </div>
         ))}
@@ -422,6 +515,78 @@ const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
             >
               &gt;
             </button>
+          </div>
+        </div>
+      )}
+
+
+
+      {/* Edit Shop Count Modal */}
+      {isEditModalOpen && editingVillage && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 px-3">
+          <div
+            className="absolute inset-0 bg-gray-50/10 backdrop-blur-sm"
+            onClick={() => setIsEditModalOpen(false)}
+          />
+          <div className="w-full max-w-[500px] p-6 rounded-2xl bg-gradient-to-br from-white to-[#E6F4FF] shadow-lg relative z-10">
+            <button
+              onClick={() => setIsEditModalOpen(false)}
+              className="absolute top-6 right-6 text-lg font-bold hover:text-[#ef7e1b]"
+            >
+              ✕
+            </button>
+            <h2 className="text-[24px] font-medium text-[#1F2837] mb-6 text-left">
+              Edit Shop Counts - {editingVillage.village_name}
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[#4B5563] text-[14px] mb-2">
+                  Total Shops:
+                </label>
+                <input
+                  type="number"
+                  value={editTotalShops}
+                  onChange={(e) => setEditTotalShops(parseInt(e.target.value) || 0)}
+                  className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                  min="0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#4B5563] text-[14px] mb-2">
+                  Active Shops:
+                </label>
+                <input
+                  type="number"
+                  value={editActiveShops}
+                  onChange={(e) => setEditActiveShops(parseInt(e.target.value) || 0)}
+                  className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                  min="0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#4B5563] text-[14px] mb-2">
+                  Inactive Shops:
+                </label>
+                <input
+                  type="number"
+                  value={editInactiveShops}
+                  onChange={(e) => setEditInactiveShops(parseInt(e.target.value) || 0)}
+                  className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                  min="0"
+                />
+              </div>
+
+              <button
+                onClick={handleUpdateShopCounts}
+                disabled={isUpdating}
+                className="w-full h-[44px] bg-[#ef7e1b] text-white rounded-[10px] transition-colors text-base font-medium shadow-sm hover:bg-[#e86d00] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUpdating ? "Updating..." : "Update Counts"}
+              </button>
+            </div>
           </div>
         </div>
       )}
