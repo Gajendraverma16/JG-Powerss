@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext, use } from "react";
+  import React, { useState, useEffect, useRef, useContext, use } from "react";
 import {
   FiChevronDown,
   FiEdit,
@@ -51,6 +51,7 @@ const TestOrder = () => {
     createdDateRange: "all", // New Created Date Range Filter
     updatedDateRange: "all", // New Updated At Date Range Filter
     contact:"all",
+    orderType: "all", // New order type filter (new/return/exchange)
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -114,7 +115,8 @@ const TestOrder = () => {
   const emailDropdownRef = useRef(null);
   const paymentDropdownRef = useRef(null);
   const itemCountDropdownRef = useRef(null);
-  const contactDropdownRef = useRef(null)
+  const contactDropdownRef = useRef(null);
+  const orderTypeDropdownRef = useRef(null);
   const [activeFilterDropdown, setActiveFilterDropdown] = useState(null);
   const itemsPerPageDropdownRef = useRef(null);
   const [isItemsPerPageDropdownOpen, setIsItemsPerPageDropdownOpen] =
@@ -432,6 +434,13 @@ switch (filters.contact) {
         matchesItemCount = true;
     }
 
+    // Order type filter logic
+    let matchesOrderType = true;
+    if (filters.orderType !== "all") {
+      const hasType = quotation.items?.some(item => item.type === filters.orderType);
+      matchesOrderType = hasType;
+    }
+
     return (
       matchesSearch &&
       matchesCustomerName &&
@@ -441,7 +450,8 @@ switch (filters.contact) {
       matchesItemCount &&
       matchesCreatedDate &&
       matchesUpdatedDate &&
-      matchesContact
+      matchesContact &&
+      matchesOrderType
     );
   });
 
@@ -846,6 +856,13 @@ const handleDelete = async (id) => {
       ) {
         setActiveFilterDropdown(null);
       }
+      if (
+        activeFilterDropdown === "orderType" &&
+        orderTypeDropdownRef.current &&
+        !orderTypeDropdownRef.current.contains(event.target)
+      ) {
+        setActiveFilterDropdown(null);
+      }
       // Pagination dropdown
       if (
         isItemsPerPageDropdownOpen &&
@@ -867,6 +884,21 @@ const handleDelete = async (id) => {
     );
   }
 
+  // Calculate order type counts
+  const orderTypeCounts = {
+    new: 0,
+    return: 0,
+    exchange: 0,
+  };
+
+  quotations.forEach((order) => {
+    order.items?.forEach((item) => {
+      if (item.type === 'new') orderTypeCounts.new++;
+      if (item.type === 'return') orderTypeCounts.return++;
+      if (item.type === 'exchange') orderTypeCounts.exchange++;
+    });
+  });
+
   return (
     <div
       className={`min-h-[797px] p-4 md:p-6 relative bg-gradient-to-br from-white to-[#E7F4FF] rounded-[10px] shadow-[2px_2px_6px_rgba(24,95,235,0.1)] flex flex-col w-full   ${
@@ -874,7 +906,7 @@ const handleDelete = async (id) => {
       } md:mx-auto`}
     >
       {/* Header Section */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
         {/* Title */}
         <h1 className="text-[20px] md:text-[22px] font-medium text-[#1F2837] whitespace-nowrap">
           {dynamicHeaderTitle}
@@ -1023,8 +1055,127 @@ const handleDelete = async (id) => {
           </div>
         </div>
       </div>
+
+      {/* Order Type Counts Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+        {/* New Orders Count */}
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-green-600 font-medium uppercase tracking-wide">New Orders</p>
+              <p className="text-2xl font-bold text-green-700 mt-1">
+                {orderTypeCounts.new}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center">
+              <span className="text-2xl">🆕</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Return Orders Count */}
+        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-4 border border-red-200 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-red-600 font-medium uppercase tracking-wide">Return Orders</p>
+              <p className="text-2xl font-bold text-red-700 mt-1">
+                {orderTypeCounts.return}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-red-200 rounded-full flex items-center justify-center">
+              <span className="text-2xl">↩️</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Exchange Orders Count */}
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Exchange Orders</p>
+              <p className="text-2xl font-bold text-blue-700 mt-1">
+                {orderTypeCounts.exchange}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
+              <span className="text-2xl">🔄</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Filter Section */}
-      <div className="grid grid-cols-1 gap-3 mb-2 md:grid-cols-2 lg:grid-cols-4 md:gap-6 w-full">
+      <div className="grid grid-cols-1 gap-3 mb-2 md:grid-cols-2 lg:grid-cols-5 md:gap-6 w-full">
+        {/* Order Type Dropdown */}
+        <div className="relative" ref={orderTypeDropdownRef}>
+          <button
+            type="button"
+            className="relative appearance-none h-[36px] md:h-[44px] lg:h-[44px] pl-2 pr-10 md:pr-15 lg:pr-15 w-full md:min-w-[140px] lg:min-w-[140px] bg-white border border-[#E9EAEA] rounded-[8px] cursor-pointer text-[#242729] text-[8px] md:text-base lg:text-sm focus:outline-none flex items-center"
+            onClick={() =>
+              setActiveFilterDropdown(
+                activeFilterDropdown === "orderType" ? null : "orderType"
+              )
+            }
+          >
+            <span className="truncate text-left flex-1">
+              {filters.orderType === "all"
+                ? "All Order Types"
+                : {
+                    new: "🆕 New Orders",
+                    return: "↩️ Return Orders",
+                    exchange: "🔄 Exchange Orders",
+                  }[filters.orderType]}
+            </span>
+            {filters.orderType !== "all" && (
+              <button
+                type="button"
+                className="absolute right-7 top-1/2 -translate-y-1/2 text-gray-300 hover:text-red-500 text-lg font-bold focus:outline-none"
+                style={{ padding: 0, lineHeight: 1 }}
+                tabIndex={-1}
+                title="Clear filter"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFilterChange("orderType", "all");
+                }}
+              >
+                <RxCross2 />
+              </button>
+            )}
+            <img
+              src="/caret-down.svg"
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute right-2 md:right-3 lg:right-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            />
+          </button>
+          {activeFilterDropdown === "orderType" && (
+            <div className="absolute top-full left-0 w-full mt-1 bg-white rounded-[12px] shadow-lg border border-gray-200 z-50 max-h-[200px] overflow-y-auto custom-scrollbar">
+              {[
+                { value: "all", label: "All Order Types" },
+                { value: "new", label: "🆕 New Orders" },
+                { value: "return", label: "↩️ Return Orders" },
+                { value: "exchange", label: "🔄 Exchange Orders" },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    handleFilterChange("orderType", option.value);
+                    setActiveFilterDropdown(null);
+                  }}
+                  className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-[#545454] cursor-pointer ${
+                    filters.orderType === option.value
+                      ? "bg-[#E7EFF8] text-[#ef7e1b] font-bold"
+                      : ""
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Customer Name Dropdown */}
         <div className="relative" ref={customerNameDropdownRef}>
           <button
@@ -1792,19 +1943,51 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
             {order?.shop_owner?.contact_number || "No contact"}
           </td>
 
-          {/* ✅ Total Value + Items Count */}
+          {/* ✅ Total Value + Items Count with Order Types */}
           <td className="py-4 px-3 text-sm text-[#4B5563]">
             <div
-              className="inline-flex items-center gap-2 bg-Duskwood-50 px-3 py-1.5 rounded-full hover:bg-Duskwood-100 transition-colors cursor-pointer"
+              className="inline-flex flex-col gap-1.5 cursor-pointer"
               onClick={(e) => handleShowItems(order.items, e)}
             >
-              <span className="font-medium text-[#1F2837] whitespace-nowrap">
-                Rs {parseFloat(order.total_value || 0).toFixed(2)}
-              </span>
-              <div className="h-3.5 w-[1px] bg-Duskwood-200 "></div>
-              <span className="text-xs text-Duskwood-600 whitespace-nowrap">
-                {order?.items?.length || 0} items
-              </span>
+              {/* Total and Items Count */}
+              <div className="inline-flex items-center gap-2 bg-Duskwood-50 px-3 py-1.5 rounded-full hover:bg-Duskwood-100 transition-colors">
+                <span className="font-medium text-[#1F2837] whitespace-nowrap">
+                  Rs {parseFloat(order.total_value || 0).toFixed(2)}
+                </span>
+                <div className="h-3.5 w-[1px] bg-Duskwood-200"></div>
+                <span className="text-xs text-Duskwood-600 whitespace-nowrap">
+                  {order?.items?.length || 0} items
+                </span>
+              </div>
+              
+              {/* Order Type Counts */}
+              <div className="flex items-center gap-1.5 text-[10px] font-medium">
+                {(() => {
+                  const newCount = order?.items?.filter(item => item.type === 'new')?.length || 0;
+                  const returnCount = order?.items?.filter(item => item.type === 'return')?.length || 0;
+                  const exchangeCount = order?.items?.filter(item => item.type === 'exchange')?.length || 0;
+                  
+                  return (
+                    <>
+                      {newCount > 0 && (
+                        <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                          N: {newCount}
+                        </span>
+                      )}
+                      {returnCount > 0 && (
+                        <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full">
+                          R: {returnCount}
+                        </span>
+                      )}
+                      {exchangeCount > 0 && (
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+                          E: {exchangeCount}
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
             </div>
           </td>
 
@@ -2058,7 +2241,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
             </div>
           </div>
 
-          {/* Total */}
+          {/* Total with Order Type Counts */}
           <div
             className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer"
             onClick={(e) => handleShowItems(order?.items, e)}
@@ -2078,7 +2261,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                 />
               </svg>
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-[10px] text-gray-500 uppercase font-medium tracking-wide">
                 Total
               </p>
@@ -2088,6 +2271,35 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                   ({order?.items?.length || 0} items)
                 </span>
               </p>
+              
+              {/* Order Type Counts for Mobile */}
+              <div className="flex items-center gap-1.5 mt-1.5">
+                {(() => {
+                  const newCount = order?.items?.filter(item => item.type === 'new')?.length || 0;
+                  const returnCount = order?.items?.filter(item => item.type === 'return')?.length || 0;
+                  const exchangeCount = order?.items?.filter(item => item.type === 'exchange')?.length || 0;
+                  
+                  return (
+                    <>
+                      {newCount > 0 && (
+                        <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[9px] font-medium">
+                          New: {newCount}
+                        </span>
+                      )}
+                      {returnCount > 0 && (
+                        <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-[9px] font-medium">
+                          Return: {returnCount}
+                        </span>
+                      )}
+                      {exchangeCount > 0 && (
+                        <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[9px] font-medium">
+                          Exchange: {exchangeCount}
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
             </div>
           </div>
 
@@ -2285,16 +2497,75 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
             </button>
 
             {/* Modal title */}
-            <h2 className="text-[24px] sm:text-[29px] font-medium text-[#1F2837] mb-8">
+            <h2 className="text-[24px] sm:text-[29px] font-medium text-[#1F2837] mb-4">
               Items Details
             </h2>
            
+            {/* Order Type Summary Cards */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              {/* New Orders Count */}
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-green-600 font-medium uppercase tracking-wide">New Orders</p>
+                    <p className="text-2xl font-bold text-green-700 mt-1">
+                      {selectedItems?.filter(item => item.type === 'new')?.length || 0}
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Return Orders Count */}
+              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 border border-red-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-red-600 font-medium uppercase tracking-wide">Return Orders</p>
+                    <p className="text-2xl font-bold text-red-700 mt-1">
+                      {selectedItems?.filter(item => item.type === 'return')?.length || 0}
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-red-200 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Exchange Orders Count */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Exchange Orders</p>
+                    <p className="text-2xl font-bold text-blue-700 mt-1">
+                      {selectedItems?.filter(item => item.type === 'exchange')?.length || 0}
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
           
             {/* Items Table */}
             <div className=" rounded-[12px] overflow-hidden">
               <table className="min-w-full divide-y divide-[#E5E7EB]">
                 <thead className="">
                   <tr>
+                    <th
+                      scope="col"
+                      className="px-6 py-4 text-left text-sm font-medium text-[#4B5563] uppercase tracking-wider"
+                    >
+                      Order Type
+                    </th>
                     <th
                       scope="col"
                       className="px-6 py-4 text-left text-sm font-medium text-[#4B5563] uppercase tracking-wider"
@@ -2323,8 +2594,23 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                 </thead>
                 <tbody className=" divide-y divide-[#E5E7EB]">
                   {selectedItems?.map((item, index) => (
-                     console.log(selectedItems,"hello farhan"),
                     <tr key={index} className="">
+                      {/* Order Type Badge */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={`
+                          inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                          ${item.type === 'new' ? 'bg-green-100 text-green-700 border border-green-200' : ''}
+                          ${item.type === 'return' ? 'bg-red-100 text-red-700 border border-red-200' : ''}
+                          ${item.type === 'exchange' ? 'bg-blue-100 text-blue-700 border border-blue-200' : ''}
+                          ${!item.type ? 'bg-gray-100 text-gray-700 border border-gray-200' : ''}
+                        `}>
+                          {item.type === 'new' && '🆕 New'}
+                          {item.type === 'return' && '↩️ Return'}
+                          {item.type === 'exchange' && '🔄 Exchange'}
+                          {!item.type && 'N/A'}
+                        </span>
+                      </td>
+                      
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[#545454]">
                         {item.title}
                       </td>
@@ -2336,9 +2622,6 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[#545454]">
                         Rs {parseFloat(item.points).toFixed(2)}
-                      </td>
-                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[#545454]">
-                        {item.customerName}
                       </td>
                     </tr>
                   ))}

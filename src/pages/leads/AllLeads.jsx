@@ -611,15 +611,23 @@ useEffect(() => {
   const fetchUsers = async () => {
     try {
       const response = await api.get("/userlist");
-      if (response.data.success) {
-        // Filter users where is_approved is true
-        const approvedUsers = response.data.result.filter(
-          (user) => user.is_approved
-        );
-        setUsers(approvedUsers);
+      if (response.data.success && response.data.result) {
+        // Check if result is an array before filtering
+        if (Array.isArray(response.data.result)) {
+          // Filter users where is_approved is true
+          const approvedUsers = response.data.result.filter(
+            (user) => user.is_approved
+          );
+          setUsers(approvedUsers);
+        } else {
+          // If result is not an array, try to use it directly or set empty array
+          setUsers([]);
+        }
+      } else {
+        setUsers([]);
       }
     } catch (err) {
-      console.error("Error fetching users:", err);
+      setUsers([]);
     }
   };
 
@@ -973,9 +981,16 @@ useEffect(() => {
         let parsedAddress = null;
         if (lead.city && typeof lead.city === "string") {
           try {
-            parsedAddress = JSON.parse(lead.city);
+            // Only try to parse if it looks like JSON (starts with { or [)
+            if (lead.city.trim().startsWith('{') || lead.city.trim().startsWith('[')) {
+              parsedAddress = JSON.parse(lead.city);
+            } else {
+              // If it's just a plain string, treat it as city name
+              parsedAddress = { city: lead.city };
+            }
           } catch (e) {
-            console.error("Error parsing address JSON:", e);
+            // If parsing fails, treat it as a plain city name
+            parsedAddress = { city: lead.city };
           }
         } else if (lead.city && typeof lead.city === "object") {
           // If for some reason it's already an object (e.g., from an older API response or direct setting)
@@ -4657,15 +4672,18 @@ useEffect(() => {
                     <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {(() => {
                         let parsedAddress = null;
-                        if (
-                          lead.city &&
-                          typeof lead.city === "string" &&
-                          lead.city.trim().startsWith("{")
-                        ) {
+                        if (lead.city && typeof lead.city === "string") {
                           try {
-                            parsedAddress = JSON.parse(lead.city);
+                            // Only try to parse if it looks like JSON
+                            if (lead.city.trim().startsWith('{') || lead.city.trim().startsWith('[')) {
+                              parsedAddress = JSON.parse(lead.city);
+                            } else {
+                              // If it's just a plain string, treat it as city name
+                              parsedAddress = { city: lead.city };
+                            }
                           } catch (e) {
-                            // ignore
+                            // If parsing fails, treat it as a plain city name
+                            parsedAddress = { city: lead.city };
                           }
                         } else if (lead.city && typeof lead.city === "object") {
                           parsedAddress = lead.city;

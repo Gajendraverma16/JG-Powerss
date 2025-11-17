@@ -72,7 +72,7 @@ const initialMenu = [
     // ],
      children: [
       { label: "All Orders", path: "/Order/testorder" },
-      //  { label: "Create Orders", path: "/Order/new" },
+       { label: "Create Orders", path: "/Order/new" },
     ],
   },
   // {
@@ -134,7 +134,7 @@ const initialMenu = [
       </div>
     ),
     children: [
-      { label: "Roles", path: "/settings/roles" },
+      // { label: "Roles", path: "/settings/roles" },
       { label: "Create New Member", path: "/settings/users" },
       { label: "Organization Info", path: "/settings/org" },
       { label: "Update Profile", path: "/settings/update-profile" },
@@ -182,8 +182,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // console.log("user", user);
-  // console.log("rolePermissions", rolePermissions);
+
 
   useEffect(() => {
     if (user?.profile_pic) {
@@ -217,7 +216,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile }) {
               status.status_name
             )}`,
           }));
-          // console.log(item.children);
+
           const staticChildren = item.children.filter(
             (child) => child.label === "All Shop Owners"
           );
@@ -248,10 +247,23 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMobile, isMobileMenuOpen]);
 
+  // Helper: Check if user role matches salesman (handles spaces and variations)
+  function isSalesmanRole(userRole) {
+    if (!userRole) return false;
+    const normalized = userRole.toLowerCase().replace(/\s+/g, '');
+    return normalized === "salesman" || normalized === "salesmen" || normalized === "sales";
+  }
+
   // Helper: Check if user has "view" permission for a module
   function hasViewPermission(moduleLabel) {
     if (rolePermissions === "ALL") return true;
     if (!Array.isArray(rolePermissions)) return false;
+    
+    // TEMPORARY FIX: Always show Shop Owners/Leads for salesman role (handle all variations)
+    if (isSalesmanRole(user?.role) && moduleLabel === "Leads") {
+      return true;
+    }
+    
     // Only check for objects, skip string entries like "noBulkAssign"
     return rolePermissions.some(
       (perm) =>
@@ -267,6 +279,12 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile }) {
   function hasCreatePermission(moduleLabel) {
     if (rolePermissions === "ALL") return true;
     if (!Array.isArray(rolePermissions)) return false;
+    
+    // TEMPORARY FIX: Allow create for salesman on Leads module
+    if (isSalesmanRole(user?.role) && moduleLabel === "Leads") {
+      return true;
+    }
+    
     return rolePermissions.some(
       (perm) =>
         perm &&
