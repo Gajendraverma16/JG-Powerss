@@ -1,22 +1,25 @@
 import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
-import Container1 from "./Container1";
+
 import {
-  BsCardChecklist,
-  BsFillTelephoneOutboundFill,
-  BsFillPersonCheckFill,
-  BsFillClockFill,
-  BsFillFileEarmarkTextFill,
-  BsFillReplyFill,
-  BsFillPersonLinesFill,
-  BsFillBuildingFill,
+   BsBarChartFill,
+   BsFillPersonLinesFill,
+   BsMapFill ,
+   BsAwardFill ,
+   BsBagFill,
+   BsLightningChargeFill
 } from "react-icons/bs";
 
 import api from "../../api";
 import { useAuth } from "../../auth/AuthContext";
 import { useNavigate } from "react-router-dom";
-import Container2 from "./Container2";
-import Container3 from "./Container3";
+import TopProductSale from "./TopProductSale";
+import ContainerShopOwner from "./ContainerShopOwner";
+import ContainerVillages from "./ContainerVillages";
+import ContainerOrders from "./ContainerOrders";
+import ContainerPoints from "./ContainerPoints";
+import ContainerActions from "./ContainerActions";
+import AreaChart from "./AreaChart";
+
 
 const LEAD_STATUS_CARDS = [];
 
@@ -122,52 +125,140 @@ const Dashboard = () => {
     fetchAllData();
   }, []);
 
-
+// Dummy Data
 const [dummy, setDummy] = useState({
   villageCount: 45,
   totalOrders: 120,
-
+  totalPointes: 300,
   newOrders: 30,
   returnOrders: 12,
   exchangeOrders: 8,
 });
 
+const [villageAPI, setVillageAPI] = useState(null);
+const [ordersAPI, setOrdersAPI] = useState(null);
+const [pointsAPI, setPointsAPI] = useState(null);
 
+
+
+useEffect(() => {
+  fetchDashboard();
+}, []);
+
+const fetchDashboard = async () => {
+  try {
+    const res = await axios.get("YOUR_API_URL");
+     setVillageAPI(res.data?.villageCount);
+    setOrdersAPI(res.data?.totalOrders);
+    setPointsAPI(res.data?.totalPointes);
+
+  } catch (e) {
+    setVillageAPI(null);
+    setOrdersAPI(null);
+    setPointsAPI(null);
+  }
+};
+
+
+// const [apiData, setApiData] = useState(null);
+
+// useEffect(() => {
+//   fetchData();
+// }, []);
+
+// const fetchData = async () => {
+//   try {
+//       const res = await api.get("/");
+
+//     if (res.data) {
+//       setApiData(res.data);
+//     } else {
+//       setApiData(null); // so dummy will show
+//     }
+//   } catch (error) {
+//     setApiData(null); // API fail → dummy
+//   }
+// };
   
-  return (
-    <div className="box-border max-w-7xl w-full md:w-[95vw]  lg:max-w-[1180px] md:mx-auto px-2 sm:px-4 lg:px-0 overflow-x-hidden ">
-      {/* Top Lead Status Cards */}
-      <div className="flex flex-wrap justify-between md:justify-start gap-2 md:gap-7 sm:gap-4 mb-4 w-full lg:max-w-[85vw] custom-1322 custom-1400 ">
+//  useEffect(() => {
+//   fetchDashboard();
+// }, []);
 
-  {/*  Total Shop Owners*/}
-  <Container1
-    leads={dashboardData?.leadsByStatus?.total_leads || 0}
+// const fetchDashboard = async () => {
+//   try {
+//      const res = await api.get("/");
+
+//     if (res.data) {
+//       setApiData(res.data); // API SUCCESS
+//     } else {
+//       setApiData(null);     // API EMPTY → Dummy
+//     }
+//   } catch (error) {
+//     setApiData(null);       // API FAIL → Dummy
+//   }
+// };
+
+  return (
+  
+  <div className="box-border max-w-7xl w-full md:w-[95vw] lg:max-w-[1180px] mx-auto px-2 sm:px-4 lg:px-0 overflow-x-hidden">
+  <div className="flex flex-wrap justify-start gap-2 md:gap-7 sm:gap-4 w-full"> 
+  <ContainerShopOwner 
+     leads={dashboardData?.leadsByStatus?.total_leads || 0}
     icon={<BsFillPersonLinesFill />}
     totalLeadsLabel="Total Shop Owners"
+    /> 
+  {user.role !== "admin" && (
+  <ContainerVillages
+    leads={villageAPI ?? dummy.villageCount}
+    icon={<BsMapFill />}
+    totalLeadsLabel="Assigned Village"
   />
-
-  {/* CARD 2 → Village */}
-   {user.role !== "admin" && (
-  <Container3
-    leads={dummy.villageCount}
-    icon={<BsFillBuildingFill />}
-    totalLeadsLabel="Village"
-  />
-)}
-  {/* CARD 3 → Total Orders */}
-   {user.role !== "admin" && (
-  <Container2
-  leads={dummy.totalOrders}
-  icon={<BsCardChecklist />}
-  totalLeadsLabel="Total Orders"
-  newToday={dummy.newOrders}
-  returns={dummy.returnOrders}
-  exchanges={dummy.exchangeOrders}
-/>
   )}
+
+  {user.role !== "admin" && (
+  <ContainerOrders
+    leads={ordersAPI ?? dummy.totalOrders}
+     icon={<BsBagFill />}
+    totalLeadsLabel="Total Orders"
+    newToday={ordersAPI?.newOrders ?? dummy.newOrders}
+    returns={ordersAPI?.returnOrders ?? dummy.returnOrders}
+    exchanges={ordersAPI?.exchangeOrders ?? dummy.exchangeOrders}
+  />
+ )}
+ </div>
+
+<div className="flex flex-wrap justify-start gap-2 md:gap-7 sm:gap-4 w-full mt-10">
+  {user.role !== "admin" && (
+  <ContainerPoints 
+    leads={pointsAPI ?? dummy.totalPointes}
+     icon={<BsAwardFill />}
+    totalLeadsLabel="Total Points"
+  />
+ )}
+
+  {user.role !== "admin" && (
+     <TopProductSale 
+     icon={<BsBarChartFill/>}
+     />
+    )}
+
+  {user.role !== "admin" && (
+   <ContainerActions
+    icon={<BsLightningChargeFill />}
+    />
+    )}
 </div>
 
 
+ {user.role !== "admin" && (
+ <div className="flex mt-10">
+ <AreaChart />
+ </div>
+ )}
+
+  {/* RIGHT SIDE — Donut chart */}
+  <div className="w-[30%] flex justify-center">
+    </div>
 
       {/* User Activity Today Section */}
     <div>
@@ -184,7 +275,7 @@ const [dummy, setDummy] = useState({
 //      state: { assignedTo: user.id, updatedBy: user.id },
 //   })
 // }
-                  
+            
 //                 >
 //                   {/* Avatar */}
 //                   {/* <div className="w-8 h-8 rounded-full bg-[#e3e9f7] flex items-center justify-center text-sm font-semibold text-[#ef7e1b] mb-2 shadow-sm border border-[#d1e3fa]">
