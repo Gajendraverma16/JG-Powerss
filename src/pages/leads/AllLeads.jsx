@@ -3659,7 +3659,7 @@ useEffect(() => {
             </button>
           )}
 
-          {hasBulkAssignPermission &&
+          {/* {hasBulkAssignPermission &&
             selectedLeads.length > 0 &&
             permissionsForLeadsModule.includes("edit") && (
               <button
@@ -3668,7 +3668,7 @@ useEffect(() => {
               >
                 Bulk Edit
               </button>
-            )}
+            )} */}
           {hasBulkAssignPermission &&
             selectedLeads.length > 0 &&
             permissionsForLeadsModule.includes("delete") && (
@@ -4579,13 +4579,17 @@ useEffect(() => {
               </th>
               <th className="py-4 px-6 font-medium text-sm">Email</th>
               <th className="py-4 px-6 font-medium text-sm">Contact</th>
-              <th className="py-4 px-6 font-medium text-sm">City</th>
+                   <th className="py-4 px-6 font-medium text-sm">Village Name</th>
+               <th className="py-4 px-6 font-medium text-sm whitespace-nowrap">
+                 Village Assigned
+              </th>
+              {/* <th className="py-4 px-6 font-medium text-sm">City</th> */}
               <th className="py-4 px-6 font-medium text-sm">WhatsApp</th>
               <th className="py-4 px-6 font-medium text-sm">Shop Name</th>
               {/* <th className="py-4 px-6 font-medium text-sm">Categories</th> */}
-              <th className="py-4 px-6 font-medium text-sm whitespace-nowrap">
+              {/* <th className="py-4 px-6 font-medium text-sm whitespace-nowrap">
                 Assigned Member
-              </th>
+              </th> */}
               {rolePermissions === "ALL" && (
                 <th className="py-4 px-6 font-medium text-sm">Created</th>
               )}
@@ -4669,7 +4673,13 @@ useEffect(() => {
                     <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {lead.contact}
                     </td>
-                    <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
+                     <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
+                      {lead.village_name}
+                    </td>
+                     <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
+                      {lead.village_assigned_member}
+                    </td>
+                    {/* <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {(() => {
                         let parsedAddress = null;
                         if (lead.city && typeof lead.city === "string") {
@@ -4706,7 +4716,7 @@ useEffect(() => {
                           return lead.city;
                         }
                       })()}
-                    </td>
+                    </td> */}
                     <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {lead.whatsapp_number}
                     </td>
@@ -4755,9 +4765,9 @@ useEffect(() => {
                       </div>
                     </td> */}
                 
-                    <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
+                    {/* <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {lead.assigned_to}
-                    </td>
+                    </td> */}
                     {rolePermissions === "ALL" && (
                       <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                         {formatDateTimeForTable(lead.created)}
@@ -4922,7 +4932,7 @@ useEffect(() => {
         </table>
       </div>
 
-      {/* Lead List Cards for Mobile */}
+      {/* Lead List Cards for    */}
       <div className="md:hidden w-full space-y-6 pb-24 flex-grow overflow-x-auto">
         {currentLeads.length === 0 ? (
           <div className="py-12 px-6 text-center">
@@ -5250,7 +5260,7 @@ useEffect(() => {
 
                   {/* Assigned To & Follow Up Row */}
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
+                    {/* <div className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
                       <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
                         <svg
                           className="w-3 h-3 text-gray-600"
@@ -5274,7 +5284,7 @@ useEffect(() => {
                           {lead.assigned_to}
                         </p>
                       </div>
-                    </div>
+                    </div> */}
 
                     <div className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
                       <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
@@ -5606,7 +5616,7 @@ useEffect(() => {
             </div>
 
             {/* Assign To (Admin Only) */}
-            {user?.role === "admin" && (
+            {/* {user?.role === "admin" && (
               <div className="space-y-2 md:col-span-2">
                 <label className="block text-[#4B5563] text-[16px] mb-2">
                   Assign To
@@ -5627,7 +5637,7 @@ useEffect(() => {
                   ))}
                 </select>
               </div>
-            )}
+            )} */}
 
             {/* Address Section */}
             <div className="space-y-1 md:col-span-2">
@@ -6131,7 +6141,7 @@ useEffect(() => {
                   
 
                   {/* Assign To */}
-                  {user?.role === "admin" && (
+                  {/* {user?.role === "admin" && (
                     <div className="space-y-2 md:col-span-2 md:row-start-5">
                       <label className="block text-[#4B5563] text-[16px] mb-2">
                         Assign To
@@ -6189,7 +6199,7 @@ useEffect(() => {
                         )}
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                   {/* Message */}
                   <div className="space-y-2 md:col-start-1 md:col-span-2 md:row-start-6">

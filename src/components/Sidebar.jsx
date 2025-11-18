@@ -117,7 +117,7 @@ const initialMenu = [
        { label: "Create Branch", path: "/branch" }, 
         { label: "Create Route", path: "/routee" },      
        { label: "Create Area", path: "/area" },
-       { label: "Create Village", path: "/village" },
+       { label: "Create Villages", path: "/village" },
 
     ],
      

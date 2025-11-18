@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { TbDotsVertical } from "react-icons/tb";
+import { TbDotsVertical, TbSearch } from "react-icons/tb";
 import Swal from "sweetalert2";
 import api from "../../api";
 
@@ -20,6 +20,9 @@ const Routee = ({ branchId = null }) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch routes
   const fetchRoutes = useCallback(async () => {
@@ -132,11 +135,25 @@ const Routee = ({ branchId = null }) => {
     setActiveDropdown((prev) => (prev === id ? null : id));
   };
 
-   // Pagination logic
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
+  };
+
+  // Search filter
+  const filteredRoutes = routes.filter((route) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      route.route_name?.toLowerCase().includes(query) ||
+      getBranchName(route.branch_id)?.toLowerCase().includes(query)
+    );
+  });
+
+  // Pagination logic
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
-  const currentData = routes.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(routes.length / rowsPerPage);
+  const currentData = filteredRoutes.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredRoutes.length / rowsPerPage);
 
   
 
@@ -160,7 +177,20 @@ const Routee = ({ branchId = null }) => {
             </span>
           </h1>
 
-           <div className="flex items-center gap-2">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+            {/* Search Bar */}
+            <div className="relative">
+              <TbSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search routes..."
+                className="h-[44px] pl-10 pr-4 rounded-[10px] border border-gray-300 bg-white focus:ring-2 focus:ring-[#0e4053] outline-none text-sm"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
           {/* Pagination Top */}
           <div className="flex items-center gap-2">
             <label className="text-sm text-[#4B5563]">Show</label>
@@ -179,17 +209,18 @@ const Routee = ({ branchId = null }) => {
         
           </div>
 
-          <button
-            onClick={() => {
-              setIsModalOpen(true);
-              setIsEditing(false);
-              setFormData({ branch_id: "", route_name: "" });
-            }}
-          className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
-          >
-            Add Route
-          </button>
-        </div>
+              <button
+                onClick={() => {
+                  setIsModalOpen(true);
+                  setIsEditing(false);
+                  setFormData({ branch_id: "", route_name: "" });
+                }}
+                className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
+              >
+                Add Route
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Desktop Table */}
@@ -202,9 +233,13 @@ const Routee = ({ branchId = null }) => {
           </div>
 
           <div className="pb-6">
-            {currentData.length === 0 ? (
+            {routes.length === 0 ? (
               <div className="text-center py-6 text-gray-500">
                 No routes available.
+              </div>
+            ) : filteredRoutes.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
+                No routes found matching "{searchQuery}"
               </div>
             ) : (
               currentData.map((route) => (
@@ -293,11 +328,12 @@ const Routee = ({ branchId = null }) => {
         </div>
 
         {/* Bottom Pagination */}
-        {routes.length > 0 && (
+        {filteredRoutes.length > 0 && (
           <div className="flex flex-col md:flex-row justify-between items-center mt-6">
             <div className="text-sm text-gray-600 mb-3 md:mb-0">
               Showing {indexOfFirst + 1} to{" "}
-              {Math.min(indexOfLast, routes.length)} of {routes.length} entries
+              {Math.min(indexOfLast, filteredRoutes.length)} of {filteredRoutes.length} entries
+              {searchQuery && ` (filtered from ${routes.length} total)`}
             </div>
             <div className="flex items-center gap-2">
               <button

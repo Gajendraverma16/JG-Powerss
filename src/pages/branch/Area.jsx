@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { TbDotsVertical } from "react-icons/tb";
+import { TbDotsVertical, TbSearch } from "react-icons/tb";
 import Swal from "sweetalert2";
 import api from "../../api";
 
@@ -18,6 +18,9 @@ const Area = () => {
   // pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [formData, setFormData] = useState({
     branch_id: "",
@@ -78,12 +81,7 @@ const Area = () => {
     }
   }, [formData.branch_id, routes]);
 
-  // Pagination logic
-  const indexOfLast = currentPage * rowsPerPage;
-  const indexOfFirst = indexOfLast - rowsPerPage;
-  const currentData = areas.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(areas.length / rowsPerPage);
-
+  // Helper functions
   const getBranchName = (id) => {
     const branch = branches.find((b) => b.id === id);
     return branch ? branch.branch_name : "N/A";
@@ -93,6 +91,22 @@ const Area = () => {
     const route = routes.find((r) => r.id === id);
     return route ? route.route_name : "N/A";
   };
+
+  // Search filter
+  const filteredAreas = areas.filter((area) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      area.area_name?.toLowerCase().includes(query) ||
+      getBranchName(area.branch_id)?.toLowerCase().includes(query) ||
+      getRouteName(area.route_id)?.toLowerCase().includes(query)
+    );
+  });
+
+  // Pagination logic
+  const indexOfLast = currentPage * rowsPerPage;
+  const indexOfFirst = indexOfLast - rowsPerPage;
+  const currentData = filteredAreas.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredAreas.length / rowsPerPage);
 
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -172,6 +186,11 @@ const Area = () => {
     setActiveDropdown((prev) => (prev === id ? null : id));
   };
 
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
+  };
+
   if (loading) {
     return (
       <div className="w-full min-h-[797px] flex items-center justify-center">
@@ -191,7 +210,20 @@ const Area = () => {
               Areas
             </span>
           </h1>
-              <div className="flex items-center gap-2">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+            {/* Search Bar */}
+            <div className="relative">
+              <TbSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search areas..."
+                className="h-[44px] pl-10 pr-4 rounded-[10px] border border-gray-300 bg-white focus:ring-2 focus:ring-[#0e4053] outline-none text-sm"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
           {/* Pagination Top */}
           <div className="flex items-center gap-2">
             <label className="text-sm text-[#4B5563]">Show</label>
@@ -210,19 +242,18 @@ const Area = () => {
         
           </div>
 
-          <button
-            onClick={() => {
-              setIsModalOpen(true);
-              setIsEditing(false);
-              setFormData({ branch_id: "", route_id: "", area_name: "" });
-            }}
-            className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
-          >
-            Add Area
-          </button>
-          
-        </div>
-
+              <button
+                onClick={() => {
+                  setIsModalOpen(true);
+                  setIsEditing(false);
+                  setFormData({ branch_id: "", route_id: "", area_name: "" });
+                }}
+                className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
+              >
+                Add Area
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Table */}
@@ -236,9 +267,13 @@ const Area = () => {
           </div>
 
           <div className="pb-6">
-            {currentData.length === 0 ? (
+            {areas.length === 0 ? (
               <div className="text-center py-6 text-gray-500">
                 No areas available.
+              </div>
+            ) : filteredAreas.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
+                No areas found matching "{searchQuery}"
               </div>
             ) : (
               currentData.map((area) => (
@@ -327,11 +362,12 @@ const Area = () => {
         </div>
 
         {/* Pagination Bottom */}
-        {areas.length > 0 && (
+        {filteredAreas.length > 0 && (
           <div className="flex flex-col md:flex-row justify-between items-center mt-6">
             <div className="text-sm text-gray-600 mb-3 md:mb-0">
               Showing {indexOfFirst + 1} to{" "}
-              {Math.min(indexOfLast, areas.length)} of {areas.length} entries
+              {Math.min(indexOfLast, filteredAreas.length)} of {filteredAreas.length} entries
+              {searchQuery && ` (filtered from ${areas.length} total)`}
             </div>
             <div className="flex items-center gap-2">
               <button

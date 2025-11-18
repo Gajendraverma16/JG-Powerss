@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { TbDotsVertical } from "react-icons/tb";
+  import React, { useCallback, useEffect, useState } from "react";
+import { TbDotsVertical, TbSearch } from "react-icons/tb";
 import Swal from "sweetalert2";
 import api from "../../api";
 
@@ -14,6 +14,9 @@ const Branch = () => {
   // pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [formData, setFormData] = useState({
     branch_code: "",
@@ -38,11 +41,25 @@ const Branch = () => {
     fetchBranches();
   }, [fetchBranches]);
 
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
+  };
+
+  // Search filter
+  const filteredBranches = branches.filter((branch) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      branch.branch_name?.toLowerCase().includes(query) ||
+      branch.branch_code?.toLowerCase().includes(query)
+    );
+  });
+
   // pagination logic
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
-  const currentData = branches.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(branches.length / rowsPerPage);
+  const currentData = filteredBranches.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredBranches.length / rowsPerPage);
 
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -139,8 +156,20 @@ const Branch = () => {
             <span className="inline-block border-b-2 border-[#0e4053] pb-1">
               Branches
             </span>
-            </h1>
+          </h1>
 
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+            {/* Search Bar */}
+            <div className="relative">
+              <TbSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search branches..."
+                className="h-[44px] pl-10 pr-4 rounded-[10px] border border-gray-300 bg-white focus:ring-2 focus:ring-[#0e4053] outline-none text-sm"
+              />
+            </div>
 
             <div className="flex items-center gap-2">
           {/* Pagination top */}
@@ -161,17 +190,18 @@ const Branch = () => {
           </div>
 
 
-          <button
-            onClick={() => {
-              setIsModalOpen(true);
-              setIsEditing(false);
-              setFormData({ branch_code: "", branch_name: "" });
-            }}
-            className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
-          >
-            Add Branch
-          </button>
-          </div> 
+              <button
+                onClick={() => {
+                  setIsModalOpen(true);
+                  setIsEditing(false);
+                  setFormData({ branch_code: "", branch_name: "" });
+                }}
+                className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
+              >
+                Add Branch
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Desktop Table */}
@@ -184,9 +214,13 @@ const Branch = () => {
           </div>
 
           <div className="pb-6">
-            {currentData.length === 0 ? (
+            {branches.length === 0 ? (
               <div className="text-center py-6 text-gray-500">
                 No branches available.
+              </div>
+            ) : filteredBranches.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
+                No branches found matching "{searchQuery}"
               </div>
             ) : (
               currentData.map((branch) => (
@@ -273,11 +307,12 @@ const Branch = () => {
         </div>
 
         {/* Pagination bottom */}
-        {branches.length > 0 && (
+        {filteredBranches.length > 0 && (
           <div className="flex flex-col md:flex-row justify-between items-center mt-6">
             <div className="text-sm text-gray-600 mb-3 md:mb-0">
               Showing {indexOfFirst + 1} to{" "}
-              {Math.min(indexOfLast, branches.length)} of {branches.length} entries
+              {Math.min(indexOfLast, filteredBranches.length)} of {filteredBranches.length} entries
+              {searchQuery && ` (filtered from ${branches.length} total)`}
             </div>
             <div className="flex items-center gap-2">
               <button
