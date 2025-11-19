@@ -2014,6 +2014,23 @@ useEffect(() => {
     }
   };
 
+  const getVillageName = (villageId) => {
+    if (!villageId) return "";
+
+    for (const branch of branchHierarchy) {
+      for (const route of branch.routes || []) {
+        for (const area of route.areas || []) {
+          const village = area.villages?.find(
+            (v) => v.village_id == villageId
+          );
+          if (village) return village.village_name;
+        }
+      }
+    }
+
+    return "";
+  };
+
 const handleEdit = (lead) => {
   console.log("🔍 Editing lead:", lead);
   console.log("🏠 Address data (lead.city):", lead.city);
@@ -2085,23 +2102,6 @@ const handleEdit = (lead) => {
     const joinDateObj = new Date(lead.Join_date);
     joinDate = joinDateObj.toISOString().split("T")[0];
   }
-
-  const getVillageName = (villageId) => {
-    if (!villageId) return "";
-
-    for (const branch of branchHierarchy) {
-      for (const route of branch.routes || []) {
-        for (const area of route.areas || []) {
-          const village = area.villages?.find(
-            (v) => v.village_id == villageId
-          );
-          if (village) return village.village_name;
-        }
-      }
-    }
-
-    return "";
-  };
 
   // ✅ FIX: Find the matching status from statuses array
   // Backend returns: status: "Kirana store", status_id: 1
@@ -4674,7 +4674,7 @@ useEffect(() => {
                       {lead.contact}
                     </td>
                      <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
-                      {lead.village_name}
+                      {getVillageName(lead.village)}
                     </td>
                      <td className="py-4 px-6 text-sm text-[#4B5563] max-w-xs overflow-hidden truncate">
                       {lead.village_assigned_member}

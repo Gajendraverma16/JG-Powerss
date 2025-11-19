@@ -5,8 +5,6 @@ import api from "../../api";
 import { useAuth } from "../../auth/AuthContext";
 import { FaPlus, FaMinus, FaTimes, FaArrowLeft, FaArrowRight, FaCamera } from "react-icons/fa";
 
-
-
 /**
  * NewOrder - Create order for shop owners with three forms: New, Return, Exchange
  * Features:
@@ -1183,12 +1181,32 @@ const NewOrder = () => {
             </div>
           );
         })()}
-        <button
-        
-          className="bg-[#EF7E1B] text-white px-6 py-3 rounded-xl font-semibold text-lg"
-        >
-        Next
-        </button>
+        <div className="flex flex-col lg:flex-row gap-3">
+          {currentStep > 0 && (
+            <button
+              onClick={goToPreviousStep}
+              className="bg-gray-500 text-white px-4 lg:px-6 py-3 rounded-xl font-semibold text-base lg:text-lg flex items-center justify-center gap-2 hover:bg-gray-600"
+            >
+              <FaArrowLeft /> Previous
+            </button>
+          )}
+          <button
+            onClick={currentStep < 2 ? goToNextStep : goToNextStep}
+            className="bg-[#EF7E1B] text-white px-4 lg:px-6 py-3 rounded-xl font-semibold text-base lg:text-lg flex items-center justify-center gap-2 hover:bg-[#d66a15]"
+          >
+            {currentStep < 2 ? (
+              <>
+                Next <FaArrowRight />
+              </>
+            ) : (
+              <>
+                <span className="hidden lg:inline">Review & Create Order</span>
+                <span className="lg:hidden">Review & Create</span>
+                <FaArrowRight />
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Summary Modal */}
