@@ -248,7 +248,7 @@ const Area = () => {
                   setIsEditing(false);
                   setFormData({ branch_id: "", route_id: "", area_name: "" });
                 }}
-                className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
+                className="h-[44px] rounded-[10px] bg-[#003A72] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(0,58,114,0.4)] hover:bg-[#004B8D]"
               >
                 Add Area
               </button>
@@ -295,13 +295,13 @@ const Area = () => {
                       <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10">
                         <button
                           onClick={() => handleEdit(area)}
-                          className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                          className="px-2 py-1 text-sm hover:bg-[#004B8D] w-full text-left"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(area.id)}
-                          className="px-2 py-1 text-sm hover:bg-[#ee7f1b] w-full text-left"
+                          className="px-2 py-1 text-sm hover:bg-[#004B8D] w-full text-left"
                         >
                           Delete
                         </button>
@@ -344,7 +344,7 @@ const Area = () => {
                 <div className="mt-2 flex gap-2">
                   <button
                     onClick={() => handleEdit(area)}
-                    className="px-3 py-1 text-sm rounded-md bg-[#ef7e1b] text-white"
+                    className="px-3 py-1 text-sm rounded-md bg-[#003A72] text-white"
                   >
                     Edit
                   </button>
@@ -474,7 +474,7 @@ const Area = () => {
               <div className="mt-10 flex justify-center">
                 <button
                   type="submit"
-                  className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                  className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
                 >
                   {isEditing ? "Save changes" : "Add Area"}
                 </button>

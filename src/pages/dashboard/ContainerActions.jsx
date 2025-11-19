@@ -29,14 +29,14 @@ const ContainerActions = ({
       >
         {/* Title + Icon Row */}
         <div className="flex justify-between items-start mb-3">
-          <div className="text-[#ef7e1b] font-bold text-[20px]">
+          <div className="text-[#003A72] font-bold text-[20px]">
             Quick Actions
           </div>
 
           {/*  Icon  */}
           <div className="bg-[#3498DB33] rounded-full w-[55px] h-[55px] flex justify-center items-center mt-1">
             {icon && (
-              <span className="w-[28px] h-[28px] flex items-center justify-center text-[28px] text-[#ef7e1b]">
+              <span className="w-[28px] h-[28px] flex items-center justify-center text-[28px] text-[#003A72]">
                 {icon}
               </span>
             )}

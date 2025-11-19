@@ -31,7 +31,7 @@ const Container1 = ({
             <div>
               {Customers !== undefined && Customers !== null && (
                 <>
-                  <div className="text-[#ef7e1b] text-[25px] font-extrabold font-quicksand">
+                  <div className="text-[#003A72] text-[25px] font-extrabold font-quicksand">
                     {Customers}+
                   </div>
                   <div className="text-black font-semibold">Total Customers</div>

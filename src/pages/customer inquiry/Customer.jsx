@@ -3019,7 +3019,7 @@ const invoiceComponent = () => {
                 <td colSpan="6" className="p-2">
                   <button
                     onClick={addServiceItem}
-                    className="h-[44px] px-10 rounded-[12px] bg-[#ef7e1b] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-white w-full"
+                    className="h-[44px] px-10 rounded-[12px] bg-[#003A72] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-white w-full"
                   >
                     Add Item
                   </button>
@@ -3582,7 +3582,7 @@ const invoiceComponent = () => {
               </button>
               <button
                 onClick={saveChanges}
-                className="w-full sm:w-[150px] h-[40px] bg-[rgb(39,152,255)] rounded-[10px] text-white text-[16px] font-semibold flex items-center justify-center hover:bg-[#ee7f1b]"
+                className="w-full sm:w-[150px] h-[40px] bg-[rgb(39,152,255)] rounded-[10px] text-white text-[16px] font-semibold flex items-center justify-center hover:bg-[#004B8D]"
               >
                 Save Changes
               </button>
@@ -3597,7 +3597,7 @@ const invoiceComponent = () => {
               </button>
               <button
                 onClick={submitInvoice}
-                className="w-full sm:w-[150px] h-[40px] bg-[rgb(39,152,255)] rounded-[10px] text-white text-[16px] font-semibold flex items-center justify-center hover:bg-[#ee7f1b]"
+                className="w-full sm:w-[150px] h-[40px] bg-[rgb(39,152,255)] rounded-[10px] text-white text-[16px] font-semibold flex items-center justify-center hover:bg-[#004B8D]"
               >
                 Submit Invoice
               </button>

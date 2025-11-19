@@ -999,7 +999,7 @@ switch (filters.contact) {
                     }}
                     className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] ${
                       itemsPerPage === option
-                        ? "bg-[#E7EFF8] font-bold text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] font-bold text-[#003A72]"
                         : "text-[#545454]"
                     }`}
                   >
@@ -1149,7 +1149,7 @@ switch (filters.contact) {
                   }}
                   className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-[#545454] cursor-pointer ${
                     filters.payment === option.value
-                      ? "bg-[#E7EFF8] text-[#ef7e1b] font-bold"
+                      ? "bg-[#E7EFF8] text-[#003A72] font-bold"
                       : ""
                   }`}
                 >
@@ -1223,7 +1223,7 @@ switch (filters.contact) {
           }}
           className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-[#545454] cursor-pointer ${
             filters.contact === option.value
-              ? "bg-[#E7EFF8] text-[#ef7e1b] font-bold"
+              ? "bg-[#E7EFF8] text-[#003A72] font-bold"
               : ""
           }`}
         >
@@ -1273,7 +1273,7 @@ switch (filters.contact) {
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     createdTimeRange === "all"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleCreatedTimeRangeChange("all")}
@@ -1281,13 +1281,13 @@ switch (filters.contact) {
                   {" "}
                   <span>All Dates</span>{" "}
                   {createdTimeRange === "all" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     createdTimeRange === "7days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleCreatedTimeRangeChange("7days")}
@@ -1295,13 +1295,13 @@ switch (filters.contact) {
                   {" "}
                   <span>Last 7 Days</span>{" "}
                   {createdTimeRange === "7days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     createdTimeRange === "30days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleCreatedTimeRangeChange("30days")}
@@ -1309,13 +1309,13 @@ switch (filters.contact) {
                   {" "}
                   <span>Last 30 Days</span>{" "}
                   {createdTimeRange === "30days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     createdTimeRange === "90days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleCreatedTimeRangeChange("90days")}
@@ -1323,7 +1323,7 @@ switch (filters.contact) {
                   {" "}
                   <span>Last 90 Days</span>{" "}
                   {createdTimeRange === "90days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <div className="border-t border-gray-200 my-2"></div>
@@ -1394,7 +1394,7 @@ switch (filters.contact) {
                     </div>
                   </div>
                   <button
-                    className="hover:bg-Duskwood-500 bg-[#ef7e1b] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center w-full"
+                    className="hover:bg-Duskwood-500 bg-[#003A72] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center w-full"
                     onClick={applyCustomCreatedDateRange}
                   >
                     Apply Custom Range
@@ -1442,7 +1442,7 @@ switch (filters.contact) {
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     updatedTimeRange === "all"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleUpdatedTimeRangeChange("all")}
@@ -1450,13 +1450,13 @@ switch (filters.contact) {
                   {" "}
                   <span>All Dates</span>{" "}
                   {updatedTimeRange === "all" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     updatedTimeRange === "7days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleUpdatedTimeRangeChange("7days")}
@@ -1464,13 +1464,13 @@ switch (filters.contact) {
                   {" "}
                   <span>Last 7 Days</span>{" "}
                   {updatedTimeRange === "7days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     updatedTimeRange === "30days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleUpdatedTimeRangeChange("30days")}
@@ -1478,13 +1478,13 @@ switch (filters.contact) {
                   {" "}
                   <span>Last 30 Days</span>{" "}
                   {updatedTimeRange === "30days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     updatedTimeRange === "90days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleUpdatedTimeRangeChange("90days")}
@@ -1492,7 +1492,7 @@ switch (filters.contact) {
                   {" "}
                   <span>Last 90 Days</span>{" "}
                   {updatedTimeRange === "90days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <div className="border-t border-gray-200 my-2"></div>
@@ -1563,7 +1563,7 @@ switch (filters.contact) {
                     </div>
                   </div>
                   <button
-                    className="hover:bg-Duskwood-500 bg-[#ef7e1b] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center w-full"
+                    className="hover:bg-Duskwood-500 bg-[#003A72] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center w-full"
                     onClick={applyCustomUpdatedDateRange}
                   >
                     Apply Custom Range
@@ -1781,7 +1781,7 @@ switch (filters.contact) {
                           >
                             <button
                               onClick={() => handleEdit(quotation)}
-                              className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
+                              className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1812,7 +1812,7 @@ switch (filters.contact) {
                             </svg>
                             <button
                               onClick={() => handleDelete(quotation.id)}
-                              className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
+                              className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1944,7 +1944,7 @@ switch (filters.contact) {
                             {/* EDIT button */}
                             <button
                               onClick={() => handleEdit(quotation)}
-                              className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
+                              className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1976,7 +1976,7 @@ switch (filters.contact) {
                             {/* DELETE button */}
                             <button
                               onClick={() => handleDelete(quotation.id)}
-                              className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
+                              className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -2324,7 +2324,7 @@ switch (filters.contact) {
             <div className="mt-10 flex justify-center">
               <button
                 onClick={() => setIsItemsModalOpen(false)}
-                className="w-full md:w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                className="w-full md:w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
               >
                 Close
               </button>

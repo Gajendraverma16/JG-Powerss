@@ -104,13 +104,8 @@ const AreaChart = () => {
   }, [chartData]);
 
   return (
-    <div className="w-full flex justify-start">
-      <div
-        className="w-full sm:w-[70%] md:w-[80%] lg:w-[50%] p-3 rounded-2xl shadow-md bg-white"
-        style={{ height: "260px" }}
-      >
-        <canvas ref={chartRef}></canvas>
-      </div>
+    <div className="w-full bg-white rounded-2xl shadow-md p-4 border border-[#E9EAEA]" style={{ height: "280px" }}>
+      <canvas ref={chartRef}></canvas>
     </div>
   );
 };

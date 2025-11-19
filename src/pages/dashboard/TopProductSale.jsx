@@ -47,7 +47,7 @@ const TopProductSale = ({
   };
 
   const blue = "#003a72";
-  const orange = "#ef7e1b";
+  const orange = "#003A72";
   const grey = "#d3d3d3";
 
   useEffect(() => {
@@ -107,7 +107,7 @@ const TopProductSale = ({
 
           <div className="bg-[#3498DB33] rounded-full w-[55px] h-[55px] flex justify-center items-center mt-1">
             {icon && (
-              <span className="w-[28px] h-[28px] flex items-center justify-center text-[28px] text-[#ef7e1b]">
+              <span className="w-[28px] h-[28px] flex items-center justify-center text-[28px] text-[#003A72]">
                 {icon}
               </span>
             )}

@@ -485,6 +485,7 @@ useEffect(() => {
     pincode: "",
   });
   const [imagePreview, setImagePreview] = useState(null);
+  const [shopImagePreview, setShopImagePreview] = useState(null);
   
   
 
@@ -524,6 +525,7 @@ useEffect(() => {
     
   });
   const [createImagePreview, setCreateImagePreview] = useState(null);
+  const [createShopImagePreview, setCreateShopImagePreview] = useState(null);
   const [shopImageFile, setShopImageFile] = useState(null);
 
 
@@ -1299,16 +1301,7 @@ useEffect(() => {
     const formData = new FormData();
 
     // --- assigned_to fix ---
-    let assignedToId = createFormData.assigned_to;
-
-    if (user?.role === "admin") {
-      const assignedUser = users.find(
-        (u) => u.name === createFormData.assigned_to
-      );
-      assignedToId = assignedUser ? assignedUser.id : "";
-    } else {
-      assignedToId = user.id;
-    }
+    let assignedToId = 1;
 
     // --- status fix ---
     const selectedStatus =
@@ -1389,7 +1382,7 @@ useEffect(() => {
       shop_name: createFormData.requirements || "",
       source: createFormData.source,
 
-      assigned_to: Number(assignedToId) || 0,
+      assigned_to: 1,
 
       near_location: createFormData.near_location,
       branch_code: createFormData.branch_code,
@@ -1417,6 +1410,14 @@ useEffect(() => {
      address: finalAddress,
      branchdetail: finalBranchDetail,
     };
+
+    // ⭐ LATITUDE & LONGITUDE - Only add if values exist
+    if (createFormData.latitude) {
+      formattedData.latitude = createFormData.latitude;
+    }
+    if (createFormData.longitude) {
+      formattedData.longitude = createFormData.longitude;
+    }
 
     console.log(formattedData);
 
@@ -1505,6 +1506,10 @@ useEffect(() => {
           URL.revokeObjectURL(createImagePreview);
         }
         setCreateImagePreview(null);
+        if (createShopImagePreview) {
+          URL.revokeObjectURL(createShopImagePreview);
+        }
+        setCreateShopImagePreview(null);
 
         // Clear address fields
         clearAddressFields();
@@ -2059,9 +2064,9 @@ const handleEdit = (lead) => {
       try {
         const parsed = JSON.parse(addressData);
         console.log("📦 Parsed address from JSON:", parsed);
-        // Backend may return "street" or "name", "pincode" or "pin"
+        // Backend may return "street" or "name" or "address", "pincode" or "pin"
         parsedAddress = {
-          name: parsed.name || parsed.street || "",
+          name: parsed.name || parsed.street || parsed.address || "",
           city: parsed.city || "",
           state: parsed.state || "",
           country: parsed.country || "",
@@ -2137,6 +2142,46 @@ const handleEdit = (lead) => {
   }
 
   // Fill form with correct data + ID
+  // ✅ Handle both web format (branch_name) and mobile format (numeric branch_code)
+  let branchCodeForForm = lead.branch_code || "";
+  let routeForForm = lead.route || "";
+  let areaForForm = lead.area || "";
+  let villageForForm = getVillageName(lead.village) || "";
+
+  // If branch_code is numeric, find the branch_name
+  if (branchCodeForForm && !isNaN(branchCodeForForm)) {
+    const branch = branchHierarchy.find(
+      (b) => String(b.branch_code) === String(branchCodeForForm) || 
+             String(b.branch_id) === String(branchCodeForForm)
+    );
+    if (branch) {
+      console.log("🔄 Converting numeric branch_code to branch_name:", branchCodeForForm, "→", branch.branch_name);
+      branchCodeForForm = branch.branch_name;
+      
+      // Also convert route if numeric
+      if (routeForForm && !isNaN(routeForForm)) {
+        const route = branch.routes?.find(
+          (r) => String(r.route_code) === String(routeForForm) || 
+                 String(r.route_id) === String(routeForForm)
+        );
+        if (route) {
+          console.log("🔄 Converting numeric route to route_name:", routeForForm, "→", route.route_name);
+          routeForForm = route.route_name;
+          
+          // Also convert area if needed
+          if (areaForForm) {
+            const area = route.areas?.find((a) => a.area_name === areaForForm);
+            if (area) {
+              areaForForm = area.area_name;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  console.log("📝 Form data being set:", { branchCodeForForm, routeForForm, areaForForm, villageForForm });
+
   setFormData({
     id: lead.customer_id || "", // ✅ Critical: use customer_id for update API
     name: lead.customer_name || lead.name || "",
@@ -2145,11 +2190,11 @@ const handleEdit = (lead) => {
     whatsapp: lead.whatsapp_number || lead.whatsapp || "",
     requirements: lead.requirements || "",
     source: lead.source || "",
-    route: lead.route || "",
+    route: routeForForm,
     near_location: lead.near_location || "",
-    branch_code: lead.branch_code || "",
-    area: lead.area || "",
-    village: getVillageName(lead.village) || "",
+    branch_code: branchCodeForForm,
+    area: areaForForm,
+    village: villageForForm,
     customer_relationship: lead.customer_relationship || "",
     source_column: lead.source_column || "",
     latitude: lead.latitude || "",
@@ -2174,6 +2219,7 @@ const handleEdit = (lead) => {
   });
 
   setImagePreview(lead.profile_pic || null);
+  setShopImagePreview(lead.shop_image || null);
   setIsModalOpen(true);
   setActiveDropdown(null);
 
@@ -2188,15 +2234,25 @@ const handleEdit = (lead) => {
 const handleInputChange = (e) => {
   const { name, value, files } = e.target;
 
-  if (name === "profile_pic" || name === "shop_image") {
+  if (name === "profile_pic") {
     const file = files[0];
     if (file) {
       setFormData((prev) => ({
         ...prev,
-        [name]: file,
+        profile_pic: file,
       }));
       if (imagePreview) URL.revokeObjectURL(imagePreview);
       setImagePreview(URL.createObjectURL(file));
+    }
+  } else if (name === "shop_image") {
+    const file = files[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        shop_image: file,
+      }));
+      if (shopImagePreview) URL.revokeObjectURL(shopImagePreview);
+      setShopImagePreview(URL.createObjectURL(file));
     }
   } else {
     setFormData((prev) => {
@@ -2289,11 +2345,11 @@ const handleShopImageChange = (e) => {
       shop_image: file, // this key will go to backend
     }));
 
-    if (ShopImagePreview) {
-      URL.revokeObjectURL(ShopImagePreview);
+    if (createShopImagePreview) {
+      URL.revokeObjectURL(createShopImagePreview);
     }
 
-    setShopImagePreview(URL.createObjectURL(file));
+    setCreateShopImagePreview(URL.createObjectURL(file));
     setShopImageFile(file);
   }
 };
@@ -2763,6 +2819,14 @@ safeAppend("village", villageId);
 
     safeAppend("Join_date", formData.Join_date);
 
+    // ---------- LATITUDE & LONGITUDE ----------
+    if (formData.latitude) {
+      safeAppend("latitude", formData.latitude);
+    }
+    if (formData.longitude) {
+      safeAppend("longitude", formData.longitude);
+    }
+
     // ---------- STATUS ----------
     safeAppend("category", formData.status_name || "");
     safeAppend("status_id", Number(formData.status_id) || 1);
@@ -2770,12 +2834,7 @@ safeAppend("village", villageId);
     safeAppend("message", formData.message);
 
     // ---------- ASSIGNED TO ----------
-    let assignedToId = formData.assigned_to;
-    if (typeof assignedToId === "string") {
-      const u = users.find((x) => x.name === assignedToId);
-      assignedToId = u ? u.id : 0;
-    }
-    safeAppend("assigned_to", Number(assignedToId));
+    safeAppend("assigned_to", 1);
 
     // ---------- FOLLOW UP ----------
     const mergedFollowup = formData.follow_up_date_input
@@ -3029,11 +3088,17 @@ safeAppend("village", villageId);
       if (createImagePreview) {
         URL.revokeObjectURL(createImagePreview);
       }
+      if (createShopImagePreview) {
+        URL.revokeObjectURL(createShopImagePreview);
+      }
       if (imagePreview) {
         URL.revokeObjectURL(imagePreview);
       }
+      if (shopImagePreview) {
+        URL.revokeObjectURL(shopImagePreview);
+      }
     };
-  }, [createImagePreview, imagePreview]);
+  }, [createImagePreview, createShopImagePreview, imagePreview, shopImagePreview]);
   
 
   // 2. Add state to track the index of the currently edited lead in filteredLeads
@@ -3652,7 +3717,7 @@ useEffect(() => {
         <div className="flex flex-wrap items-center gap-3 md:gap-4 lg:gap-4">
           {permissionsForLeadsModule.includes("create") && (
             <button
-              className="hover:bg-Duskwood-500 bg-[#ef7e1b] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center cursor-pointer"
+              className="hover:bg-Duskwood-500 bg-[#003A72] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center cursor-pointer"
               onClick={openCreateModal}
             >
               Create Shop Owners      
@@ -3663,7 +3728,7 @@ useEffect(() => {
             selectedLeads.length > 0 &&
             permissionsForLeadsModule.includes("edit") && (
               <button
-                className="hover:bg-Duskwood-500 bg-[#ef7e1b] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center cursor-pointer"
+                className="hover:bg-Duskwood-500 bg-[#003A72] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center cursor-pointer"
                 onClick={() => setIsBulkAssignModalOpen(true)}
               >
                 Bulk Edit
@@ -3700,7 +3765,7 @@ useEffect(() => {
                 >
                   <button
                     onClick={handleImportCsv}
-                    className="group flex items-center px-2 lg:px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md cursor-pointer"
+                    className="group flex items-center px-2 lg:px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md cursor-pointer"
                   >
                     <FiUpload className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors" />
                     <span className="group-hover:text-white transition-colors whitespace-nowrap">
@@ -3720,7 +3785,7 @@ useEffect(() => {
                       setIsExportModalOpen(true);
                       setIsCsvDropdownOpen(false);
                     }}
-                    className="group flex items-center px-2 lg:px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md cursor-pointer"
+                    className="group flex items-center px-2 lg:px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md cursor-pointer"
                   >
                     <FiDownload className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors" />
                     <span className="group-hover:text-white transition-colors whitespace-nowrap">
@@ -3762,7 +3827,7 @@ useEffect(() => {
                     }}
                     className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] ${
                       itemsPerPage === option
-                        ? "bg-[#E7EFF8] font-bold text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] font-bold text-[#003A72]"
                         : "text-[#545454]"
                     }`}
                   >
@@ -3902,7 +3967,7 @@ useEffect(() => {
                   }}
                   className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-[#545454] ${
                     String(filters.statusId) === String(status.status_id)
-                      ? "bg-[#E7EFF8] text-[#ef7e1b] font-bold"
+                      ? "bg-[#E7EFF8] text-[#003A72] font-bold"
                       : ""
                   }`}
                 >
@@ -4031,53 +4096,53 @@ useEffect(() => {
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     timeRange === "all"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   } cursor-pointer`}
                   onClick={() => handleTimeRangeChange("all")}
                 >
                   <span>All Dates</span>
                   {timeRange === "all" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     timeRange === "7days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   } cursor-pointer`}
                   onClick={() => handleTimeRangeChange("7days")}
                 >
                   <span>Last 7 Days</span>
                   {timeRange === "7days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     timeRange === "30days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   } cursor-pointer`}
                   onClick={() => handleTimeRangeChange("30days")}
                 >
                   <span>Last 30 Days</span>
                   {timeRange === "30days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     timeRange === "90days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   } cursor-pointer`}
                   onClick={() => handleTimeRangeChange("90days")}
                 >
                   <span>Last 90 Days</span>
                   {timeRange === "90days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}
                 </button>
 
@@ -4141,7 +4206,7 @@ useEffect(() => {
                   </div>
                   <button
                     className="hover:bg-Duskwood-500
-        bg-[#ef7e1b] text-white
+        bg-[#003A72] text-white
         h-[44px] px-5
         rounded-[8px]
         flex items-center justify-center cursor-pointer
@@ -4214,53 +4279,53 @@ useEffect(() => {
                   <button
                     className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                       createdTimeRange === "all"
-                        ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] text-[#003A72]"
                         : "hover:bg-gray-100"
                     } cursor-pointer`}
                     onClick={() => handleCreatedTimeRangeChange("all")}
                   >
                     <span>All Dates</span>
                     {createdTimeRange === "all" && (
-                      <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                      <FaCheck className="h-4 w-4 text-[#003A72]" />
                     )}
                   </button>
                   <button
                     className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                       createdTimeRange === "7days"
-                        ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] text-[#003A72]"
                         : "hover:bg-gray-100"
                     } cursor-pointer`}
                     onClick={() => handleCreatedTimeRangeChange("7days")}
                   >
                     <span>Last 7 Days</span>
                     {createdTimeRange === "7days" && (
-                      <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                      <FaCheck className="h-4 w-4 text-[#003A72]" />
                     )}
                   </button>
                   <button
                     className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                       createdTimeRange === "30days"
-                        ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] text-[#003A72]"
                         : "hover:bg-gray-100"
                     } cursor-pointer`}
                     onClick={() => handleCreatedTimeRangeChange("30days")}
                   >
                     <span>Last 30 Days</span>
                     {createdTimeRange === "30days" && (
-                      <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                      <FaCheck className="h-4 w-4 text-[#003A72]" />
                     )}
                   </button>
                   <button
                     className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                       createdTimeRange === "90days"
-                        ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] text-[#003A72]"
                         : "hover:bg-gray-100"
                     } cursor-pointer`}
                     onClick={() => handleCreatedTimeRangeChange("90days")}
                   >
                     <span>Last 90 Days</span>
                     {createdTimeRange === "90days" && (
-                      <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                      <FaCheck className="h-4 w-4 text-[#003A72]" />
                     )}
                   </button>
 
@@ -4334,7 +4399,7 @@ useEffect(() => {
                     </div>
                     <button
                       className="hover:bg-Duskwood-500
-        bg-[#ef7e1b] text-white
+        bg-[#003A72] text-white
         h-[44px] px-5
         rounded-[8px]
         flex items-center justify-center cursor-pointer
@@ -4409,53 +4474,53 @@ useEffect(() => {
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     updatedTimeRange === "all"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   } cursor-pointer`}
                   onClick={() => handleUpdatedTimeRangeChange("all")}
                 >
                   <span>All Dates</span>
                   {updatedTimeRange === "all" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     updatedTimeRange === "7days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   } cursor-pointer`}
                   onClick={() => handleUpdatedTimeRangeChange("7days")}
                 >
                   <span>Last 7 Days</span>
                   {updatedTimeRange === "7days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     updatedTimeRange === "30days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   } cursor-pointer`}
                   onClick={() => handleUpdatedTimeRangeChange("30days")}
                 >
                   <span>Last 30 Days</span>
                   {updatedTimeRange === "30days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     updatedTimeRange === "90days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   } cursor-pointer`}
                   onClick={() => handleUpdatedTimeRangeChange("90days")}
                 >
                   <span>Last 90 Days</span>
                   {updatedTimeRange === "90days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}
                 </button>
 
@@ -4529,7 +4594,7 @@ useEffect(() => {
                   </div>
                   <button
                     className="hover:bg-Duskwood-500
-        bg-[#ef7e1b] text-white
+        bg-[#003A72] text-white
         h-[44px] px-5
         rounded-[8px]
         flex items-center justify-center cursor-pointer
@@ -4733,7 +4798,7 @@ useEffect(() => {
                               lead.status_name === "Fresh List"
                                 ? "bg-[#27AE60] text-white"
                                 : lead.status_name === "Follow Up"
-                                ? "bg-[#ef7e1b] text-white"
+                                ? "bg-[#003A72] text-white"
                                 : lead.status_name === "Get Call Back Us"
                                 ? "bg-[#FFFBEB] text-[#D97706]"
                                 : lead.status_name === "Contact In Future"
@@ -4741,7 +4806,7 @@ useEffect(() => {
                                 : lead.status_name === "Next Day Payments"
                                 ? "bg-[#27AE60] text-white"
                                 : lead.status_name === "Quote Send"
-                                ? "bg-[#ef7e1b] text-white"
+                                ? "bg-[#003A72] text-white"
                                 : lead.status_name === "Call Back"
                                 ? "bg-[#FFFBEB] text-[#D97706]"
                                 : lead.status_name === "Construction"
@@ -4749,7 +4814,7 @@ useEffect(() => {
                                 : lead.status_name === "NPC"
                                 ? "bg-[#27AE60] text-white"
                                 : lead.status_name === "Switch off"
-                                ? "bg-[#ef7e1b] text-white"
+                                ? "bg-[#003A72] text-white"
                                 : lead.status_name === "Not Reachable"
                                 ? "bg-[#FFFBEB] text-[#D97706]"
                                 : lead.status_name === "Quotation"
@@ -4799,7 +4864,7 @@ useEffect(() => {
                                 {/* Create New Order */}
 {/* <button
   onClick={() => handleCreateOrder(lead.customer_id)}
-  className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors cursor-pointer"
+  className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors cursor-pointer"
 >
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -4820,7 +4885,7 @@ useEffect(() => {
 {/* Create Return */}
 {/* <button
   onClick={() => handleCreateReturn(lead.customer_id)}
-  className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors cursor-pointer"
+  className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors cursor-pointer"
 >
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -4839,7 +4904,7 @@ useEffect(() => {
 {/* Create Exchange */}
 {/* <button
   onClick={() => handleCreateExchange(lead.customer_id)}
-  className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md cursor-pointer"
+  className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md cursor-pointer"
 >
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -4860,7 +4925,7 @@ useEffect(() => {
                                 {permissionsForLeadsModule.includes("edit") && (
                                   <button
                                     onClick={() => handleEdit(lead)}
-                                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md cursor-pointer"
+                                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md cursor-pointer"
                                   >
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
@@ -4899,7 +4964,7 @@ useEffect(() => {
                                     onClick={() =>
                                       handleDelete(lead.customer_id)
                                     }
-                                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md cursor-pointer"
+                                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md cursor-pointer"
                                   >
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
@@ -5052,7 +5117,7 @@ useEffect(() => {
                               {permissionsForLeadsModule.includes("edit") && (
                                 <button
                                   onClick={() => handleEdit(lead)}
-                                  className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md cursor-pointer"
+                                  className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md cursor-pointer"
                                 >
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -5089,7 +5154,7 @@ useEffect(() => {
                               {permissionsForLeadsModule.includes("delete") && (
                                 <button
                                   onClick={() => handleDelete(lead.customer_id)}
-                                  className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md cursor-pointer"
+                                  className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md cursor-pointer"
                                 >
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -5455,7 +5520,7 @@ useEffect(() => {
               />
               <label
                 htmlFor="edit-file-upload"
-                className="absolute bottom-1 right-1 bg-[#ef7e1b] text-white 
+                className="absolute bottom-1 right-1 bg-[#003A72] text-white 
                            rounded-full p-2 cursor-pointer hover:bg-[#0e4053] transition-colors"
               >
                 <FiEdit className="w-4 h-4" />
@@ -5572,11 +5637,10 @@ useEffect(() => {
                            outline-none text-[#545454]"
               >
                 <option value="">Select...</option>
-                <option value="LIKE">LIKE</option>
-                <option value="NOCALL">NO CALL</option>
-                <option value="VISIT">VISIT</option>
-                <option value="REFRENCE">REFERENCE</option>
-                <option value="OTHER">OTHER</option>
+                <option value="On call">On call</option>
+                <option value="Visit">Visit</option>
+                <option value="Reference">Reference</option>
+                <option value="Other">Other</option>
               </select>
             </div>
 
@@ -5816,24 +5880,27 @@ useEffect(() => {
                            border border-white/20 focus:ring-2 focus:ring-[#0e4053]
                            outline-none text-[#545454]"
               />
+              {/* Hidden fields for latitude and longitude */}
+              <input type="hidden" name="latitude" value={formData.latitude || ""} onChange={handleInputChange} />
+              <input type="hidden" name="longitude" value={formData.longitude || ""} onChange={handleInputChange} />
             </div> 
             <div className="space-y-2 md:col-start-1 md:row-start-10">
   <label className="block text-[#4B5563] text-[16px] mb-2">
     Customer Relationship
   </label>
   <select
-    name="customer_relationship"  // ✅ Correct name
+    name="customer_relationship"
     value={formData.customer_relationship}
     onChange={handleInputChange}
     className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
     focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
   >
     <option value="">Select...</option>
-    <option value="POOR">POOR</option>
-    <option value="GOOD">GOOD</option>
-    <option value="VERY GOOD">VERY GOOD</option>
-    <option value="EXCELLENT">EXCELLENT</option>
-    <option value="NEW">NEW</option>
+    <option value="New Customer">New Customer</option>
+    <option value="Poor">Poor</option>
+    <option value="Good">Good</option>
+    <option value="Very Good">Very Good</option>
+    <option value="Excellent">Excellent</option>
   </select>
 </div>
             {/* Shop Image */}
@@ -5841,6 +5908,15 @@ useEffect(() => {
               <label className="block text-[#4B5563] text-[16px] mb-2">
                 Shop Image
               </label>
+              {shopImagePreview && (
+                <div className="mb-3">
+                  <img
+                    src={shopImagePreview}
+                    alt="Shop Preview"
+                    className="w-32 h-32 object-cover rounded-md border-2 border-gray-300"
+                  />
+                </div>
+              )}
               <label
                 htmlFor="shop-image-upload"
                 className="flex items-center justify-between w-full px-4 py-2 bg-[#f1f5f9]
@@ -5855,7 +5931,7 @@ useEffect(() => {
                   viewBox="0 0 24 24"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="w-5 h-5 text-[#ef7e1b]"
+                  className="w-5 h-5 text-[#003A72]"
                 >
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -5894,15 +5970,15 @@ useEffect(() => {
           <button
             type="button"
             onClick={() => setIsModalOpen(false)}
-            className="w-full md:w-[207px] h-[46px] text-[#ef7e1b] border border-[#0e4053]
-                       rounded-[10px] hover:bg-[#ee7f1b] hover:text-white transition-colors cursor-pointer"
+            className="w-full md:w-[207px] h-[46px] text-[#003A72] border border-[#0e4053]
+                       rounded-[10px] hover:bg-[#004B8D] hover:text-white transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="w-full md:w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px]
-                       hover:bg-[#ee7f1b] transition-colors cursor-pointer ml-4"
+            className="w-full md:w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px]
+                       hover:bg-[#004B8D] transition-colors cursor-pointer ml-4"
           >
             Save
           </button>
@@ -5981,7 +6057,7 @@ useEffect(() => {
                     />
                     <label
                       htmlFor="file-upload"
-                      className="absolute bottom-1 right-1 bg-[#ef7e1b] text-white rounded-full p-2 cursor-pointer hover:bg-Duskwood-600 transition-colors"
+                      className="absolute bottom-1 right-1 bg-[#003A72] text-white rounded-full p-2 cursor-pointer hover:bg-Duskwood-600 transition-colors"
                     >
                       <svg
                         stroke="currentColor"
@@ -6098,11 +6174,10 @@ useEffect(() => {
   className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
 >
   <option value="">Select...</option>
-  <option value="LIKE">LIKE</option>
-  <option value="NOCALL">NO CALL</option>
-  <option value="VISIT">VISIT</option>
-  <option value="REFRENCE">REFERENCE</option>
-  <option value="OTHER">OTHER</option>
+  <option value="On call">On call</option>
+  <option value="Visit">Visit</option>
+  <option value="Reference">Reference</option>
+  <option value="Other">Other</option>
 </select>
  </div>
 
@@ -6485,6 +6560,9 @@ useEffect(() => {
     className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
                focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
   />
+  {/* Hidden fields for latitude and longitude */}
+  <input type="hidden" name="latitude" value={createFormData.latitude || ""} onChange={handleCreateInputChange} />
+  <input type="hidden" name="longitude" value={createFormData.longitude || ""} onChange={handleCreateInputChange} />
 </div>
 
 
@@ -6495,30 +6573,35 @@ useEffect(() => {
     Customer Relationship
   </label>
   <select
-    name="customer_relationship"  // ✅ Correct name
+    name="customer_relationship"
     value={createFormData.customer_relationship}
     onChange={handleCreateInputChange}
     className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 
     focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
   >
     <option value="">Select...</option>
-    <option value="POOR">POOR</option>
-    <option value="GOOD">GOOD</option>
-    <option value="VERY GOOD">VERY GOOD</option>
-    <option value="EXCELLENT">EXCELLENT</option>
-    <option value="NEW">NEW</option>
+    <option value="New Customer">New Customer</option>
+    <option value="Poor">Poor</option>
+    <option value="Good">Good</option>
+    <option value="Very Good">Very Good</option>
+    <option value="Excellent">Excellent</option>
   </select>
 </div>
 
 
 <div className="md:col-span-1 flex flex-col w-full">
    <label className="block text-[#4B5563] text-[16px] mb-2"> Shop image </label>
-    <label htmlFor="file-upload" className="flex items-center justify-between w-full px-4 py-2 bg-[#f1f5f9] text-gray-600 rounded-md cursor-pointer border border-gray-300 hover:bg-gray-100 transition" >
-       <span id="file-name" className="truncate"> Choose an image (PNG, JPG, GIF up to 10MB) </span> 
-       <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-[#ef7e1b]" xmlns="http://www.w3.org/2000/svg" > 
+    <label htmlFor="shop-image-upload" className="flex items-center justify-between w-full px-4 py-2 bg-[#f1f5f9] text-gray-600 rounded-md cursor-pointer border border-gray-300 hover:bg-gray-100 transition" >
+       <span id="shop-file-name" className="truncate"> Choose an image (PNG, JPG, GIF up to 10MB) </span> 
+       <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-[#003A72]" xmlns="http://www.w3.org/2000/svg" > 
        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path> 
        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path> </svg> </label> 
-       <input id="file-upload" className="hidden" accept="image/*" type="file" onChange={handleProfilePictureChange} /> 
+       <input id="shop-image-upload" className="hidden" accept="image/*" type="file" onChange={handleShopImageChange} /> 
+       {createShopImagePreview && (
+         <div className="mt-2">
+           <img src={createShopImagePreview} alt="Shop Preview" className="w-32 h-32 object-cover rounded-md border-2 border-gray-300" />
+         </div>
+       )}
        </div>
                 </div>
               </div>
@@ -6527,7 +6610,7 @@ useEffect(() => {
               <div className="mt-10 flex justify-center">
                 <button
                   type="submit"
-                  className="w-full md:w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors lg:mr-20 cursor-pointer"
+                  className="w-full md:w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors lg:mr-20 cursor-pointer"
                 >
                   Save
                 </button>
@@ -6796,7 +6879,7 @@ useEffect(() => {
                         }
                       }
                 }
-                className="text-[#ef7e1b] hover:underline focus:outline-none focus:ring-2 focus:ring-[#0e4053] rounded-md px-2 py-1 -mr-2 transition-colors duration-200 cursor-pointer"
+                className="text-[#003A72] hover:underline focus:outline-none focus:ring-2 focus:ring-[#0e4053] rounded-md px-2 py-1 -mr-2 transition-colors duration-200 cursor-pointer"
               >
                 {importFileType === "csv"
                   ? "View Sample File CSV"
@@ -6809,10 +6892,10 @@ useEffect(() => {
               <button
                 onClick={uploadCsvFile}
                 disabled={!selectedFile}
-                className={`w-full md:w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] transition-colors ${
+                className={`w-full md:w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] transition-colors ${
                   !selectedFile
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-[#ee7f1b]"
+                    : "hover:bg-[#004B8D]"
                 }`}
               >
                 Import
@@ -6908,7 +6991,7 @@ useEffect(() => {
                   setIsExportModalOpen(false);
                   await handleExportCsv();
                 }}
-                className="w-full md:w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                className="w-full md:w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
               >
                 Export
               </button>
@@ -6993,7 +7076,7 @@ useEffect(() => {
 
             {/* Bulk Edit Options Section */}
             <div className="rounded-xl p-6 shadow-sm border border-[#E9EAEA] mb-5">
-              <h3 className="text-lg font-semibold text-[#ef7e1b] mb-4">
+              <h3 className="text-lg font-semibold text-[#003A72] mb-4">
                 Bulk Edit Options
               </h3>
               <div className="space-y-4">
@@ -7155,7 +7238,7 @@ useEffect(() => {
                                     bulkEditSelectedStatus &&
                                     bulkEditSelectedStatus.status_id ===
                                       status.status_id
-                                      ? "bg-[#E7EFF8] text-[#ef7e1b] font-bold"
+                                      ? "bg-[#E7EFF8] text-[#003A72] font-bold"
                                       : ""
                                   }`}
                                 >
@@ -7251,14 +7334,14 @@ useEffect(() => {
                   !bulkAssignUser &&
                   !bulkChangeStatus)
               }
-              className={`mt-6 w-full h-[44px] bg-[#ef7e1b] text-white rounded-[10px] transition-colors text-base font-medium shadow-sm ${
+              className={`mt-6 w-full h-[44px] bg-[#003A72] text-white rounded-[10px] transition-colors text-base font-medium shadow-sm ${
                 selectedLeads.length === 0 ||
                 (!bulkDeleteMessage &&
                   !bulkDeleteFollowUp &&
                   !bulkAssignUser &&
                   !bulkChangeStatus)
                   ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-[#ee7f1b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0e4053]"
+                  : "hover:bg-[#004B8D] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0e4053]"
               }`}
             >
               Apply Selected Actions

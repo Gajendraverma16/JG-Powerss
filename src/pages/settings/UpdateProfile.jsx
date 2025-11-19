@@ -876,7 +876,7 @@ const UpdateProfile = () => {
             <div className="mt-6 flex justify-start">
               <button
                 type="submit"
-                className="w-full md:w-[207px] h-[44px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                className="w-full md:w-[207px] h-[44px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
               >
                 Update Profile
               </button>
@@ -952,7 +952,7 @@ const UpdateProfile = () => {
             <div className="mt-6 flex justify-start">
               <button
                 type="submit"
-                className="w-full md:w-[207px] h-[44px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                className="w-full md:w-[207px] h-[44px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
               >
                 Update Password
               </button>

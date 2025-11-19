@@ -233,28 +233,66 @@ const LeadSettings = () => {
   }
 
   return (
-    <div className="w-full px-4 py-6 md:px-10 md:py-10">
-      <div className="relative mx-auto flex min-h-[440px] max-w-5xl flex-col rounded-[18px] border border-white/60 bg-gradient-to-br from-white via-[#F5FAFF] to-[#E7F4FF] p-6 shadow-[0px_20px_45px_rgba(20,84,182,0.08)] md:p-8">
-        {/* Header */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <h1 className="text-[20px] md:text-[24px] font-semibold text-[#1F2837]">
-            <span className="inline-block border-b-2 border-[#0e4053] pb-1">
-              Categories
-            </span>
-          </h1>
+    <div className="w-full h-auto min-h-[300px] p-4 md:p-6 relative bg-gradient-to-br from-white to-[#E7F4FF] rounded-[10px] shadow-[2px_2px_6px_rgba(24,95,235,0.1)] flex flex-col">
+      {/* Header Section */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        {/* Title */}
+        <div className="flex gap-6">
+           <h2
+              className={`text-[20px] md:text-[22px] font-medium text-[#1F2837] whitespace-nowrap pb-1 ${
+                activeScreen === "Shop Owner Categories"
+                  ? "border-b-2 border-[#0e4053]"
+                  : "border-b-2 border-transparent"
+              }`}
+            >
+               Categories
+            </h2>
+          {/* <button
+            onClick={() => setActiveScreen("Shop Owner Categories")}
+            className="focus:outline-none"
+          >
+            <h2
+              className={`text-[20px] md:text-[22px] font-medium text-[#1F2837] whitespace-nowrap pb-1 ${
+                activeScreen === "Shop Owner Categories"
+                  ? "border-b-2 border-[#0e4053]"
+                  : "border-b-2 border-transparent"
+              }`}
+            >
+              Shop Owner Categories
+            </h2>
+          </button> */}
+          {/* <button
+            onClick={() => setActiveScreen("googleSheet")}
+            className="focus:outline-none"
+          >
+            <h2
+              className={`text-[20px] md:text-[22px] font-medium text-[#1F2837] whitespace-nowrap pb-1 ${
+                activeScreen === "googleSheet"
+                  ? "border-b-2 border-[#0e4053]"
+                  : "border-b-2 border-transparent"
+              }`}
+            >
+              Google Sheet
+            </h2>
+          </button> */}
+        </div>
 
-          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
-            {/* Search Bar */}
-            <div className="relative">
-              <TbSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder="Search categories..."
-                className="h-[44px] pl-10 pr-4 rounded-[10px] border border-gray-300 bg-white focus:ring-2 focus:ring-[#0e4053] outline-none text-sm"
-              />
-            </div>
+        {activeScreen === "status" ? (
+          <div className="flex items-center gap-3 md:gap-4">
+            {/* Add Status button - user didn't specify, but often needed */}
+            <button
+              onClick={() => setIsAddStatusModalOpen(true)}
+              className="hover:bg-[#004B8D] bg-[#003A72] text-white h-[44px] px-8 rounded-[8px] flex items-center justify-center"
+            >
+              Add Categories
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 md:gap-4">
+            {/* No additional buttons needed for Google Sheet view */}
+          </div>
+        )}
+      </div>
 
             <div className="flex items-center gap-2">
               {/* Pagination top */}
@@ -274,15 +312,111 @@ const LeadSettings = () => {
                 </select>
               </div>
 
-              <button
-                onClick={() => {
-                  setIsAddStatusModalOpen(true);
-                  setNewStatusData({ status_name: "" });
-                }}
-                className="h-[44px] rounded-[10px] bg-[#003A72] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(0,58,114,0.4)] "
-              >
-                Add Categories
-              </button>
+              {/* Body */}
+              <div className="pb-20">
+                {leadStatuses?.length === 0 ? (
+                  <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-8 text-center text-[#4B5563] border-b border-gray-200 items-center last:border-b-0  transition-colors">
+                    <div className="lg:col-span-5">
+                      No Categories available.
+                    </div>{" "}
+                    {/* Adjusted colspan for the new grid */}
+                  </div>
+                ) : (
+                  leadStatuses?.map((status) => (
+                    <div
+                      key={status.status_id}
+                      className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-4 border-b border-gray-200 items-center last:border-b-0  transition-colors"
+                    >
+                      <div className="text-sm text-[#4B5563] text-left">
+                        {status.status_id}
+                      </div>
+                      <div className="text-sm text-[#4B5563] text-left whitespace-nowrap">
+                        {status.status_name}
+                      </div>
+                      <div className="relative text-left">
+                        {" "}
+                        {/* Removed flex justify-center for left alignment */}
+                        <button
+                          onClick={() => toggleDropdown(status.status_id)}
+                          className="p-2 text-[#4B5563] hover:bg-Duskwood-200  rounded-full transition-colors"
+                        >
+                          <TbDotsVertical className="w-4 h-4" />
+                        </button>
+                        {activeDropdown === status.status_id && (
+                          <div className="relative">
+                            <div
+                              ref={(el) => {
+                                if (el) {
+                                  el.scrollIntoView({
+                                    behavior: "smooth",
+                                    block: "nearest",
+                                  });
+                                }
+                              }}
+                              className="absolute left-0 w-24 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-10 overflow-hidden"
+                            >
+                              {" "}
+                              {/* Aligned dropdown to the left */}
+                              <button
+                                onClick={() => handleEdit(status)}
+                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="24"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors"
+                                >
+                                  <path
+                                    fill="currentColor"
+                                    d="M4 14v-2h7v2zm0-4V8h11v2zm0-4V4h11v2zm9 14v-3.075l6.575-6.55l3.075 3.05L16.075 20zm7.5-6.575l-.925-.925zm-6 5.075h.95l3.025-3.05l-.45-.475l-.475-.45l-3.05 3.025zm3.525-3.525l-.475-.45l.925.925z"
+                                  />
+                                </svg>
+                                <span className="group-hover:text-white transition-colors">
+                                  Edit
+                                </span>
+                              </button>
+                              <svg
+                                className="w-full h-[1px]"
+                                viewBox="0 0 100 1"
+                                preserveAspectRatio="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <polygon
+                                  points="0,0 50,1 100,0"
+                                  fill="#E5E7EB"
+                                />
+                              </svg>
+                              <button
+                                onClick={() => handleDelete(status.status_id)}
+                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="24"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors"
+                                >
+                                  <path
+                                    fill="currentColor"
+                                    d="M7.616 20q-.672 0-1.144-.472T6 18.385V6H5V5h4v-.77h6V5h4v1h-1v12.385q0 .69-.462 1.153T16.384 20zM17 6H7v12.385q0 .269.173.442t.443.173h8.769q.23 0 .423-.192t.192-.424zM9.808 17h1V8h-1zm3.384 0h1V8h-1zM7 6v13z"
+                                  />
+                                </svg>
+                                <span className="group-hover:text-white transition-colors">
+                                  Delete
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div /> {/* New empty column */}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -332,7 +466,78 @@ const LeadSettings = () => {
                           Delete
                         </button>
                       </div>
-                    )}
+                    </div>
+                    <div className="relative">
+                      <button
+                        onClick={() => toggleDropdown(status.status_id)}
+                        className="p-2 text-[#4B5563] rounded-full hover:bg-gray-100"
+                      >
+                        <TbDotsVertical className="w-5 h-5" />
+                      </button>
+                      {activeDropdown === status.status_id && (
+                        <div className="absolute right-0 mt-1 w-28 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-20 overflow-hidden">
+                          <div
+                            ref={(el) => {
+                              if (el) {
+                                el.scrollIntoView({
+                                  behavior: "smooth",
+                                  block: "nearest",
+                                });
+                              }
+                            }}
+                          >
+                            <button
+                              onClick={() => handleEdit(status)}
+                              className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors"
+                              >
+                                <path
+                                  fill="currentColor"
+                                  d="M4 14v-2h7v2zm0-4V8h11v2zm0-4V4h11v2zm9 14v-3.075l6.575-6.55l3.075 3.05L16.075 20zm7.5-6.575l-.925-.925zm-6 5.075h.95l3.025-3.05l-.45-.475l-.475-.45l-3.05 3.025zm3.525-3.525l-.475-.45l.925.925z"
+                                />
+                              </svg>
+                              <span className="group-hover:text-white transition-colors">
+                                Edit
+                              </span>
+                            </button>
+                            <svg
+                              className="w-full h-[1px]"
+                              viewBox="0 0 100 1"
+                              preserveAspectRatio="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
+                            </svg>
+                            <button
+                              onClick={() => handleDelete(status.status_id)}
+                              className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                className="mr-2 w-4 h-4 fill-current text-[#4B5463] group-hover:text-white transition-colors"
+                              >
+                                <path
+                                  fill="currentColor"
+                                  d="M7.616 20q-.672 0-1.144-.472T6 18.385V6H5V5h4v-.77h6V5h4v1h-1v12.385q0 .69-.462 1.153T16.384 20zM17 6H7v12.385q0 .269.173.442t.443.173h8.769q.23 0 .423-.192t.192-.424zM9.808 17h1V8h-1zm3.384 0h1V8h-1zM7 6v13z"
+                                />
+                              </svg>
+                              <span className="group-hover:text-white transition-colors">
+                                Delete
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))
@@ -393,9 +598,9 @@ const LeadSettings = () => {
             </div>
             <div className="flex items-center gap-2">
               <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className="px-3 py-1 border rounded disabled:opacity-50"
+                type="button"
+                onClick={handleDownloadSample}
+                className="text-[11px] sm:text-sm lg:text-base text-[#003A72] hover:underline focus:outline-none focus:ring-2 focus:ring-[#0e4053] rounded-md px-2 py-1 transition-colors duration-200 whitespace-nowrap"
               >
                 Prev
               </button>
@@ -410,9 +615,15 @@ const LeadSettings = () => {
                 Next
               </button>
             </div>
-          </div>
-        )}
-      </div>
+            <button
+              type="submit"
+              className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
+            >
+              Import Sheet
+            </button>
+          </form> */}
+        </div>
+      )}
 
       {/* Edit Modal */}
       {isModalOpen && (
@@ -465,7 +676,10 @@ const LeadSettings = () => {
               </div>
 
               <div className="mt-10 flex justify-center">
-                <button type="submit" className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px]  transition-colors">
+                <button
+                  type="submit"
+                  className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
+                >
                   Save
                 </button>
               </div>
@@ -517,7 +731,10 @@ const LeadSettings = () => {
               </div>
 
               <div className="mt-10 flex justify-center">
-                <button type="submit" className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px]  transition-colors">
+                <button
+                  type="submit"
+                  className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
+                >
                   Add Categories
                 </button>
               </div>

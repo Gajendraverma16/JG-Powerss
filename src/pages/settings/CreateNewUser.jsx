@@ -1059,7 +1059,7 @@ const CreateUser = () => {
         <div className="flex items-center gap-3 md:gap-4">
           <button
             className=" hover:bg-Duskwood-500
-        bg-[#ef7e1b] text-white
+        bg-[#003A72] text-white
         h-[44px] px-5
         rounded-[8px]
         flex items-center justify-center
@@ -1099,7 +1099,7 @@ const CreateUser = () => {
                     }}
                     className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] ${
                       itemsPerPage === option
-                        ? "bg-[#E7EFF8] font-bold text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] font-bold text-[#003A72]"
                         : "text-[#545454]"
                     }`}
                   >
@@ -1192,7 +1192,7 @@ const CreateUser = () => {
                               ${
                                 user.is_approved
                                   ? "bg-[#27AE60] text-white"
-                                  : "bg-[#ef7e1b] text-white"
+                                  : "bg-[#003A72] text-white"
                               }
                               hover:scale-105 transform
                             `}
@@ -1308,7 +1308,7 @@ const CreateUser = () => {
                               {/* EDIT button */}
                               <button
                                 onClick={() => handleEdit(user)}
-                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md cursor-pointer"
+                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md cursor-pointer"
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -1343,7 +1343,7 @@ const CreateUser = () => {
                               {/* DELETE button */}
                               <button
                                 onClick={() => handleDelete(user.id)}
-                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md cursor-pointer"
+                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md cursor-pointer"
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -1417,7 +1417,7 @@ const CreateUser = () => {
                           {/* EDIT button */}
                           <button
                             onClick={() => handleEdit(user)}
-                            className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md cursor-pointer"
+                            className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md cursor-pointer"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -1449,7 +1449,7 @@ const CreateUser = () => {
                           {/* DELETE button */}
                           <button
                             onClick={() => handleDelete(user.id)}
-                            className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md cursor-pointer"
+                            className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md cursor-pointer"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -1504,7 +1504,7 @@ const CreateUser = () => {
                           ${
                             user.is_approved
                               ? "bg-[#27AE60] text-white"
-                              : "bg-[#ef7e1b] text-white"
+                              : "bg-[#003A72] text-white"
                           }
                         `}
                       >
@@ -2032,7 +2032,7 @@ const CreateUser = () => {
                         }
                       }
                     }}
-                    className="text-[10px] text-[#ef7e1b] hover:underline cursor-pointer  flex whitespace-nowrap cursor-pointer"
+                    className="text-[10px] text-[#003A72] hover:underline cursor-pointer  flex whitespace-nowrap cursor-pointer"
                   >
                     Click to change user's password{" "}
                   </button>
@@ -2048,7 +2048,7 @@ const CreateUser = () => {
               <button
                 type="submit"
                 onClick={handleSubmit}
-                className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors cursor-pointer"
+                className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors cursor-pointer"
               >
                 Save
               </button>
@@ -2444,7 +2444,7 @@ const CreateUser = () => {
               <button
                 type="button"
                 onClick={handleCreateSubmit}
-                className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors cursor-pointer"
+                className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors cursor-pointer"
               >
                 Save
               </button>

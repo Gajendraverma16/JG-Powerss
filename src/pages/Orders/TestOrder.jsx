@@ -1043,7 +1043,7 @@ const handleDelete = async (id) => {
                     }}
                     className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] ${
                       itemsPerPage === option
-                        ? "bg-[#E7EFF8] font-bold text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] font-bold text-[#003A72]"
                         : "text-[#545454]"
                     }`}
                   >
@@ -1165,7 +1165,7 @@ const handleDelete = async (id) => {
                   }}
                   className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-[#545454] cursor-pointer ${
                     filters.orderType === option.value
-                      ? "bg-[#E7EFF8] text-[#ef7e1b] font-bold"
+                      ? "bg-[#E7EFF8] text-[#003A72] font-bold"
                       : ""
                   }`}
                 >
@@ -1311,7 +1311,7 @@ const handleDelete = async (id) => {
                   }}
                   className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-[#545454] cursor-pointer ${
                     filters.payment === option.value
-                      ? "bg-[#E7EFF8] text-[#ef7e1b] font-bold"
+                      ? "bg-[#E7EFF8] text-[#003A72] font-bold"
                       : ""
                   }`}
                 >
@@ -1385,7 +1385,7 @@ const handleDelete = async (id) => {
           }}
           className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-[#545454] cursor-pointer ${
             filters.contact === option.value
-              ? "bg-[#E7EFF8] text-[#ef7e1b] font-bold"
+              ? "bg-[#E7EFF8] text-[#003A72] font-bold"
               : ""
           }`}
         >
@@ -1435,7 +1435,7 @@ const handleDelete = async (id) => {
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     createdTimeRange === "all"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleCreatedTimeRangeChange("all")}
@@ -1443,13 +1443,13 @@ const handleDelete = async (id) => {
                   {" "}
                   <span>All Dates</span>{" "}
                   {createdTimeRange === "all" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     createdTimeRange === "7days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleCreatedTimeRangeChange("7days")}
@@ -1457,13 +1457,13 @@ const handleDelete = async (id) => {
                   {" "}
                   <span>Last 7 Days</span>{" "}
                   {createdTimeRange === "7days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     createdTimeRange === "30days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleCreatedTimeRangeChange("30days")}
@@ -1471,13 +1471,13 @@ const handleDelete = async (id) => {
                   {" "}
                   <span>Last 30 Days</span>{" "}
                   {createdTimeRange === "30days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     createdTimeRange === "90days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleCreatedTimeRangeChange("90days")}
@@ -1485,7 +1485,7 @@ const handleDelete = async (id) => {
                   {" "}
                   <span>Last 90 Days</span>{" "}
                   {createdTimeRange === "90days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <div className="border-t border-gray-200 my-2"></div>
@@ -1556,7 +1556,7 @@ const handleDelete = async (id) => {
                     </div>
                   </div>
                   <button
-                    className="hover:bg-Duskwood-500 bg-[#ef7e1b] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center w-full"
+                    className="hover:bg-Duskwood-500 bg-[#003A72] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center w-full"
                     onClick={applyCustomCreatedDateRange}
                   >
                     Apply Custom Range
@@ -1604,7 +1604,7 @@ const handleDelete = async (id) => {
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     updatedTimeRange === "all"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleUpdatedTimeRangeChange("all")}
@@ -1612,13 +1612,13 @@ const handleDelete = async (id) => {
                   {" "}
                   <span>All Dates</span>{" "}
                   {updatedTimeRange === "all" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     updatedTimeRange === "7days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleUpdatedTimeRangeChange("7days")}
@@ -1626,13 +1626,13 @@ const handleDelete = async (id) => {
                   {" "}
                   <span>Last 7 Days</span>{" "}
                   {updatedTimeRange === "7days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     updatedTimeRange === "30days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleUpdatedTimeRangeChange("30days")}
@@ -1640,13 +1640,13 @@ const handleDelete = async (id) => {
                   {" "}
                   <span>Last 30 Days</span>{" "}
                   {updatedTimeRange === "30days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     updatedTimeRange === "90days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleUpdatedTimeRangeChange("90days")}
@@ -1654,7 +1654,7 @@ const handleDelete = async (id) => {
                   {" "}
                   <span>Last 90 Days</span>{" "}
                   {updatedTimeRange === "90days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <div className="border-t border-gray-200 my-2"></div>
@@ -1725,7 +1725,7 @@ const handleDelete = async (id) => {
                     </div>
                   </div>
                   <button
-                    className="hover:bg-Duskwood-500 bg-[#ef7e1b] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center w-full"
+                    className="hover:bg-Duskwood-500 bg-[#003A72] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center w-full"
                     onClick={applyCustomUpdatedDateRange}
                   >
                     Apply Custom Range
@@ -2056,7 +2056,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                 >
                   {/* <button
                     onClick={() => handleEdit(order)}
-                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
+                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
                   >
                     <FiEdit className="mr-2 w-4 h-4 group-hover:text-white" />
                     <span className="group-hover:text-white">Edit</span>
@@ -2073,7 +2073,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
 
                   <button
                     onClick={() => handleDelete(order?.id)}
-                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
+                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
                   >
                     <FiTrash2 className="mr-2 w-4 h-4 group-hover:text-white" />
                     <span className="group-hover:text-white">Delete</span>
@@ -2157,7 +2157,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                   {/* Edit (optional) */}
                   {/* <button
                     onClick={() => handleEdit(order)}
-                    className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors"
+                    className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors"
                   >
                     <FiEdit className="mr-2 w-4 h-4 group-hover:text-white" />
                     <span className="group-hover:text-white">Edit</span>
@@ -2174,7 +2174,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
 
                   <button
                     onClick={() => handleDelete(order?.id)}
-                    className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors"
+                    className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors"
                   >
                     <FiTrash2 className="mr-2 w-4 h-4 group-hover:text-white" />
                     <span className="group-hover:text-white">Delete</span>
@@ -2248,7 +2248,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
           >
             <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
               <svg
-                className="w-5 h-5 text-[#EF7E1B]"
+                className="w-5 h-5 text-[#003A72]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -2644,7 +2644,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
             <div className="mt-10 flex justify-center">
               <button
                 onClick={() => setIsItemsModalOpen(false)}
-                className="w-full md:w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                className="w-full md:w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
               >
                 Close
               </button>
