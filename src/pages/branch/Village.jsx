@@ -333,13 +333,13 @@ import api from "../../api";
                       <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10">
                         <button
                           onClick={() => handleEdit(v)}
-                          className="px-2 py-1 text-sm hover:bg-[#004B8D] w-full text-left"
+                          className="px-2 py-1 text-sm hover:bg-[#004B8D] hover:text-white w-full text-left"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(v.id)}
-                          className="px-2 py-1 text-sm hover:bg-[#004B8D] w-full text-left"
+                          className="px-2 py-1 text-sm hover:bg-[#004B8D] hover:text-white w-full text-left"
                         >
                           Delete
                         </button>

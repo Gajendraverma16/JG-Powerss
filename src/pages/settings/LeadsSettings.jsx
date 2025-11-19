@@ -11,6 +11,7 @@ const LeadSettings = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddStatusModalOpen, setIsAddStatusModalOpen] = useState(false); 
   const [editingStatus, setEditingStatus] = useState(null);
+  const [activeScreen, setActiveScreen] = useState("status");
   const [formData, setFormData] = useState({
     status_name: "",
   });
@@ -294,134 +295,7 @@ const LeadSettings = () => {
         )}
       </div>
 
-            <div className="flex items-center gap-2">
-              {/* Pagination top */}
-              <div className="flex items-center gap-2 ">
-                <label className="text-sm text-[#4B5563]">Show</label>
-                <select
-                  className="border border-gray-300 rounded-md text-sm px-2 py-1"
-                  value={rowsPerPage}
-                  onChange={(e) => {
-                    setRowsPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={25}>25</option>
-                </select>
-              </div>
-
-              {/* Body */}
-              <div className="pb-20">
-                {leadStatuses?.length === 0 ? (
-                  <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-8 text-center text-[#4B5563] border-b border-gray-200 items-center last:border-b-0  transition-colors">
-                    <div className="lg:col-span-5">
-                      No Categories available.
-                    </div>{" "}
-                    {/* Adjusted colspan for the new grid */}
-                  </div>
-                ) : (
-                  leadStatuses?.map((status) => (
-                    <div
-                      key={status.status_id}
-                      className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-4 border-b border-gray-200 items-center last:border-b-0  transition-colors"
-                    >
-                      <div className="text-sm text-[#4B5563] text-left">
-                        {status.status_id}
-                      </div>
-                      <div className="text-sm text-[#4B5563] text-left whitespace-nowrap">
-                        {status.status_name}
-                      </div>
-                      <div className="relative text-left">
-                        {" "}
-                        {/* Removed flex justify-center for left alignment */}
-                        <button
-                          onClick={() => toggleDropdown(status.status_id)}
-                          className="p-2 text-[#4B5563] hover:bg-Duskwood-200  rounded-full transition-colors"
-                        >
-                          <TbDotsVertical className="w-4 h-4" />
-                        </button>
-                        {activeDropdown === status.status_id && (
-                          <div className="relative">
-                            <div
-                              ref={(el) => {
-                                if (el) {
-                                  el.scrollIntoView({
-                                    behavior: "smooth",
-                                    block: "nearest",
-                                  });
-                                }
-                              }}
-                              className="absolute left-0 w-24 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-10 overflow-hidden"
-                            >
-                              {" "}
-                              {/* Aligned dropdown to the left */}
-                              <button
-                                onClick={() => handleEdit(status)}
-                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors"
-                                >
-                                  <path
-                                    fill="currentColor"
-                                    d="M4 14v-2h7v2zm0-4V8h11v2zm0-4V4h11v2zm9 14v-3.075l6.575-6.55l3.075 3.05L16.075 20zm7.5-6.575l-.925-.925zm-6 5.075h.95l3.025-3.05l-.45-.475l-.475-.45l-3.05 3.025zm3.525-3.525l-.475-.45l.925.925z"
-                                  />
-                                </svg>
-                                <span className="group-hover:text-white transition-colors">
-                                  Edit
-                                </span>
-                              </button>
-                              <svg
-                                className="w-full h-[1px]"
-                                viewBox="0 0 100 1"
-                                preserveAspectRatio="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <polygon
-                                  points="0,0 50,1 100,0"
-                                  fill="#E5E7EB"
-                                />
-                              </svg>
-                              <button
-                                onClick={() => handleDelete(status.status_id)}
-                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors"
-                                >
-                                  <path
-                                    fill="currentColor"
-                                    d="M7.616 20q-.672 0-1.144-.472T6 18.385V6H5V5h4v-.77h6V5h4v1h-1v12.385q0 .69-.462 1.153T16.384 20zM17 6H7v12.385q0 .269.173.442t.443.173h8.769q.23 0 .423-.192t.192-.424zM9.808 17h1V8h-1zm3.384 0h1V8h-1zM7 6v13z"
-                                  />
-                                </svg>
-                                <span className="group-hover:text-white transition-colors">
-                                  Delete
-                                </span>
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div /> {/* New empty column */}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Desktop Table */}
+      {/* Desktop Table */}
         <div className="hidden md:block flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] p-4">
           <div className="grid md:grid-cols-[1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] font-medium text-sm">
             <div>Categories ID</div>
@@ -452,92 +326,68 @@ const LeadSettings = () => {
                       <TbDotsVertical className="w-4 h-4" />
                     </button>
                     {activeDropdown === (status.status_id || status._id) && (
-                      <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10 border border-gray-200 mt-2">
-                        <button
-                          onClick={() => handleEdit(status)}
-                          className="px-2 py-1 text-sm  w-full text-left hover:text-white hover:bg-[#003A72]"
+                      <div className="absolute right-0 mt-1 w-28 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-20 overflow-hidden">
+                        <div
+                          ref={(el) => {
+                            if (el) {
+                              el.scrollIntoView({
+                                behavior: "smooth",
+                                block: "nearest",
+                              });
+                            }
+                          }}
                         >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(status.status_id || status._id)}
-                          className="px-2 py-1 text-sm  w-full text-left hover:text-white hover:bg-[#003A72]"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                    <div className="relative">
-                      <button
-                        onClick={() => toggleDropdown(status.status_id)}
-                        className="p-2 text-[#4B5563] rounded-full hover:bg-gray-100"
-                      >
-                        <TbDotsVertical className="w-5 h-5" />
-                      </button>
-                      {activeDropdown === status.status_id && (
-                        <div className="absolute right-0 mt-1 w-28 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-20 overflow-hidden">
-                          <div
-                            ref={(el) => {
-                              if (el) {
-                                el.scrollIntoView({
-                                  behavior: "smooth",
-                                  block: "nearest",
-                                });
-                              }
-                            }}
+                          <button
+                            onClick={() => handleEdit(status)}
+                            className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
                           >
-                            <button
-                              onClick={() => handleEdit(status)}
-                              className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors"
-                              >
-                                <path
-                                  fill="currentColor"
-                                  d="M4 14v-2h7v2zm0-4V8h11v2zm0-4V4h11v2zm9 14v-3.075l6.575-6.55l3.075 3.05L16.075 20zm7.5-6.575l-.925-.925zm-6 5.075h.95l3.025-3.05l-.45-.475l-.475-.45l-3.05 3.025zm3.525-3.525l-.475-.45l.925.925z"
-                                />
-                              </svg>
-                              <span className="group-hover:text-white transition-colors">
-                                Edit
-                              </span>
-                            </button>
                             <svg
-                              className="w-full h-[1px]"
-                              viewBox="0 0 100 1"
-                              preserveAspectRatio="none"
                               xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors"
                             >
-                              <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
+                              <path
+                                fill="currentColor"
+                                d="M4 14v-2h7v2zm0-4V8h11v2zm0-4V4h11v2zm9 14v-3.075l6.575-6.55l3.075 3.05L16.075 20zm7.5-6.575l-.925-.925zm-6 5.075h.95l3.025-3.05l-.45-.475l-.475-.45l-3.05 3.025zm3.525-3.525l-.475-.45l.925.925z"
+                              />
                             </svg>
-                            <button
-                              onClick={() => handleDelete(status.status_id)}
-                              className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
+                            <span className="group-hover:text-white transition-colors">
+                              Edit
+                            </span>
+                          </button>
+                          <svg
+                            className="w-full h-[1px]"
+                            viewBox="0 0 100 1"
+                            preserveAspectRatio="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
+                          </svg>
+                          <button
+                            onClick={() => handleDelete(status.status_id || status._id)}
+                            className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              className="mr-2 w-4 h-4 fill-current text-[#4B5463] group-hover:text-white transition-colors"
                             >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                className="mr-2 w-4 h-4 fill-current text-[#4B5463] group-hover:text-white transition-colors"
-                              >
-                                <path
-                                  fill="currentColor"
-                                  d="M7.616 20q-.672 0-1.144-.472T6 18.385V6H5V5h4v-.77h6V5h4v1h-1v12.385q0 .69-.462 1.153T16.384 20zM17 6H7v12.385q0 .269.173.442t.443.173h8.769q.23 0 .423-.192t.192-.424zM9.808 17h1V8h-1zm3.384 0h1V8h-1zM7 6v13z"
-                                />
-                              </svg>
-                              <span className="group-hover:text-white transition-colors">
-                                Delete
-                              </span>
-                            </button>
-                          </div>
+                              <path
+                                fill="currentColor"
+                                d="M7.616 20q-.672 0-1.144-.472T6 18.385V6H5V5h4v-.77h6V5h4v1h-1v12.385q0 .69-.462 1.153T16.384 20zM17 6H7v12.385q0 .269.173.442t.443.173h8.769q.23 0 .423-.192t.192-.424zM9.808 17h1V8h-1zm3.384 0h1V8h-1zM7 6v13z"
+                              />
+                            </svg>
+                            <span className="group-hover:text-white transition-colors">
+                              Delete
+                            </span>
+                          </button>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
@@ -588,40 +438,34 @@ const LeadSettings = () => {
           ))}
         </div>
 
-        {/* Pagination bottom */}
-        {filteredStatuses.length > 0 && (
-          <div className="flex flex-col md:flex-row justify-between items-center mt-6">
-            <div className="text-sm text-gray-600 mb-3 md:mb-0">
-              Showing {indexOfFirst + 1} to {Math.min(indexOfLast, filteredStatuses.length)} of{" "}
-              {filteredStatuses.length} entries
-              {searchQuery && ` (filtered from ${leadStatuses.length} total)`}
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleDownloadSample}
-                className="text-[11px] sm:text-sm lg:text-base text-[#003A72] hover:underline focus:outline-none focus:ring-2 focus:ring-[#0e4053] rounded-md px-2 py-1 transition-colors duration-200 whitespace-nowrap"
-              >
-                Prev
-              </button>
-              <span className="text-sm">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
+      {/* Pagination bottom */}
+      {filteredStatuses.length > 0 && (
+        <div className="flex flex-col md:flex-row justify-between items-center mt-6">
+          <div className="text-sm text-gray-600 mb-3 md:mb-0">
+            Showing {indexOfFirst + 1} to {Math.min(indexOfLast, filteredStatuses.length)} of{" "}
+            {filteredStatuses.length} entries
+            {searchQuery && ` (filtered from ${leadStatuses.length} total)`}
+          </div>
+          <div className="flex items-center gap-2">
             <button
-              type="submit"
-              className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
+              type="button"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="px-3 py-1 border rounded disabled:opacity-50"
             >
-              Import Sheet
+              Prev
             </button>
-          </form> */}
+            <span className="text-sm">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
 
