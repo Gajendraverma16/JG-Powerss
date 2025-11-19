@@ -89,43 +89,34 @@ const [isUpdating, setIsUpdating] = useState(false);
     try {
       setIsUpdating(true);
 
-      // TODO: Replace with actual API endpoint when provided
-      await api.post(`/villages/${editingVillage.id}/update-shop-counts`, {
+      const response = await api.post("/villages/updateShops", {
+        village_id: editingVillage.id,
         total_shops: editTotalShops,
         active_shops: editActiveShops,
         inactive_shops: editInactiveShops,
       });
 
-      // Update the village in the list
-      setVillages((prev) =>
-        prev.map((v) =>
-          v.id === editingVillage.id
-            ? {
-                ...v,
-                total_shops: editTotalShops,
-                active_shops: editActiveShops,
-                inactive_shops: editInactiveShops,
-              }
-            : v
-        )
-      );
+      // Close modal first
+      setIsEditModalOpen(false);
 
+      // Show success message
       Swal.fire({
         icon: "success",
         title: "Updated!",
-        text: "Shop counts updated successfully.",
+        text: response.data?.message || "Shop counts updated successfully.",
         timer: 1500,
         showConfirmButton: false,
       });
 
-      setIsEditModalOpen(false);
+      // Refresh villages list from server to get updated data
+      await fetchVillages();
     } catch (err) {
       console.error("Error updating shop counts:", err);
       Swal.fire({
         icon: "error",
         title: "Update Failed",
         text: err.response?.data?.message || "Could not update shop counts.",
-        confirmButtonColor: "#ef7e1b",
+        confirmButtonColor: "#003A72",
       });
     } finally {
       setIsUpdating(false);
@@ -249,7 +240,7 @@ const [isUpdating, setIsUpdating] = useState(false);
         icon: "success",
         title: "Villages Assigned!",
         text: response.data?.message || `${selectedVillages.length} villages assigned to ${selectedAssignee}.`,
-        confirmButtonColor: "#ef7e1b",
+        confirmButtonColor: "#003A72",
       });
 
       // Refresh villages list
@@ -265,7 +256,7 @@ const [isUpdating, setIsUpdating] = useState(false);
         icon: "error",
         title: "Assignment Failed",
         text: error.response?.data?.message || "Failed to assign villages.",
-        confirmButtonColor: "#ef7e1b",
+        confirmButtonColor: "#003A72",
       });
     }
   };
@@ -345,7 +336,7 @@ const [isUpdating, setIsUpdating] = useState(false);
         {/* Bulk Edit */}
         {selectedVillages.length > 0 && (user?.role === "admin" || user?.role === "superadmin") && (
           <button
-            className="bg-[#ef7e1b] hover:bg-[#e86d00] text-white h-[44px] px-5 rounded-[8px]"
+            className="bg-[#003A72] hover:bg-[#003A72] text-white h-[44px] px-5 rounded-[8px]"
             onClick={() => setIsBulkAssignModalOpen(true)}
           >
            Assigned Villages
@@ -358,17 +349,19 @@ const [isUpdating, setIsUpdating] = useState(false);
         <table className="w-full border-collapse">
           <thead>
             <tr className="text-left text-[#4B5563]">
-              <th className="py-4 px-6 w-12">
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedVillages.length === currentVillages.length &&
-                    currentVillages.length > 0
-                  }
-                  onChange={toggleSelectAll}
-                  className="w-4 h-4 rounded border-[#E9EAEA] cursor-pointer"
-                />
-              </th>
+              {(user?.role === "admin" || user?.role === "superadmin") && (
+                <th className="py-4 px-6 w-12">
+                  <input
+                    type="checkbox"
+                    checked={
+                      selectedVillages.length === currentVillages.length &&
+                      currentVillages.length > 0
+                    }
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded border-[#E9EAEA] cursor-pointer"
+                  />
+                </th>
+              )}
               <th className="py-4 px-6 text-sm font-medium">Village ID</th>
               <th className="py-4 px-6 text-sm font-medium">Village Name</th>
               <th className="py-4 px-6 text-sm font-medium">Assigned Member</th>
@@ -381,21 +374,23 @@ const [isUpdating, setIsUpdating] = useState(false);
           <tbody>
             {currentVillages.length === 0 ? (
               <tr>
-                <td colSpan="8" className="py-8 px-6 text-center text-[#4B5563]">
+                <td colSpan={(user?.role === "admin" || user?.role === "superadmin") ? "8" : "7"} className="py-8 px-6 text-center text-[#4B5563]">
                   {searchTerm ? "No Villages found." : "No Villages available."}
                 </td>
               </tr>
             ) : (
               currentVillages.map((village) => (
                 <tr key={village.id} className="border-t border-[#E5E7EB]">
-                  <td className="py-4 px-6">
-                    <input
-                      type="checkbox"
-                      checked={selectedVillages.includes(village.id)}
-                      onChange={() => toggleVillageSelection(village.id)}
-                      className="w-4 h-4 rounded border-[#E9EAEA] cursor-pointer"
-                    />
-                  </td>
+                  {(user?.role === "admin" || user?.role === "superadmin") && (
+                    <td className="py-4 px-6">
+                      <input
+                        type="checkbox"
+                        checked={selectedVillages.includes(village.id)}
+                        onChange={() => toggleVillageSelection(village.id)}
+                        className="w-4 h-4 rounded border-[#E9EAEA] cursor-pointer"
+                      />
+                    </td>
+                  )}
                   <td className="py-4 px-6 text-sm text-[#4B5563]">{village.id}</td>
                   <td className="py-4 px-6 text-sm text-[#4B5563]">
                     {village.village_name}
@@ -415,7 +410,7 @@ const [isUpdating, setIsUpdating] = useState(false);
                   <td className="py-4 px-6 text-sm">
                     <button
                       onClick={() => handleOpenEditModal(village)}
-                      className="bg-[#ef7e1b] hover:bg-[#e86d00] text-white px-3 py-1 rounded-md text-xs"
+                      className="bg-[#003A72] hover:bg-[#003A72] text-white px-3 py-1 rounded-md text-xs"
                     >
                       Edit Count
                     </button>
@@ -440,12 +435,14 @@ const [isUpdating, setIsUpdating] = useState(false);
                 </h3>
                 <p className="text-sm text-gray-500">ID: {village.id}</p>
               </div>
-              <input
-                type="checkbox"
-                checked={selectedVillages.includes(village.id)}
-                onChange={() => toggleVillageSelection(village.id)}
-                className="w-5 h-5 rounded border-gray-300 cursor-pointer"
-              />
+              {(user?.role === "admin" || user?.role === "superadmin") && (
+                <input
+                  type="checkbox"
+                  checked={selectedVillages.includes(village.id)}
+                  onChange={() => toggleVillageSelection(village.id)}
+                  className="w-5 h-5 rounded border-gray-300 cursor-pointer"
+                />
+              )}
             </div>
             <div className="space-y-1">
               <p className="text-sm text-gray-600">
@@ -465,7 +462,7 @@ const [isUpdating, setIsUpdating] = useState(false);
               </p>
               <button
                 onClick={() => handleOpenEditModal(village)}
-                className="mt-2 bg-[#ef7e1b] hover:bg-[#e86d00] text-white px-3 py-2 rounded-md text-xs"
+                className="mt-2 bg-[#003A72] hover:bg-[#003A72] text-white px-3 py-2 rounded-md text-xs"
               >
                 Edit Count
               </button>
@@ -511,7 +508,7 @@ const [isUpdating, setIsUpdating] = useState(false);
           <div className="w-full max-w-[500px] p-6 rounded-2xl bg-gradient-to-br from-white to-[#E6F4FF] shadow-lg relative z-10">
             <button
               onClick={() => setIsEditModalOpen(false)}
-              className="absolute top-6 right-6 text-lg font-bold hover:text-[#ef7e1b]"
+              className="absolute top-6 right-6 text-lg font-bold hover:text-[#003A72]"
             >
               ✕
             </button>
@@ -562,7 +559,7 @@ const [isUpdating, setIsUpdating] = useState(false);
               <button
                 onClick={handleUpdateShopCounts}
                 disabled={isUpdating}
-                className="w-full h-[44px] bg-[#ef7e1b] text-white rounded-[10px] transition-colors text-base font-medium shadow-sm hover:bg-[#e86d00] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-[44px] bg-[#003A72] text-white rounded-[10px] transition-colors text-base font-medium shadow-sm hover:bg-[#003A72] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isUpdating ? "Updating..." : "Update Counts"}
               </button>
@@ -646,7 +643,7 @@ const [isUpdating, setIsUpdating] = useState(false);
 
             <button
               onClick={handleBulkAssign}
-              className="w-full h-[44px] bg-[#ef7e1b] text-white rounded-[10px] transition-colors text-base font-medium shadow-sm hover:bg-[#e86d00]"
+              className="w-full h-[44px] bg-[#003A72] text-white rounded-[10px] transition-colors text-base font-medium shadow-sm hover:bg-[#003A72]"
             >
               Assign Villages
             </button>

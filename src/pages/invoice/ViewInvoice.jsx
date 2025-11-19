@@ -1023,7 +1023,7 @@ const ViewInvoice = () => {
                     type="button"
                     className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-xs sm:text-sm md:text-base lg:text-base ${
                       itemsPerPage === num
-                        ? "bg-[#E7EFF8] font-bold text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] font-bold text-[#003A72]"
                         : "text-[#545454]"
                     }`}
                     onClick={() => {
@@ -1423,7 +1423,7 @@ const ViewInvoice = () => {
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     createdTimeRange === "all"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleCreatedTimeRangeChange("all")}
@@ -1431,13 +1431,13 @@ const ViewInvoice = () => {
                   {" "}
                   <span>All Dates</span>{" "}
                   {createdTimeRange === "all" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     createdTimeRange === "7days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleCreatedTimeRangeChange("7days")}
@@ -1445,13 +1445,13 @@ const ViewInvoice = () => {
                   {" "}
                   <span>Last 7 Days</span>{" "}
                   {createdTimeRange === "7days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     createdTimeRange === "30days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleCreatedTimeRangeChange("30days")}
@@ -1459,13 +1459,13 @@ const ViewInvoice = () => {
                   {" "}
                   <span>Last 30 Days</span>{" "}
                   {createdTimeRange === "30days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     createdTimeRange === "90days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   }`}
                   onClick={() => handleCreatedTimeRangeChange("90days")}
@@ -1473,7 +1473,7 @@ const ViewInvoice = () => {
                   {" "}
                   <span>Last 90 Days</span>{" "}
                   {createdTimeRange === "90days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}{" "}
                 </button>
                 <div className="border-t border-gray-200 my-2"></div>
@@ -1544,7 +1544,7 @@ const ViewInvoice = () => {
                     </div>
                   </div>
                   <button
-                    className="hover:bg-Duskwood-500 bg-[#ef7e1b] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center w-full"
+                    className="hover:bg-Duskwood-500 bg-[#003A72] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center w-full"
                     onClick={applyCustomCreatedDateRange}
                   >
                     Apply Custom Range
@@ -1722,7 +1722,7 @@ const ViewInvoice = () => {
                                   console.log("Edit clicked", invoice);
                                   handleEdit(invoice);
                                 }}
-                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
+                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -1765,7 +1765,7 @@ const ViewInvoice = () => {
                                   console.log("Delete clicked", invoice.id);
                                   handleDelete(invoice.id);
                                 }}
-                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
+                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -1893,7 +1893,7 @@ const ViewInvoice = () => {
                                   console.log("Edit clicked (mobile)", invoice);
                                   handleEdit(invoice);
                                 }}
-                                className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
+                                className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -1939,7 +1939,7 @@ const ViewInvoice = () => {
                                   );
                                   handleDelete(invoice.id);
                                 }}
-                                className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
+                                className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -2418,7 +2418,7 @@ const ViewInvoice = () => {
                   <button
                     type="button"
                     onClick={addServiceItem}
-                    className="h-[44px] px-10 rounded-[12px] bg-[#ef7e1b] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-white hover:bg-[#ee7f1b]"
+                    className="h-[44px] px-10 rounded-[12px] bg-[#003A72] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-white hover:bg-[#004B8D]"
                   >
                     Add
                   </button>
@@ -2427,10 +2427,10 @@ const ViewInvoice = () => {
                 <div className="w-full h-[1px] bg-gray-200 my-4"></div>
 
                 <div className="flex items-center justify-end gap-8 lg:gap-56 mb-14">
-                  <div className="text-[#ef7e1b] text-lg sm:text-xl lg:text-[20px] font-bold">
+                  <div className="text-[#003A72] text-lg sm:text-xl lg:text-[20px] font-bold">
                     Total
                   </div>
-                  <div className="text-[#ef7e1b] text-lg sm:text-xl lg:text-[20px] font-bold">
+                  <div className="text-[#003A72] text-lg sm:text-xl lg:text-[20px] font-bold">
                     Rs {calculateTotalServiceCharge().toFixed(2)}
                   </div>
                 </div>
@@ -2445,7 +2445,7 @@ const ViewInvoice = () => {
                 </button>
                 <button
                   type="submit"
-                  className="h-[46px] px-4 text-white bg-[#ef7e1b] hover:bg-[#ee7f1b] rounded-[12px] transition-colors font-medium"
+                  className="h-[46px] px-4 text-white bg-[#003A72] hover:bg-[#004B8D] rounded-[12px] transition-colors font-medium"
                 >
                   Save Changes
                 </button>
@@ -2581,7 +2581,7 @@ const ViewInvoice = () => {
             <div className="mt-10 flex justify-center">
               <button
                 onClick={() => setIsItemsModalOpen(false)}
-                className="w-full md:w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                className="w-full md:w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
               >
                 Close
               </button>

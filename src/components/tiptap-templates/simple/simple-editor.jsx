@@ -82,54 +82,54 @@ const MainToolbarContent = ({ onHighlighterClick, onLinkClick, isMobile }) => {
       <ToolbarGroup className="bg-white rounded-md p-1 shadow-sm">
         <UndoRedoButton
           action="undo"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
         <UndoRedoButton
           action="redo"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
       </ToolbarGroup>
       <ToolbarSeparator className="bg-gray-300" />
       <ToolbarGroup className="bg-white rounded-md p-1 shadow-sm">
         <HeadingDropdownMenu
           levels={[1, 2, 3, 4]}
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
         <ListDropdownMenu
           types={["bulletList", "orderedList", "taskList"]}
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
-        <BlockquoteButton className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md" />
-        <CodeBlockButton className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md" />
+        <BlockquoteButton className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md" />
+        <CodeBlockButton className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md" />
       </ToolbarGroup>
       <ToolbarSeparator className="bg-gray-300" />
       <ToolbarGroup className="bg-white rounded-md p-1 shadow-sm">
         <MarkButton
           type="bold"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
         <MarkButton
           type="italic"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
         <MarkButton
           type="strike"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
         <MarkButton
           type="code"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
         <MarkButton
           type="underline"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
         {!isMobile ? (
           <ColorHighlightPopover />
         ) : (
           <ColorHighlightPopoverButton
             onClick={onHighlighterClick}
-            className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+            className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
           />
         )}
         {!isMobile ? (
@@ -137,7 +137,7 @@ const MainToolbarContent = ({ onHighlighterClick, onLinkClick, isMobile }) => {
         ) : (
           <LinkButton
             onClick={onLinkClick}
-            className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+            className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
           />
         )}
       </ToolbarGroup>
@@ -145,43 +145,43 @@ const MainToolbarContent = ({ onHighlighterClick, onLinkClick, isMobile }) => {
       <ToolbarGroup className="bg-white rounded-md p-1 shadow-sm">
         <MarkButton
           type="superscript"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
         <MarkButton
           type="subscript"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
       </ToolbarGroup>
       <ToolbarSeparator className="bg-gray-300" />
       <ToolbarGroup className="bg-white rounded-md p-1 shadow-sm">
         <TextAlignButton
           align="left"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
         <TextAlignButton
           align="center"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
         <TextAlignButton
           align="right"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
         <TextAlignButton
           align="justify"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
       </ToolbarGroup>
       <ToolbarSeparator className="bg-gray-300" />
       <ToolbarGroup className="bg-white rounded-md p-1 shadow-sm">
         <ImageUploadButton
           text="Add"
-          className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+          className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
         />
       </ToolbarGroup>
       <Spacer />
       {isMobile && <ToolbarSeparator className="bg-gray-300" />}
       <ToolbarGroup className="bg-white rounded-md p-1 shadow-sm">
-        <ThemeToggle className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md" />
+        <ThemeToggle className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md" />
       </ToolbarGroup>
     </>
   );
@@ -193,7 +193,7 @@ const MobileToolbarContent = ({ type, onBack }) => (
       <Button
         data-style="ghost"
         onClick={onBack}
-        className="text-[#ef7e1b] hover:bg-gray-100 p-2 rounded-md"
+        className="text-[#003A72] hover:bg-gray-100 p-2 rounded-md"
       >
         <ArrowLeftIcon className="tiptap-button-icon" />
         {type === "highlighter" ? (
@@ -275,7 +275,7 @@ export function SimpleEditor({ initialContent, onUpdate }) {
     <EditorContext.Provider value={{ editor }}>
       <Toolbar
         ref={toolbarRef}
-        className="bg-[#ef7e1b] rounded-t-lg p-2 shadow-md z-10 "
+        className="bg-[#003A72] rounded-t-lg p-2 shadow-md z-10 "
         style={
           isMobile
             ? {

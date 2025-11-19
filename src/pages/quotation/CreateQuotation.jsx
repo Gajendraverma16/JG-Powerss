@@ -331,7 +331,7 @@ useEffect(() => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-[#ef7e1b] text-white h-[48px] rounded-xl hover:bg-[#ee7f1b] transition disabled:opacity-60"
+          className="w-full bg-[#003A72] text-white h-[48px] rounded-xl hover:bg-[#004B8D] transition disabled:opacity-60"
         >
           {loading ? "Adding..." : "Add Product"}
         </button>

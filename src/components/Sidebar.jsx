@@ -443,7 +443,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile }) {
         {((!isCollapsed && !isMobile) || (!isMobileCollapsed && isMobile)) && (
           <div className="flex gap-2 p-6 ml-20">
             <img src="/JGPOWER.png" alt="logo" height={30} width={60} />
-            {/* <h1 className="text-2xl font-bold text-[#ef7e1b]">JG POWERS</h1> */}
+            {/* <h1 className="text-2xl font-bold text-[#003A72]">JG POWERS</h1> */}
           </div>
 
         )}
@@ -575,7 +575,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile }) {
                             className={({ isActive }) =>
                               `flex items-center px-5 py-4 text-sm -ml-1 rounded-xl transition-all flex-grow ${
                                 isActive
-                                  ? "bg-[#ef7e1b] text-white active shadow-[0_3px_6px_rgba(124,123,135,0.15),0_6px_10px_rgba(124,123,135,0.12),0_8px_12px_rgba(124,123,135,0.08)]"
+                                  ? "bg-[#003A72] text-white active shadow-[0_3px_6px_rgba(124,123,135,0.15),0_6px_10px_rgba(124,123,135,0.12),0_8px_12px_rgba(124,123,135,0.08)]"
                                   : "text-[#242220] hover:bg-[#242220]/5"
                               }`
                             }
@@ -602,7 +602,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile }) {
                             : "px-5 py-4"
                         } rounded-xl transition-all group ${
                           isActive
-                            ? "bg-[#ef7e1b] text-white active shadow-[0_3px_6px_rgba(124,123,135,0.15),0_6px_10px_rgba(124,123,135,0.12),0_8px_12px_rgba(124,123,135,0.08)]"
+                            ? "bg-[#003A72] text-white active shadow-[0_3px_6px_rgba(124,123,135,0.15),0_6px_10px_rgba(124,123,135,0.12),0_8px_12px_rgba(124,123,135,0.08)]"
                             : "text-[#242220] hover:bg-[#242220]/5"
                         }`
                       }
@@ -646,7 +646,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile }) {
               : ""
           }`}
         >
-          <img src="/Arrow.svg" alt="Back"  className="w-7 h-7 text-[#ef7e1b]" />
+          <img src="/Arrow.svg" alt="Back"  className="w-7 h-7 text-[#003A72]" />
        {/* <img
   src="/right-arrow.png"
   alt="Back"

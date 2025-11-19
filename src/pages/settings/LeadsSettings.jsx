@@ -331,7 +331,7 @@ const LeadSettings = () => {
             {/* Add Status button - user didn't specify, but often needed */}
             <button
               onClick={() => setIsAddStatusModalOpen(true)}
-              className="hover:bg-[#ee7f1b] bg-[#ef7e1b] text-white h-[44px] px-8 rounded-[8px] flex items-center justify-center"
+              className="hover:bg-[#004B8D] bg-[#003A72] text-white h-[44px] px-8 rounded-[8px] flex items-center justify-center"
             >
               Add Categories
             </button>
@@ -404,7 +404,7 @@ const LeadSettings = () => {
                               {/* Aligned dropdown to the left */}
                               <button
                                 onClick={() => handleEdit(status)}
-                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
+                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -435,7 +435,7 @@ const LeadSettings = () => {
                               </svg>
                               <button
                                 onClick={() => handleDelete(status.status_id)}
-                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
+                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -509,7 +509,7 @@ const LeadSettings = () => {
                           >
                             <button
                               onClick={() => handleEdit(status)}
-                              className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
+                              className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -537,7 +537,7 @@ const LeadSettings = () => {
                             </svg>
                             <button
                               onClick={() => handleDelete(status.status_id)}
-                              className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
+                              className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -593,14 +593,14 @@ const LeadSettings = () => {
               <button
                 type="button"
                 onClick={handleDownloadSample}
-                className="text-[11px] sm:text-sm lg:text-base text-[#ef7e1b] hover:underline focus:outline-none focus:ring-2 focus:ring-[#0e4053] rounded-md px-2 py-1 transition-colors duration-200 whitespace-nowrap"
+                className="text-[11px] sm:text-sm lg:text-base text-[#003A72] hover:underline focus:outline-none focus:ring-2 focus:ring-[#0e4053] rounded-md px-2 py-1 transition-colors duration-200 whitespace-nowrap"
               >
                 Download Sample File
               </button>
             </div>
             <button
               type="submit"
-              className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+              className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
             >
               Import Sheet
             </button>
@@ -680,7 +680,7 @@ const LeadSettings = () => {
               <div className="mt-10 flex justify-center">
                 <button
                   type="submit"
-                  className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                  className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
                 >
                   Save
                 </button>
@@ -748,7 +748,7 @@ const LeadSettings = () => {
               <div className="mt-10 flex justify-center">
                 <button
                   type="submit"
-                  className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                  className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
                 >
                   Add Categories
                 </button>

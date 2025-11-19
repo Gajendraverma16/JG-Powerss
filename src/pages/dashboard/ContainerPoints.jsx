@@ -30,7 +30,7 @@ const ContainerPoints = ({
             <div>
               {leads !== undefined && leads !== null && (
                 <>
-                  <div className="text-[#ef7e1b] text-[25px] font-extrabold font-quicksand">
+                  <div className="text-[#003A72] text-[25px] font-extrabold font-quicksand">
                     {leads}+
                   </div>
                   <div className="text-black font-semibold">
@@ -43,7 +43,7 @@ const ContainerPoints = ({
             {/* Icon */}
             <div className="bg-[#3498DB33] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5">
               {icon && (
-                <span className="w-[30px] h-[30px] flex items-center justify-center text-[30px] text-[#ef7e1b]">
+                <span className="w-[30px] h-[30px] flex items-center justify-center text-[30px] text-[#003A72]">
                   {icon}
                 </span>
               )}

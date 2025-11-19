@@ -159,7 +159,7 @@ const fetchCategories = async () => {
     <select
       value={selectedCategory}
       onChange={(e) => setSelectedCategory(e.target.value)}
-      className="w-full h-[42px] sm:h-[46px] px-3 pr-10 rounded-[10px] bg-[#E7EFF8] border border-gray-300 text-[#4B5563] text-[14px] sm:text-[15px] focus:ring-2 focus:ring-[#ef7e1b] outline-none appearance-none"
+      className="w-full h-[42px] sm:h-[46px] px-3 pr-10 rounded-[10px] bg-[#E7EFF8] border border-gray-300 text-[#4B5563] text-[14px] sm:text-[15px] focus:ring-2 focus:ring-[#003A72] outline-none appearance-none"
     >
       <option value="">All Categories</option>
       {categories.map((cat) => (
@@ -190,7 +190,7 @@ const fetchCategories = async () => {
       value={searchTerm}
       onChange={handleSearchChange}
       placeholder="Search by name, SKU or ID..."
-      className="w-full h-[42px] sm:h-[46px] pl-10 pr-10 rounded-[10px] bg-white border border-gray-300 focus:ring-2 focus:ring-[#ef7e1b] outline-none text-[#4B5563] text-[14px] sm:text-[15px]"
+      className="w-full h-[42px] sm:h-[46px] pl-10 pr-10 rounded-[10px] bg-white border border-gray-300 focus:ring-2 focus:ring-[#003A72] outline-none text-[#4B5563] text-[14px] sm:text-[15px]"
     />
     <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
       <svg
@@ -234,7 +234,7 @@ const fetchCategories = async () => {
             {/* Table (Desktop) */}
             <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full text-sm text-left border-collapse">
-                <thead className="bg-[#ef7e1b] text-white">
+                <thead className="bg-[#003A72] text-white">
                   <tr>
                     <th className="px-4 py-3">ID</th>
                     <th className="px-4 py-3">Image</th>
@@ -416,7 +416,7 @@ const fetchCategories = async () => {
                 setItemsPerPage(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600 focus:ring-2 focus:ring-[#ef7e1b] outline-none"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600 focus:ring-2 focus:ring-[#003A72] outline-none"
             >
               {[5, 10, 20, 50].map((num) => (
                 <option key={num} value={num}>
@@ -434,7 +434,7 @@ const fetchCategories = async () => {
               className={`px-3 py-1 rounded-lg border ${
                 currentPage === 1
                   ? "text-gray-400 border-gray-200 bg-gray-100 cursor-not-allowed"
-                  : "text-[#ef7e1b] border-[#ef7e1b] hover:bg-[#ef7e1b] hover:text-white"
+                  : "text-[#003A72] border-[#003A72] hover:bg-[#003A72] hover:text-white"
               } transition`}
             >
               Previous
@@ -452,7 +452,7 @@ const fetchCategories = async () => {
               className={`px-3 py-1 rounded-lg border ${
                 currentPage === totalPages
                   ? "text-gray-400 border-gray-200 bg-gray-100 cursor-not-allowed"
-                  : "text-[#ef7e1b] border-[#ef7e1b] hover:bg-[#ef7e1b] hover:text-white"
+                  : "text-[#003A72] border-[#003A72] hover:bg-[#003A72] hover:text-white"
               } transition`}
             >
               Next
@@ -635,7 +635,7 @@ const fetchCategories = async () => {
         {/* Submit */}
         <button
           type="submit"
-          className="w-full bg-[#ef7e1b] text-white py-2 rounded-xl hover:bg-[#ee7f1b] transition"
+          className="w-full bg-[#003A72] text-white py-2 rounded-xl hover:bg-[#004B8D] transition"
         >
           Update Product
         </button>

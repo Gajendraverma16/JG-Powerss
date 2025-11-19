@@ -582,7 +582,7 @@ const RolesPermissions = () => {
             <button
               onClick={() => setIsAddRoleModalOpen(true)}
               className=" hover:bg-Duskwood-500 
-        bg-[#ef7e1b] text-white
+        bg-[#003A72] text-white
         h-[44px] px-8
         rounded-[8px]
         flex items-center justify-center
@@ -594,7 +594,7 @@ const RolesPermissions = () => {
             <div className="relative">
               <button
                 onClick={() => setIsRoleDropdownOpen((prev) => !prev)}
-                className="bg-[#ef7e1b] text-white h-[44px] px-4 rounded-[8px] flex items-center justify-center gap-2"
+                className="bg-[#003A72] text-white h-[44px] px-4 rounded-[8px] flex items-center justify-center gap-2"
               >
                 <span>{selectedRole?.name || "Select Role Name"}</span>
                 <FiChevronDown />
@@ -610,7 +610,7 @@ const RolesPermissions = () => {
                             setSelectedRole(null);
                             setIsRoleDropdownOpen(false);
                           }}
-                          className="group flex items-center px-4 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors"
+                          className="group flex items-center px-4 py-2 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors"
                         >
                           <span className="group-hover:text-white transition-colors">
                             Select Role Name
@@ -637,7 +637,7 @@ const RolesPermissions = () => {
                             });
                             setIsRoleDropdownOpen(false);
                           }}
-                          className="group flex items-center px-4 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors"
+                          className="group flex items-center px-4 py-2 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors"
                         >
                           <span className="group-hover:text-white transition-colors">
                             {formatRoleName(role.name)}
@@ -731,7 +731,7 @@ const RolesPermissions = () => {
                                   {/* EDIT button */}
                                   <button
                                     onClick={() => handleEdit(role)}
-                                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
+                                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
                                   >
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
@@ -764,7 +764,7 @@ const RolesPermissions = () => {
                                   {/* DELETE button */}
                                   <button
                                     onClick={() => handleDelete(role.id)}
-                                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
+                                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
                                   >
                                     <svg
                                       xmlns="http://www.w3.org/2000/svg"
@@ -822,7 +822,7 @@ const RolesPermissions = () => {
               </div>
               <div className="text-sm text-[#6B7280] mt-2 text-center">
                 Use the{" "}
-                <span className="font-semibold text-[#ef7e1b]">
+                <span className="font-semibold text-[#003A72]">
                   Select Role Name
                 </span>{" "}
                 dropdown above to choose a role.
@@ -910,7 +910,7 @@ const RolesPermissions = () => {
               <div className="mt-10 flex justify-center">
                 <button
                   type="submit"
-                  className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                  className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
                 >
                   Save
                 </button>
@@ -975,7 +975,7 @@ const RolesPermissions = () => {
               <div className="mt-10 flex justify-center">
                 <button
                   type="submit"
-                  className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+                  className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
                 >
                   Create Role
                 </button>
@@ -996,7 +996,7 @@ const PermissionToggle = ({ checked, onChange }) => {
       type="button"
       onClick={onChange}
       className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${
-        checked ? "bg-[#ef7e1b]" : "bg-gray-300"
+        checked ? "bg-[#003A72]" : "bg-gray-300"
       }`}
     >
       <span

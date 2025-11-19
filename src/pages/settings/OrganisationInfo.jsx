@@ -1250,10 +1250,10 @@ const OrganisationInfo = () => {
                 <button
                   type="button"
                   onClick={handleAddTerm}
-                  className={`h-[44px] px-4 bg-[#ef7e1b] text-white rounded-[10px] transition-colors ${
+                  className={`h-[44px] px-4 bg-[#003A72] text-white rounded-[10px] transition-colors ${
                     !newTerm.trim()
-                      ? "opacity-50 cursor-not-allowed bg-[#ef7e1b]" // disabled look
-                      : "hover:bg-[#ee7f1b]"
+                      ? "opacity-50 cursor-not-allowed bg-[#003A72]" // disabled look
+                      : "hover:bg-[#004B8D]"
                   }`}
                   title="Add Term"
                   disabled={!newTerm.trim()}
@@ -1336,7 +1336,7 @@ const OrganisationInfo = () => {
           <div className="mt-6 flex justify-end">
             <button
               type="submit"
-              className="w-full md:w-[207px] h-[44px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
+              className="w-full md:w-[207px] h-[44px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors"
             >
               Update Details
             </button>

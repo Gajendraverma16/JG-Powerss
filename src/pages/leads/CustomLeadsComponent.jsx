@@ -2746,7 +2746,7 @@ const CustomLeadManager = () => {
             selectedLeads.length > 0 &&
             permissionsForLeadsModule.includes("edit") && (
               <button
-                className="hover:bg-Duskwood-500 bg-[#ef7e1b] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center"
+                className="hover:bg-Duskwood-500 bg-[#003A72] text-white h-[44px] px-5 rounded-[8px] flex items-center justify-center"
                 onClick={() => setIsBulkEditModalOpen(true)}
               >
                 Bulk Edit
@@ -2798,7 +2798,7 @@ const CustomLeadManager = () => {
                     }}
                     className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] ${
                       itemsPerPage === option
-                        ? "bg-[#E7EFF8] font-bold text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] font-bold text-[#003A72]"
                         : "text-[#545454]"
                     }`}
                   >
@@ -3130,53 +3130,53 @@ const CustomLeadManager = () => {
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     timeRange === "all"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   } cursor-pointer`}
                   onClick={() => handleTimeRangeChange("all")}
                 >
                   <span>All Dates</span>
                   {timeRange === "all" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     timeRange === "7days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   } cursor-pointer`}
                   onClick={() => handleTimeRangeChange("7days")}
                 >
                   <span>Last 7 Days</span>
                   {timeRange === "7days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     timeRange === "30days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   } cursor-pointer`}
                   onClick={() => handleTimeRangeChange("30days")}
                 >
                   <span>Last 30 Days</span>
                   {timeRange === "30days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}
                 </button>
                 <button
                   className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                     timeRange === "90days"
-                      ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                      ? "bg-[#E7EFF8] text-[#003A72]"
                       : "hover:bg-gray-100"
                   } cursor-pointer`}
                   onClick={() => handleTimeRangeChange("90days")}
                 >
                   <span>Last 90 Days</span>
                   {timeRange === "90days" && (
-                    <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                    <FaCheck className="h-4 w-4 text-[#003A72]" />
                   )}
                 </button>
 
@@ -3240,7 +3240,7 @@ const CustomLeadManager = () => {
                   </div>
                   <button
                     className="hover:bg-Duskwood-500
-        bg-[#ef7e1b] text-white
+        bg-[#003A72] text-white
         h-[44px] px-5
         rounded-[8px]
         flex items-center justify-center
@@ -3313,53 +3313,53 @@ const CustomLeadManager = () => {
                   <button
                     className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                       createdTimeRange === "all"
-                        ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] text-[#003A72]"
                         : "hover:bg-gray-100"
                     } cursor-pointer`}
                     onClick={() => handleCreatedTimeRangeChange("all")}
                   >
                     <span>All Dates</span>
                     {createdTimeRange === "all" && (
-                      <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                      <FaCheck className="h-4 w-4 text-[#003A72]" />
                     )}
                   </button>
                   <button
                     className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                       createdTimeRange === "7days"
-                        ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] text-[#003A72]"
                         : "hover:bg-gray-100"
                     } cursor-pointer`}
                     onClick={() => handleCreatedTimeRangeChange("7days")}
                   >
                     <span>Last 7 Days</span>
                     {createdTimeRange === "7days" && (
-                      <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                      <FaCheck className="h-4 w-4 text-[#003A72]" />
                     )}
                   </button>
                   <button
                     className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                       createdTimeRange === "30days"
-                        ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] text-[#003A72]"
                         : "hover:bg-gray-100"
                     } cursor-pointer`}
                     onClick={() => handleCreatedTimeRangeChange("30days")}
                   >
                     <span>Last 30 Days</span>
                     {createdTimeRange === "30days" && (
-                      <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                      <FaCheck className="h-4 w-4 text-[#003A72]" />
                     )}
                   </button>
                   <button
                     className={`flex items-center justify-between w-full px-3 py-2 text-sm text-left rounded-md ${
                       createdTimeRange === "90days"
-                        ? "bg-[#E7EFF8] text-[#ef7e1b]"
+                        ? "bg-[#E7EFF8] text-[#003A72]"
                         : "hover:bg-gray-100"
                     } cursor-pointer`}
                     onClick={() => handleCreatedTimeRangeChange("90days")}
                   >
                     <span>Last 90 Days</span>
                     {createdTimeRange === "90days" && (
-                      <FaCheck className="h-4 w-4 text-[#ef7e1b]" />
+                      <FaCheck className="h-4 w-4 text-[#003A72]" />
                     )}
                   </button>
 
@@ -3433,7 +3433,7 @@ const CustomLeadManager = () => {
                     </div>
                     <button
                       className="hover:bg-Duskwood-500
-        bg-[#ef7e1b] text-white
+        bg-[#003A72] text-white
         h-[44px] px-5
         rounded-[8px]
         flex items-center justify-center
@@ -3600,7 +3600,7 @@ const CustomLeadManager = () => {
                               lead.status_name === "Fresh List"
                                 ? "bg-[#27AE60] text-white"
                                 : lead.status_name === "Follow Up"
-                                ? "bg-[#ef7e1b] text-white"
+                                ? "bg-[#003A72] text-white"
                                 : lead.status_name === "Get Call Back Us"
                                 ? "bg-[#FFFBEB] text-[#D97706]"
                                 : lead.status_name === "Contact In Future"
@@ -3608,7 +3608,7 @@ const CustomLeadManager = () => {
                                 : lead.status_name === "Next Day Payments"
                                 ? "bg-[#27AE60] text-white"
                                 : lead.status_name === "Quote Send"
-                                ? "bg-[#ef7e1b] text-white"
+                                ? "bg-[#003A72] text-white"
                                 : lead.status_name === "Call Back"
                                 ? "bg-[#FFFBEB] text-[#D97706]"
                                 : lead.status_name === "Construction"
@@ -3616,7 +3616,7 @@ const CustomLeadManager = () => {
                                 : lead.status_name === "NPC"
                                 ? "bg-[#27AE60] text-white"
                                 : lead.status_name === "Switch off"
-                                ? "bg-[#ef7e1b] text-white"
+                                ? "bg-[#003A72] text-white"
                                 : lead.status_name === "Not Reachable"
                                 ? "bg-[#FFFBEB] text-[#D97706]"
                                 : lead.status_name === "Quotation"
@@ -3675,7 +3675,7 @@ const CustomLeadManager = () => {
                               {permissionsForLeadsModule.includes("edit") && (
                                 <button
                                   onClick={() => handleEditWithIndex(lead)}
-                                  className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
+                                  className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
                                 >
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -3711,7 +3711,7 @@ const CustomLeadManager = () => {
                               {permissionsForLeadsModule.includes("delete") && (
                                 <button
                                   onClick={() => handleDelete(lead.customer_id)}
-                                  className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
+                                  className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
                                 >
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -3859,7 +3859,7 @@ const CustomLeadManager = () => {
                               {permissionsForLeadsModule.includes("edit") && (
                                 <button
                                   onClick={() => handleEditWithIndex(lead)}
-                                  className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
+                                  className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
                                 >
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -3896,7 +3896,7 @@ const CustomLeadManager = () => {
                               {permissionsForLeadsModule.includes("delete") && (
                                 <button
                                   onClick={() => handleDelete(lead.customer_id)}
-                                  className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
+                                  className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
                                 >
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -4234,7 +4234,7 @@ const CustomLeadManager = () => {
                     />
                     <label
                       htmlFor="edit-file-upload"
-                      className="absolute bottom-1 right-1 bg-[#ef7e1b] text-white rounded-full p-2 cursor-pointer hover:bg-Duskwood-600 transition-colors"
+                      className="absolute bottom-1 right-1 bg-[#003A72] text-white rounded-full p-2 cursor-pointer hover:bg-Duskwood-600 transition-colors"
                     >
                       <FiEdit className="w-4 h-4" />
                       <input
@@ -4621,7 +4621,7 @@ const CustomLeadManager = () => {
                       currentIndex === -1 ||
                       editableLeads.length === 0
                         ? " text-gray-400 cursor-not-allowed border border-gray-300"
-                        : "bg-[#ef7e1b] text-white hover:bg-[#ee7f1b] transition-colors"
+                        : "bg-[#003A72] text-white hover:bg-[#004B8D] transition-colors"
                     }
                   `}
                   disabled={
@@ -4648,14 +4648,14 @@ const CustomLeadManager = () => {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="w-full md:w-[207px] h-[46px] text-[#ef7e1b] border border-[#0e4053] rounded-[10px] hover:bg-[#ee7f1b] hover:text-white transition-colors cursor-pointer"
+                  className="w-full md:w-[207px] h-[46px] text-[#003A72] border border-[#0e4053] rounded-[10px] hover:bg-[#004B8D] hover:text-white transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 {/* Save button (existing) */}
                 <button
                   type="submit"
-                  className="w-full md:w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors cursor-pointer"
+                  className="w-full md:w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] hover:bg-[#004B8D] transition-colors cursor-pointer"
                   onClick={(e) => handleSubmit(e, "save")}
                 >
                   Save
@@ -4670,7 +4670,7 @@ const CustomLeadManager = () => {
                       currentIndex === editableLeads.length - 1 ||
                       editableLeads.length === 0
                         ? " text-gray-400 cursor-not-allowed border border-gray-300"
-                        : "bg-[#ef7e1b] text-white hover:bg-[#ee7f1b] transition-colors"
+                        : "bg-[#003A72] text-white hover:bg-[#004B8D] transition-colors"
                     }
                   `}
                   title="Save and next"
@@ -4872,7 +4872,7 @@ const CustomLeadManager = () => {
               <button
                 type="button"
                 onClick={handleDownloadSample}
-                className="text-[#ef7e1b] hover:underline focus:outline-none focus:ring-2 focus:ring-[#0e4053] rounded-md px-2 py-1 -mr-2 transition-colors duration-200"
+                className="text-[#003A72] hover:underline focus:outline-none focus:ring-2 focus:ring-[#0e4053] rounded-md px-2 py-1 -mr-2 transition-colors duration-200"
               >
                 View Sample File
               </button>
@@ -4882,10 +4882,10 @@ const CustomLeadManager = () => {
               <button
                 onClick={uploadCsvFile}
                 disabled={!selectedFile}
-                className={`w-full md:w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] transition-colors ${
+                className={`w-full md:w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] transition-colors ${
                   !selectedFile
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-[#ee7f1b]"
+                    : "hover:bg-[#004B8D]"
                 }`}
               >
                 Import
@@ -5018,12 +5018,12 @@ const CustomLeadManager = () => {
                   selectedLeads.length === 0 ||
                   isBulkAssignLoading
                 }
-                className={`w-full md:w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] transition-colors ${
+                className={`w-full md:w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px] transition-colors ${
                   !selectedAssignee ||
                   selectedLeads.length === 0 ||
                   isBulkAssignLoading
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-[#ee7f1b]"
+                    : "hover:bg-[#004B8D]"
                 }`}
               >
                 {isBulkAssignLoading ? "Assigning..." : "Assign Selected Shop Owners"}
@@ -5096,7 +5096,7 @@ const CustomLeadManager = () => {
             </h2>
             {/* Bulk Edit Options Section */}
             <div className="rounded-xl p-6 shadow-sm border border-[#E9EAEA] mb-5">
-              <h3 className="text-lg font-semibold text-[#ef7e1b] mb-4">
+              <h3 className="text-lg font-semibold text-[#003A72] mb-4">
                 Bulk Edit Options
               </h3>
               <div className="space-y-4">
@@ -5258,7 +5258,7 @@ const CustomLeadManager = () => {
                                     bulkEditSelectedStatus &&
                                     bulkEditSelectedStatus.status_id ===
                                       status.status_id
-                                      ? "bg-[#E7EFF8] text-[#ef7e1b] font-bold"
+                                      ? "bg-[#E7EFF8] text-[#003A72] font-bold"
                                       : ""
                                   }`}
                                 >
@@ -5355,14 +5355,14 @@ const CustomLeadManager = () => {
                     !bulkAssignUser &&
                     !bulkChangeStatus)
                 }
-                className={`mt-6 w-full h-[44px] bg-[#ef7e1b] text-white rounded-[10px] transition-colors text-base font-medium shadow-sm ${
+                className={`mt-6 w-full h-[44px] bg-[#003A72] text-white rounded-[10px] transition-colors text-base font-medium shadow-sm ${
                   selectedLeads.length === 0 ||
                   (!bulkDeleteMessage &&
                     !bulkDeleteFollowUp &&
                     !bulkAssignUser &&
                     !bulkChangeStatus)
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-[#ee7f1b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0e4053]"
+                    : "hover:bg-[#004B8D] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0e4053]"
                 }`}
               >
                 Apply Selected Actions

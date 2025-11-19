@@ -544,7 +544,7 @@ const NewOrder = () => {
       {/* Step Navigation */}
       <div className="mb-6">
         <div className="text-center mb-4">
-          <h2 className="text-xl font-bold text-[#EF7E1B]">{formTitles[currentStep]}</h2>
+          <h2 className="text-xl font-bold text-[#003A72]">{formTitles[currentStep]}</h2>
         </div>
         
         {/* Step Indicator */}
@@ -555,7 +555,7 @@ const NewOrder = () => {
                 onClick={() => setCurrentStep(index)}
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold cursor-pointer hover:opacity-80 ${
                   index === currentStep
-                    ? 'bg-[#EF7E1B] text-white'
+                    ? 'bg-[#003A72] text-white'
                     : index < currentStep
                     ? 'bg-green-500 text-white'
                     : 'bg-gray-200 text-gray-500'
@@ -565,7 +565,7 @@ const NewOrder = () => {
               </div>
               <span 
                 onClick={() => setCurrentStep(index)}
-                className={`ml-2 text-sm cursor-pointer hover:opacity-80 ${index === currentStep ? 'text-[#EF7E1B] font-semibold' : 'text-gray-500'}`}
+                className={`ml-2 text-sm cursor-pointer hover:opacity-80 ${index === currentStep ? 'text-[#003A72] font-semibold' : 'text-gray-500'}`}
               >
                 {title}
               </span>
@@ -592,7 +592,7 @@ const NewOrder = () => {
         <div className="relative overflow-visible" ref={leadDropdownRef}>
           <input
             type="text"
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#EF7E1B]"
+            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#003A72]"
             placeholder="Search shop owner..."
             value={leadSearch}
             onChange={(e) => {
@@ -1118,7 +1118,7 @@ const NewOrder = () => {
 
             {/* Amount and Remove - Mobile */}
             <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-              <div className="text-lg font-bold text-[#EF7E1B]">
+              <div className="text-lg font-bold text-[#003A72]">
                 Total: ₹{(it.quantity * it.product_price).toLocaleString()}
               </div>
               <button
@@ -1135,7 +1135,7 @@ const NewOrder = () => {
         <div className="p-3 text-center">
           <button
             onClick={addItemRow}
-            className="text-[#ef7e1b] border border-dashed border-[#ef7e1b] px-3 py-2 rounded-full text-sm"
+            className="text-[#003A72] border border-dashed border-[#003A72] px-3 py-2 rounded-full text-sm"
           >
             <FaPlus className="inline mr-1" /> Add Product
           </button>
@@ -1153,7 +1153,7 @@ const NewOrder = () => {
         </label>
         <textarea
           rows="3"
-          className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#EF7E1B] focus:border-[#EF7E1B]"
+          className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#003A72] focus:border-[#003A72]"
           placeholder={
             currentStep === 0 
               ? "Add any notes..." 
@@ -1172,7 +1172,7 @@ const NewOrder = () => {
           const { total_value, total_points } = calculateTotals();
           return (
             <div>
-              <div className="text-2xl font-bold text-[#EF7E1B]">
+              <div className="text-2xl font-bold text-[#003A72]">
                 Total: ₹{total_value.toLocaleString()}
               </div>
               <div className="text-lg text-gray-500">
@@ -1192,7 +1192,7 @@ const NewOrder = () => {
           )}
           <button
             onClick={currentStep < 2 ? goToNextStep : goToNextStep}
-            className="bg-[#EF7E1B] text-white px-4 lg:px-6 py-3 rounded-xl font-semibold text-base lg:text-lg flex items-center justify-center gap-2 hover:bg-[#d66a15]"
+            className="bg-[#003A72] text-white px-4 lg:px-6 py-3 rounded-xl font-semibold text-base lg:text-lg flex items-center justify-center gap-2 hover:bg-[#004B8D]"
           >
             {currentStep < 2 ? (
               <>
@@ -1222,7 +1222,7 @@ const NewOrder = () => {
         >
           <div className="bg-white rounded-xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200 transform transition-all duration-300 scale-100">
             <div className="p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-bold text-[#EF7E1B] mb-4">Order Summary</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-[#003A72] mb-4">Order Summary</h3>
               <p className="text-sm sm:text-base text-gray-600 mb-4">
                 Review your orders for <strong>{selectedLead?.customer_name}</strong>
               </p>
@@ -1239,7 +1239,7 @@ const NewOrder = () => {
 
                 return (
                   <div key={orderType} className="mb-4 sm:mb-6 border border-gray-200 rounded-lg p-3 sm:p-4">
-                    <h4 className="font-semibold text-base sm:text-lg mb-3 capitalize text-[#EF7E1B]">
+                    <h4 className="font-semibold text-base sm:text-lg mb-3 capitalize text-[#003A72]">
                       {orderType} Order
                     </h4>
                     
@@ -1255,7 +1255,7 @@ const NewOrder = () => {
                                 <span className="text-green-600 text-xs">✓ {item.images.length} images</span>
                               )}
                             </div>
-                            <span className="font-medium text-[#EF7E1B] sm:text-gray-900">₹{(item.quantity * item.product_price).toLocaleString()}</span>
+                            <span className="font-medium text-[#003A72] sm:text-gray-900">₹{(item.quantity * item.product_price).toLocaleString()}</span>
                           </div>
                         ))}
                     </div>
@@ -1266,7 +1266,7 @@ const NewOrder = () => {
                       </div>
                     )}
                     
-                    <div className="text-right font-bold text-[#EF7E1B]">
+                    <div className="text-right font-bold text-[#003A72]">
                       Total: ₹{total.toLocaleString()}
                     </div>
                   </div>
@@ -1282,7 +1282,7 @@ const NewOrder = () => {
                 </button>
                 <button
                   onClick={submitAllOrders}
-                  className="bg-[#EF7E1B] text-white px-4 lg:px-6 py-3 rounded-xl font-semibold hover:bg-[#d66a15] order-1 lg:order-2"
+                  className="bg-[#003A72] text-white px-4 lg:px-6 py-3 rounded-xl font-semibold hover:bg-[#004B8D] order-1 lg:order-2"
                 >
                   Create Orders
                 </button>

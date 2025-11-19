@@ -187,7 +187,7 @@ const handleUpdateSubmit = async (e) => {
         <div className="flex flex-col sm:flex-row sm:items-end items-center gap-6 w-full sm:w-auto">
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-[#ef7e1b]  text-white px-6 py-2 rounded-lg hover:bg-[#ee7f1b] w-full sm:w-auto"
+            className="bg-[#003A72]  text-white px-6 py-2 rounded-lg hover:bg-[#004B8D] w-full sm:w-auto"
           >
             Create Categories
           </button>
@@ -198,7 +198,7 @@ const handleUpdateSubmit = async (e) => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by name or ID..."
-              className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#ef7e1b] outline-none"
+              className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#003A72] outline-none"
             />
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
               <svg
@@ -240,7 +240,7 @@ const handleUpdateSubmit = async (e) => {
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full text-sm text-left border-collapse">
-                <thead className="bg-[#ef7e1b] text-white">
+                <thead className="bg-[#003A72] text-white">
                   <tr>
                     <th className="px-4 py-3">ID</th>
                     <th className="px-4 py-3">Name</th>
@@ -365,7 +365,7 @@ const handleUpdateSubmit = async (e) => {
                 setItemsPerPage(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600 focus:ring-2 focus:ring-[#ef7e1b] outline-none"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600 focus:ring-2 focus:ring-[#003A72] outline-none"
             >
               {[5, 10, 20, 50].map((num) => (
                 <option key={num} value={num}>
@@ -381,7 +381,7 @@ const handleUpdateSubmit = async (e) => {
               className={`px-3 py-1 rounded-lg border ${
                 currentPage === 1
                   ? "text-gray-400 border-gray-200 bg-gray-100 cursor-not-allowed"
-                  : "text-[#ef7e1b] border-[#ef7e1b] hover:bg-[#ef7e1b] hover:text-white"
+                  : "text-[#003A72] border-[#003A72] hover:bg-[#003A72] hover:text-white"
               } transition`}
             >
               Previous
@@ -399,7 +399,7 @@ const handleUpdateSubmit = async (e) => {
               className={`px-3 py-1 rounded-lg border ${
                 currentPage === totalPages
                   ? "text-gray-400 border-gray-200 bg-gray-100 cursor-not-allowed"
-                  : "text-[#ef7e1b] border-[#ef7e1b] hover:bg-[#ef7e1b] hover:text-white"
+                  : "text-[#003A72] border-[#003A72] hover:bg-[#003A72] hover:text-white"
               } transition`}
             >
               Next
@@ -443,7 +443,7 @@ const handleUpdateSubmit = async (e) => {
               </div>
               <button
                 type="submit"
-                className="w-full bg-[#ef7e1b] text-white py-2 rounded-xl hover:bg-[#ee7f1b] transition"
+                className="w-full bg-[#003A72] text-white py-2 rounded-xl hover:bg-[#004B8D] transition"
               >
                 Create Categories
               </button>
@@ -493,7 +493,7 @@ const handleUpdateSubmit = async (e) => {
               </div>
               <button
                 type="submit"
-                className="w-full bg-[#ef7e1b] text-white py-2 rounded-xl hover:bg-[#ee7f1b] transition"
+                className="w-full bg-[#003A72] text-white py-2 rounded-xl hover:bg-[#004B8D] transition"
               >
                 Update Categories
               </button>

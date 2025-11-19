@@ -31,7 +31,7 @@ const ContainerOrders = ({
             <div>
               {leads !== undefined && leads !== null && (
                 <>
-                  <div className="text-[#ef7e1b] text-[25px] font-extrabold font-quicksand">
+                  <div className="text-[#003A72] text-[25px] font-extrabold font-quicksand">
                     {leads}+
                   </div>
                   <div className="text-black font-semibold">
@@ -44,7 +44,7 @@ const ContainerOrders = ({
             {/* Icon */}
             <div className="bg-[#3498DB33] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5">
               {icon && (
-                <span className="w-[30px] h-[30px] flex items-center justify-center text-[30px] text-[#ef7e1b]">
+                <span className="w-[30px] h-[30px] flex items-center justify-center text-[30px] text-[#003A72]">
                   {icon}
                 </span>
               )}
@@ -53,7 +53,7 @@ const ContainerOrders = ({
         </div>
      
         {/* Details row */}
-        <div className="flex justify-between mt-4 text-[14px] font-semibold text-[#ef7e1b]"> 
+        <div className="flex justify-between mt-4 text-[14px] font-semibold text-[#003A72]"> 
           <div>New: 0</div>
           <div>Return: 0</div>
           <div>Exchange: 0</div>

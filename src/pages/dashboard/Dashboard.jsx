@@ -198,63 +198,746 @@ const fetchDashboard = async () => {
 //   }
 // };
 
+  // Admin Dashboard Data with Dummy Values
+  const [adminStats, setAdminStats] = useState({
+    totalShopOwners: 245,
+    totalBranches: 12,
+    totalRoutes: 48,
+    totalAreas: 156,
+    totalVillages: 320,
+    totalProducts: 150,
+    totalOrders: 1250,
+    newOrders: 85,
+    returnOrders: 23,
+    exchangeOrders: 15,
+    totalUsers: 42,
+    totalRevenue: 125000,
+  });
+
+  const [topUsers, setTopUsers] = useState([
+    { id: 1, name: "Rajesh Kumar", orders: 145, revenue: 25200, avatar: "/dummyavatar.jpeg" },
+    { id: 2, name: "Priya Sharma", orders: 128, revenue: 21800, avatar: "/dummyavatar.jpeg" },
+    { id: 3, name: "Amit Patel", orders: 112, revenue: 19200, avatar: "/dummyavatar.jpeg" },
+    { id: 4, name: "Sneha Gupta", orders: 98, revenue: 16800, avatar: "/dummyavatar.jpeg" },
+    { id: 5, name: "Vikram Singh", orders: 85, revenue: 14500, avatar: "/dummyavatar.jpeg" },
+  ]);
+
+  useEffect(() => {
+    if (user.role === "admin") {
+      fetchAdminDashboardData();
+    }
+  }, [user.role]);
+
+  const fetchAdminDashboardData = async () => {
+    try {
+      // Fetch all admin stats - API Integration Ready
+      const [shopOwnersRes, branchesRes, usersRes] = await Promise.all([
+        api.get("/totalleads").catch(() => null),
+        api.get("/branch-hierarchy").catch(() => null),
+        // api.get("/products/count").catch(() => null),
+        // api.get("/orders/stats").catch(() => null),
+        api.get("/userlist").catch(() => null),
+        // api.get("/revenue/total").catch(() => null),
+        // api.get("/users/top").catch(() => null),
+      ]);
+
+      // Calculate counts from branch hierarchy
+      const branches = branchesRes?.data?.data || [];
+      let routeCount = 0;
+      let areaCount = 0;
+      let villageCount = 0;
+
+      branches.forEach(branch => {
+        routeCount += branch.routes?.length || 0;
+        branch.routes?.forEach(route => {
+          areaCount += route.areas?.length || 0;
+          route.areas?.forEach(area => {
+            villageCount += area.villages?.length || 0;
+          });
+        });
+      });
+
+      // Update stats with API data or keep dummy values
+      setAdminStats(prev => ({
+        totalShopOwners: shopOwnersRes?.data?.total_leads || prev.totalShopOwners,
+        totalBranches: branches.length || prev.totalBranches,
+        totalRoutes: routeCount || prev.totalRoutes,
+        totalAreas: areaCount || prev.totalAreas,
+        totalVillages: villageCount || prev.totalVillages,
+        totalProducts: prev.totalProducts, // Replace with: productsRes?.data?.count
+        totalOrders: prev.totalOrders, // Replace with: ordersRes?.data?.total
+        newOrders: prev.newOrders, // Replace with: ordersRes?.data?.new
+        returnOrders: prev.returnOrders, // Replace with: ordersRes?.data?.return
+        exchangeOrders: prev.exchangeOrders, // Replace with: ordersRes?.data?.exchange
+        totalUsers: usersRes?.data?.result?.length || prev.totalUsers,
+        totalRevenue: prev.totalRevenue, // Replace with: revenueRes?.data?.total
+      }));
+
+      // Update top users if API available
+      // const topUsersData = topUsersRes?.data?.users;
+      // if (topUsersData && topUsersData.length > 0) {
+      //   setTopUsers(topUsersData);
+      // }
+    } catch (error) {
+      console.error("Error fetching admin dashboard data:", error);
+      // Keep dummy data on error
+    }
+  };
+
   return (
   
   <div className="box-border max-w-7xl w-full md:w-[95vw] lg:max-w-[1180px] mx-auto px-2 sm:px-4 lg:px-0 overflow-x-hidden">
-  <div className="flex flex-wrap justify-start gap-2 md:gap-7 sm:gap-4 w-full"> 
-  <ContainerShopOwner 
-     leads={dashboardData?.leadsByStatus?.total_leads || 0}
-    icon={<BsFillPersonLinesFill />}
-    totalLeadsLabel="Total Shop Owners"
-    /> 
-  {user.role !== "admin" && (
-  <ContainerVillages
-    leads={villageAPI ?? dummy.villageCount}
-    icon={<BsMapFill />}
-    totalLeadsLabel="Assigned Village"
-  />
+  
+  {/* ADMIN DASHBOARD */}
+  {user.role === "admin" ? (
+    <>
+      {/* Welcome Header */}
+      <div className="mb-6">
+        {/* <h1 className="text-2xl md:text-3xl font-bold text-[#1F2837]">Admin Dashboard</h1>
+        <p className="text-[#727A90] mt-1">Welcome back! Here's what's happening today.</p> */}
+      </div>
+
+      {/* Main Stats Grid */}
+      <div className="flex flex-wrap justify-start gap-4 md:gap-6 mb-6">
+        {/* Total Shop Owners */}
+        <div
+          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
+                     w-full sm:w-[48%] lg:w-[30%] min-w-[280px] group cursor-pointer"
+          style={{
+            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
+          }}
+        >
+          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
+          <div
+            className="relative z-10 rounded-[14px] min-h-[150px] h-full
+                       px-5 pt-5 pb-3 flex flex-col justify-between
+                       shadow-[0_4px_20px_rgba(0,0,0,0.08)] group-hover:shadow-[0_8px_30px_rgba(52,152,219,0.15)] transition-all duration-300"
+            style={{ background: "linear-gradient(45deg, white, #f0f9ff)" }}
+          >
+            <div className="flex justify-between">
+              <div>
+                <div className="text-[#003A72] text-[32px] font-extrabold font-quicksand group-hover:scale-105 transition-transform duration-300">
+                  {adminStats.totalShopOwners}+
+                </div>
+                <div className="text-black font-semibold text-[15px]">
+                  Total Shop Owners
+                </div>
+              </div>
+              <div className="bg-[#003A7233] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5 group-hover:scale-110 transition-transform duration-300">
+                <BsFillPersonLinesFill className="text-[#003A72] text-[30px]" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Products */}
+        <div
+          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
+                     w-full sm:w-[48%] lg:w-[30%] min-w-[280px] group cursor-pointer"
+          style={{
+            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
+          }}
+        >
+          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
+          <div
+            className="relative z-10 rounded-[14px] min-h-[150px] h-full
+                       px-5 pt-5 pb-3 flex flex-col justify-between
+                       shadow-[0_4px_20px_rgba(0,0,0,0.08)] group-hover:shadow-[0_8px_30px_rgba(52,152,219,0.15)] transition-all duration-300"
+            style={{ background: "linear-gradient(45deg, white, #f0f9ff)" }}
+          >
+            <div className="flex justify-between">
+              <div>
+                <div className="text-[#003A72] text-[32px] font-extrabold font-quicksand group-hover:scale-105 transition-transform duration-300">
+                  {adminStats.totalProducts}+
+                </div>
+                <div className="text-black font-semibold text-[15px]">
+                  Total Products
+                </div>
+              </div>
+              <div className="bg-[#003A7233] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5 group-hover:scale-110 transition-transform duration-300">
+                <BsBarChartFill className="text-[#003A72] text-[30px]" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Users */}
+        <div
+          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
+                     w-full sm:w-[48%] lg:w-[30%] min-w-[280px] group cursor-pointer"
+          style={{
+            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
+          }}
+        >
+          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
+          <div
+            className="relative z-10 rounded-[14px] min-h-[150px] h-full
+                       px-5 pt-5 pb-3 flex flex-col justify-between
+                       shadow-[0_4px_20px_rgba(0,0,0,0.08)] group-hover:shadow-[0_8px_30px_rgba(52,152,219,0.15)] transition-all duration-300"
+            style={{ background: "linear-gradient(45deg, white, #f0f9ff)" }}
+          >
+            <div className="flex justify-between">
+              <div>
+                <div className="text-[#003A72] text-[32px] font-extrabold font-quicksand group-hover:scale-105 transition-transform duration-300">
+                  {adminStats.totalUsers}+
+                </div>
+                <div className="text-black font-semibold text-[15px]">
+                  Total Users
+                </div>
+              </div>
+              <div className="bg-[#003A7233] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-7 h-7 text-[#003A72]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Orders & Revenue Section */}
+      <div className="flex flex-wrap justify-start gap-4 md:gap-6 mb-6">
+        {/* Total Orders Card */}
+        {/* <div
+          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
+                     w-full sm:w-[48%] lg:w-[48%] min-w-[280px]"
+          style={{
+            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
+          }}
+        >
+          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
+          <div
+            className="relative z-10 rounded-[14px] min-h-[150px] h-full
+                       px-5 pt-5 pb-3 flex flex-col justify-between
+                       shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
+            style={{ background: "linear-gradient(45deg, white, #e6f4fb)" }}
+          >
+            <div className="flex justify-between mb-3">
+              <div>
+                <div className="text-[#003A72] text-[32px] font-extrabold font-quicksand">
+                  {adminStats.totalOrders}+
+                </div>
+                <div className="text-black font-semibold text-[15px]">
+                  Total Orders
+                </div>
+              </div>
+              <div className="bg-[#003A7233] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5">
+                <BsBagFill className="text-[#003A72] text-[30px]" />
+              </div>
+            </div>
+            <div className="flex gap-3 text-xs font-medium">
+              <span className="text-green-600">New: {adminStats.newOrders}</span>
+              <span className="text-red-600">Return: {adminStats.returnOrders}</span>
+              <span className="text-blue-600">Exchange: {adminStats.exchangeOrders}</span>
+            </div>
+          </div>
+        </div> */}
+
+        {/* Revenue Card */}
+        {/* <div
+          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
+                     w-full sm:w-[48%] lg:w-[48%] min-w-[280px]"
+          style={{
+            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
+          }}
+        >
+          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
+          <div
+            className="relative z-10 rounded-[14px] min-h-[150px] h-full
+                       px-5 pt-5 pb-3 flex flex-col justify-between
+                       shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
+            style={{ background: "linear-gradient(45deg, white, #e6f4fb)" }}
+          >
+            <div className="flex justify-between">
+              <div>
+                <div className="text-[#003A72] text-[32px] font-extrabold font-quicksand">
+                  ₹ {(adminStats.totalRevenue / 1000).toFixed(0)}K+
+                </div>
+                <div className="text-black font-semibold text-[15px]">
+                  Total Revenue
+                </div>
+                <div className="text-[#727A90] text-xs mt-1">
+                  Recreate value (Points)
+                </div>
+              </div>
+              <div className="bg-[#003A7233] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5">
+                <BsAwardFill className="text-[#003A72] text-[30px]" />
+              </div>
+            </div>
+          </div>
+        </div> */}
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Orders Bar Chart */}
+        <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-2xl shadow-md p-6 border border-[#E9EAEA]">
+          <h3 className="text-lg font-semibold text-[#1F2837] mb-6">Orders Overview</h3>
+          <div className="h-64 flex items-center justify-center">
+            <div className="w-full h-full flex items-end justify-around gap-4">
+              {[
+                { label: "New", value: adminStats.newOrders, color: "#27AE60", max: 100 },
+                { label: "Return", value: adminStats.returnOrders, color: "#E74C3C", max: 100 },
+                { label: "Exchange", value: adminStats.exchangeOrders, color: "#003A72", max: 100 },
+                { label: "Total", value: adminStats.totalOrders, color: "#003A72", max: 1500 },
+              ].map((item, idx) => (
+                <div key={idx} className="flex-1 flex flex-col items-center group">
+                  <div 
+                    className="w-full rounded-t-xl transition-all duration-500 hover:opacity-80 cursor-pointer relative"
+                    style={{ 
+                      height: `${(item.value / item.max) * 100}%`,
+                      backgroundColor: item.color,
+                      minHeight: "30px"
+                    }}
+                  >
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs px-2 py-1 rounded">
+                      {item.value}
+                    </div>
+                  </div>
+                  <p className="text-xs text-[#727A90] mt-3 font-medium">{item.label}</p>
+                  <p className="text-lg font-bold text-[#1F2837]">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Distribution with Icons */}
+        <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-2xl shadow-md p-6 border border-[#E9EAEA]">
+          <h3 className="text-lg font-semibold text-[#1F2837] mb-6">Location Distribution</h3>
+          <div className="space-y-4">
+            {[
+              { 
+                label: "Branches", 
+                value: adminStats.totalBranches, 
+                color: "#003A72",
+                icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              },
+              { 
+                label: "Routes", 
+                value: adminStats.totalRoutes, 
+                color: "#27AE60",
+                icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+              },
+              { 
+                label: "Areas", 
+                value: adminStats.totalAreas, 
+                color: "#003A72",
+                icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              },
+              { 
+                label: "Villages", 
+                value: adminStats.totalVillages, 
+                color: "#9B59B6",
+                icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              },
+            ].map((item, idx) => {
+              const total = adminStats.totalBranches + adminStats.totalRoutes + adminStats.totalAreas + adminStats.totalVillages;
+              const percentage = ((item.value / total) * 100).toFixed(1);
+              
+              return (
+                <div key={idx} className="flex items-center gap-4">
+                  <div 
+                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `${item.color}15` }}
+                  >
+                    <div style={{ color: item.color }}>
+                      {item.icon}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-[#1F2837]">{item.label}</span>
+                      <span className="text-sm font-bold text-[#1F2837]">{item.value}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="h-2 rounded-full transition-all duration-500"
+                        style={{ 
+                          width: `${percentage}%`,
+                          backgroundColor: item.color
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-xs text-[#727A90] font-medium w-12 text-right">{percentage}%</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Top Users Section */}
+      <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-2xl shadow-md p-6 border border-[#E9EAEA]">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-[#1F2837]">Top Performing Users</h3>
+          <BsLightningChargeFill className="text-[#003A72] text-xl" />
+        </div>
+        <div className="space-y-3">
+          {topUsers.map((user, idx) => (
+            <div key={user.id} className="flex items-center justify-between p-4 bg-white rounded-xl hover:shadow-md transition-all duration-300 border border-gray-100 group">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-gray-200 group-hover:ring-[#003A72] transition-all">
+                    <img 
+                      src={user.avatar} 
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/dummyavatar.jpeg";
+                      }}
+                    />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-[#003A72] to-[#003A72] flex items-center justify-center text-white text-xs font-bold shadow-md">
+                    {idx + 1}
+                  </div>
+                </div>
+                <div>
+                  <p className="font-semibold text-[#1F2837] group-hover:text-[#003A72] transition-colors">{user.name}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <BsBagFill className="text-[#727A90] text-xs" />
+                    <p className="text-xs text-[#727A90]">{user.orders} orders</p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-[#003A72] text-lg">₹ {user.revenue.toLocaleString()}</p>
+                <p className="text-xs text-[#727A90]">Revenue</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  ) : (
+    /* SALESMAN DASHBOARD */
+    <>
+      {/* Welcome Header */}
+      <div className="mb-6">
+        {/* <h1 className="text-2xl md:text-3xl font-bold text-[#1F2837]">Welcome back, {user?.name || 'Salesman'}!</h1>
+        <p className="text-[#727A90] mt-1">Here's your performance overview</p> */}
+      </div>
+
+      {/* Stats Cards Row 1 */}
+      <div className="flex flex-wrap justify-start gap-4 md:gap-6 mb-6">
+        {/* Total Shop Owners */}
+        <div
+          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
+                     w-full sm:w-[48%] lg:w-[30%] min-w-[280px] group cursor-pointer"
+          style={{
+            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
+          }}
+        >
+          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
+          <div
+            className="relative z-10 rounded-[14px] min-h-[150px] h-full
+                       px-5 pt-5 pb-3 flex flex-col justify-between
+                       shadow-[0_4px_20px_rgba(0,0,0,0.08)] group-hover:shadow-[0_8px_30px_rgba(0,58,114,0.15)] transition-all duration-300"
+            style={{ background: "linear-gradient(45deg, white, #e6f4fb)" }}
+          >
+            <div className="flex justify-between">
+              <div>
+                <div className="text-[#003A72] text-[32px] font-extrabold font-quicksand group-hover:scale-105 transition-transform duration-300">
+                  {dashboardData?.leadsByStatus?.total_leads || 0}+
+                </div>
+                <div className="text-black font-semibold text-[15px]">
+                  Total Shop Owners
+                </div>
+              </div>
+              <div className="bg-[#003A7233] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5 group-hover:scale-110 transition-transform duration-300">
+                <BsFillPersonLinesFill className="text-[#003A72] text-[30px]" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Assigned Villages */}
+        <div
+          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
+                     w-full sm:w-[48%] lg:w-[30%] min-w-[280px] group cursor-pointer"
+          style={{
+            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
+          }}
+        >
+          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
+          <div
+            className="relative z-10 rounded-[14px] min-h-[150px] h-full
+                       px-5 pt-5 pb-3 flex flex-col justify-between
+                       shadow-[0_4px_20px_rgba(0,0,0,0.08)] group-hover:shadow-[0_8px_30px_rgba(0,58,114,0.15)] transition-all duration-300"
+            style={{ background: "linear-gradient(45deg, white, #e6f4fb)" }}
+          >
+            <div className="flex justify-between">
+              <div>
+                <div className="text-[#003A72] text-[32px] font-extrabold font-quicksand group-hover:scale-105 transition-transform duration-300">
+                  {villageAPI ?? dummy.villageCount}+
+                </div>
+                <div className="text-black font-semibold text-[15px]">
+                  Assigned Villages
+                </div>
+              </div>
+              <div className="bg-[#003A7233] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5 group-hover:scale-110 transition-transform duration-300">
+                <BsMapFill className="text-[#003A72] text-[30px]" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Orders */}
+        <div
+          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
+                     w-full sm:w-[48%] lg:w-[30%] min-w-[280px] group cursor-pointer"
+          style={{
+            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
+          }}
+        >
+          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
+          <div
+            className="relative z-10 rounded-[14px] min-h-[150px] h-full
+                       px-5 pt-5 pb-3 flex flex-col justify-between
+                       shadow-[0_4px_20px_rgba(0,0,0,0.08)] group-hover:shadow-[0_8px_30px_rgba(0,58,114,0.15)] transition-all duration-300"
+            style={{ background: "linear-gradient(45deg, white, #e6f4fb)" }}
+          >
+            <div className="flex justify-between">
+              <div>
+                <div className="text-[#003A72] text-[32px] font-extrabold font-quicksand group-hover:scale-105 transition-transform duration-300">
+                  {ordersAPI ?? dummy.totalOrders}+
+                </div>
+                <div className="text-black font-semibold text-[15px]">
+                  Total Orders
+                </div>
+              </div>
+              <div className="bg-[#003A7233] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5 group-hover:scale-110 transition-transform duration-300">
+                <BsBagFill className="text-[#003A72] text-[30px]" />
+              </div>
+            </div>
+            <div className="flex gap-3 text-xs font-medium mt-2">
+              <span className="text-green-600">New: {ordersAPI?.newOrders ?? dummy.newOrders}</span>
+              <span className="text-red-600">Return: {ordersAPI?.returnOrders ?? dummy.returnOrders}</span>
+              <span className="text-blue-600">Exchange: {ordersAPI?.exchangeOrders ?? dummy.exchangeOrders}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Cards Row 2 */}
+      <div className="flex flex-wrap justify-start gap-4 md:gap-6 mb-6">
+        {/* Total Points */}
+        <div
+          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
+                     w-full sm:w-[48%] lg:w-[30%] min-w-[280px] group cursor-pointer"
+          style={{
+            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
+          }}
+        >
+          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
+          <div
+            className="relative z-10 rounded-[14px] min-h-[150px] h-full
+                       px-5 pt-5 pb-3 flex flex-col justify-between
+                       shadow-[0_4px_20px_rgba(0,0,0,0.08)] group-hover:shadow-[0_8px_30px_rgba(0,58,114,0.15)] transition-all duration-300"
+            style={{ background: "linear-gradient(45deg, white, #e6f4fb)" }}
+          >
+            <div className="flex justify-between">
+              <div>
+                <div className="text-[#003A72] text-[32px] font-extrabold font-quicksand group-hover:scale-105 transition-transform duration-300">
+                  {pointsAPI ?? dummy.totalPointes}+
+                </div>
+                <div className="text-black font-semibold text-[15px]">
+                  Total Points
+                </div>
+              </div>
+              <div className="bg-[#003A7233] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5 group-hover:scale-110 transition-transform duration-300">
+                <BsAwardFill className="text-[#003A72] text-[30px]" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Top Product Sale */}
+        <div
+          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
+                     w-full sm:w-[48%] lg:w-[30%] min-w-[280px]"
+          style={{
+            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
+          }}
+        >
+          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
+          <div
+            className="relative z-10 rounded-[14px] min-h-[150px] h-full
+                       px-5 pt-5 pb-3 flex flex-col justify-between
+                       shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
+            style={{ background: "linear-gradient(45deg, white, #e6f4fb)" }}
+          >
+            <div className="flex justify-between items-start mb-2">
+              <div className="text-black font-semibold text-[15px]">
+                Top Product Sale
+              </div>
+              <div className="bg-[#003A7233] rounded-full w-[50px] h-[50px] flex justify-center items-center">
+                <BsBarChartFill className="text-[#003A72] text-[24px]" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="relative w-16 h-16">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#E5E7EB" strokeWidth="12" />
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#003A72" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="75.36" />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xs font-bold text-[#003A72]">70%</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-[#727A90]">Vector</p>
+                <p className="text-sm font-semibold text-[#1F2837]">95K Sales</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div
+          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
+                     w-full sm:w-[48%] lg:w-[30%] min-w-[280px]"
+          style={{
+            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
+          }}
+        >
+          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
+          <div
+            className="relative z-10 rounded-[14px] min-h-[150px] h-full
+                       px-5 pt-5 pb-3 flex flex-col justify-between
+                       shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
+            style={{ background: "linear-gradient(45deg, white, #e6f4fb)" }}
+          >
+            <div className="flex justify-between items-start mb-3">
+              <div className="text-black font-semibold text-[15px]">
+                Quick Actions
+              </div>
+              <div className="bg-[#003A7233] rounded-full w-[50px] h-[50px] flex justify-center items-center">
+                <BsLightningChargeFill className="text-[#003A72] text-[24px]" />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => navigate('/leads/all')} className="flex-1 bg-[#0e4053] hover:bg-[#0d3847] text-white text-xs py-2 px-3 rounded-lg transition-colors duration-200 font-medium">
+                View Customer
+              </button>
+              <button onClick={() => navigate('/Order/new')} className="flex-1 bg-[#003A72] hover:bg-[#003A72] text-white text-xs py-2 px-3 rounded-lg transition-colors duration-200 font-medium">
+                Create Order
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Performance Chart with Side Stats */}
+      <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Chart - Takes 1 column (50%) */}
+        <div className="lg:col-span-1">
+          <AreaChart />
+        </div>
+        
+        {/* Side Stats Card - Takes 1 column (50%) */}
+        <div className="lg:col-span-1">
+          <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-2xl shadow-md p-5 border border-[#E9EAEA] h-[280px] flex flex-col">
+            <h3 className="text-base font-semibold text-[#1F2837] mb-3">Monthly Summary</h3>
+            
+            <div className="space-y-3 flex-1 overflow-y-auto">
+              {/* This Month */}
+              <div className="bg-white rounded-lg p-3 border border-gray-100">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-[#727A90]">This Month</span>
+                  <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Active</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-[#003A72]">₹ 12.5K</span>
+                  <span className="text-xs text-green-600 font-medium">↑ 15%</span>
+                </div>
+              </div>
+
+              {/* Target Progress */}
+              <div className="bg-white rounded-lg p-3 border border-gray-100">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-[#727A90]">Monthly Target</span>
+                  <span className="text-xs font-semibold text-[#1F2837]">75%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
+                  <div className="bg-gradient-to-r from-[#003A72] to-[#003A72] h-2 rounded-full transition-all duration-500" style={{ width: '75%' }}></div>
+                </div>
+                <p className="text-[10px] text-[#727A90]">₹ 15K / ₹ 20K</p>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-gradient-to-br from-[#003A72]/10 to-[#003A72]/5 rounded-lg p-2 border border-[#003A72]/20">
+                  <p className="text-[10px] text-[#727A90] mb-0.5">Avg. Order</p>
+                  <p className="text-lg font-bold text-[#003A72]">₹ 850</p>
+                </div>
+                <div className="bg-gradient-to-br from-[#27AE60]/10 to-[#27AE60]/5 rounded-lg p-2 border border-[#27AE60]/20">
+                  <p className="text-[10px] text-[#727A90] mb-0.5">Conversion</p>
+                  <p className="text-lg font-bold text-[#27AE60]">68%</p>
+                </div>
+              </div>
+
+              {/* Top Achievement */}
+              <div className="bg-gradient-to-r from-[#0e4053] to-[#0d3847] rounded-lg p-3 text-white">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[10px] text-white/80">Top Performer</p>
+                    <p className="text-sm font-semibold">Best Sales This Week!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Your Rank Section */}
+      <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-xl shadow-md p-6 border border-[#E9EAEA]">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-[#1F2837]">Your Performance Rank</h3>
+          <div className="flex items-center gap-2 bg-gradient-to-r from-[#003A72] to-[#003A72] text-white px-4 py-2 rounded-full">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            <span className="font-bold">Rank #5</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-lg p-4 border border-gray-100">
+            <p className="text-xs text-[#727A90] mb-1">Total Sales</p>
+            <p className="text-2xl font-bold text-[#003A72]">₹ 45,200</p>
+            <p className="text-xs text-green-600 mt-1">↑ 12% from last month</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 border border-gray-100">
+            <p className="text-xs text-[#727A90] mb-1">Orders Completed</p>
+            <p className="text-2xl font-bold text-[#0e4053]">{ordersAPI ?? dummy.totalOrders}</p>
+            <p className="text-xs text-green-600 mt-1">↑ 8% from last month</p>
+          </div>
+          <div className="bg-white rounded-lg p-4 border border-gray-100">
+            <p className="text-xs text-[#727A90] mb-1">Customer Satisfaction</p>
+            <p className="text-2xl font-bold text-[#27AE60]">4.8/5.0</p>
+            <p className="text-xs text-[#727A90] mt-1">Based on 120 reviews</p>
+          </div>
+        </div>
+      </div>
+    </>
   )}
-
-  {user.role !== "admin" && (
-  <ContainerOrders
-    leads={ordersAPI ?? dummy.totalOrders}
-     icon={<BsBagFill />}
-    totalLeadsLabel="Total Orders"
-    newToday={ordersAPI?.newOrders ?? dummy.newOrders}
-    returns={ordersAPI?.returnOrders ?? dummy.returnOrders}
-    exchanges={ordersAPI?.exchangeOrders ?? dummy.exchangeOrders}
-  />
- )}
- </div>
-
-<div className="flex flex-wrap justify-start gap-2 md:gap-7 sm:gap-4 w-full mt-10">
-  {user.role !== "admin" && (
-  <ContainerPoints 
-    leads={pointsAPI ?? dummy.totalPointes}
-     icon={<BsAwardFill />}
-    totalLeadsLabel="Total Points"
-  />
- )}
-
-  {user.role !== "admin" && (
-     <TopProductSale 
-     icon={<BsBarChartFill/>}
-     />
-    )}
-
-  {user.role !== "admin" && (
-   <ContainerActions
-    icon={<BsLightningChargeFill />}
-    />
-    )}
-</div>
-
-
- {user.role !== "admin" && (
- <div className="flex mt-10">
- <AreaChart />
- </div>
- )}
 
   {/* RIGHT SIDE — Donut chart */}
   <div className="w-[30%] flex justify-center">
@@ -278,7 +961,7 @@ const fetchDashboard = async () => {
             
 //                 >
 //                   {/* Avatar */}
-//                   {/* <div className="w-8 h-8 rounded-full bg-[#e3e9f7] flex items-center justify-center text-sm font-semibold text-[#ef7e1b] mb-2 shadow-sm border border-[#d1e3fa]">
+//                   {/* <div className="w-8 h-8 rounded-full bg-[#e3e9f7] flex items-center justify-center text-sm font-semibold text-[#003A72] mb-2 shadow-sm border border-[#d1e3fa]">
 //                     {initials}
 //                   </div> */}
 //                   {/* Name */}
@@ -300,7 +983,7 @@ const fetchDashboard = async () => {
 //                       <span className="text-[10px] text-[#727A90] mt-0.5 text-left ">
 //                         Today's <br></br>Updated Shop Owners
 //                       </span>
-//                       <span className="text-2xl font-bold text-[#ef7e1b] leading-none text-right">
+//                       <span className="text-2xl font-bold text-[#003A72] leading-none text-right">
 //                         {updatedData.updated_leads ?? 0}
 //                       </span>
 //                     </div>
@@ -355,7 +1038,7 @@ const fetchDashboard = async () => {
                       }}
                       className={`w-full px-3 py-2 text-left hover:bg-[#E7EFF8] text-xs sm:text-sm md:text-base lg:text-base ${
                         itemsPerPage === option
-                          ? "bg-[#E7EFF8] font-bold text-[#ef7e1b]"
+                          ? "bg-[#E7EFF8] font-bold text-[#003A72]"
                           : "text-[#545454]"
                       }`}
                     >
@@ -511,7 +1194,7 @@ const fetchDashboard = async () => {
                           lead.status_name === "Fresh List"
                             ? "bg-[#27AE60] text-white"
                             : lead.status_name === "Follow Up"
-                            ? "bg-[#ef7e1b] text-white"
+                            ? "bg-[#003A72] text-white"
                             : lead.status_name === "Get Call Back Us"
                             ? "bg-[#FFFBEB] text-[#D97706]"
                             : lead.status_name === "Contact In Future"
@@ -519,7 +1202,7 @@ const fetchDashboard = async () => {
                             : lead.status_name === "Next Day Payments"
                             ? "bg-[#27AE60] text-white"
                             : lead.status_name === "Quote Send"
-                            ? "bg-[#ef7e1b] text-white"
+                            ? "bg-[#003A72] text-white"
                             : lead.status_name === "Call Back"
                             ? "bg-[#FFFBEB] text-[#D97706]"
                             : lead.status_name === "Construction"
@@ -527,7 +1210,7 @@ const fetchDashboard = async () => {
                             : lead.status_name === "NPC"
                             ? "bg-[#27AE60] text-white"
                             : lead.status_name === "Switch off"
-                            ? "bg-[#ef7e1b] text-white"
+                            ? "bg-[#003A72] text-white"
                             : lead.status_name === "Not Reachable"
                             ? "bg-[#FFFBEB] text-[#D97706]"
                             : lead.status_name === "Quotation"
