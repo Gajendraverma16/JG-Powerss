@@ -128,7 +128,20 @@ const TestOrder = () => {
         const response = await api.get(dynamicApiEndpoint); // Use dynamicApiEndpoint
         // console.log(response.data);
         if (response.data.success) {
-          setQuotations(response.data.data); // Access data.data for quotations
+          // Map order_status to type for each item
+          const ordersWithTypes = response.data.data.map(order => ({
+            ...order,
+            items: order.items?.map(item => {
+              // Convert order_status to number if it's a string
+              const status = typeof item.order_status === 'string' ? parseInt(item.order_status) : item.order_status;
+              const type = status === 0 ? 'new' : status === 1 ? 'return' : status === 2 ? 'exchange' : 'new';
+              return {
+                ...item,
+                type: type
+              };
+            })
+          }));
+          setQuotations(ordersWithTypes);
         } else {
           setError("Failed to fetch data");
         }
@@ -774,6 +787,9 @@ const handleDelete = async (id) => {
   // Function to open items modal
   const handleShowItems = (items, e) => {
     e.stopPropagation();
+    console.log('Items received:', items);
+    console.log('First item type:', items?.[0]?.type);
+    console.log('First item order_status:', items?.[0]?.order_status);
     setSelectedItems(items);
     setIsItemsModalOpen(true);
   };
@@ -884,20 +900,7 @@ const handleDelete = async (id) => {
     );
   }
 
-  // Calculate order type counts
-  const orderTypeCounts = {
-    new: 0,
-    return: 0,
-    exchange: 0,
-  };
 
-  quotations.forEach((order) => {
-    order.items?.forEach((item) => {
-      if (item.type === 'new') orderTypeCounts.new++;
-      if (item.type === 'return') orderTypeCounts.return++;
-      if (item.type === 'exchange') orderTypeCounts.exchange++;
-    });
-  });
 
   return (
     <div
@@ -1056,58 +1059,12 @@ const handleDelete = async (id) => {
         </div>
       </div>
 
-      {/* Order Type Counts Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-        {/* New Orders Count */}
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-green-600 font-medium uppercase tracking-wide">New Orders</p>
-              <p className="text-2xl font-bold text-green-700 mt-1">
-                {orderTypeCounts.new}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center">
-              <span className="text-2xl">🆕</span>
-            </div>
-          </div>
-        </div>
 
-        {/* Return Orders Count */}
-        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-4 border border-red-200 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-red-600 font-medium uppercase tracking-wide">Return Orders</p>
-              <p className="text-2xl font-bold text-red-700 mt-1">
-                {orderTypeCounts.return}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-red-200 rounded-full flex items-center justify-center">
-              <span className="text-2xl">↩️</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Exchange Orders Count */}
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Exchange Orders</p>
-              <p className="text-2xl font-bold text-blue-700 mt-1">
-                {orderTypeCounts.exchange}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
-              <span className="text-2xl">🔄</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Filter Section */}
       <div className="grid grid-cols-1 gap-3 mb-2 md:grid-cols-2 lg:grid-cols-5 md:gap-6 w-full">
         {/* Order Type Dropdown */}
-        <div className="relative" ref={orderTypeDropdownRef}>
+        {/* <div className="relative" ref={orderTypeDropdownRef}>
           <button
             type="button"
             className="relative appearance-none h-[36px] md:h-[44px] lg:h-[44px] pl-2 pr-10 md:pr-15 lg:pr-15 w-full md:min-w-[140px] lg:min-w-[140px] bg-white border border-[#E9EAEA] rounded-[8px] cursor-pointer text-[#242729] text-[8px] md:text-base lg:text-sm focus:outline-none flex items-center"
@@ -1174,7 +1131,7 @@ const handleDelete = async (id) => {
               ))}
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Customer Name Dropdown */}
         <div className="relative" ref={customerNameDropdownRef}>
@@ -1768,9 +1725,9 @@ const handleDelete = async (id) => {
                 Customer Name
               </th>
 
-              <th className="py-4 px-3 font-medium text-sm w-[120px] whitespace-nowrap">
+              {/* <th className="py-4 px-3 font-medium text-sm w-[120px] whitespace-nowrap">
                 Notes
-              </th>
+              </th> */}
               <th className="py-4 px-3 font-medium text-sm w-[120px] whitespace-nowrap">
                 Contact
               </th>
@@ -1934,9 +1891,9 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
           </td>
 
           {/* ✅ Notes */}
-          <td className="py-4 px-3 text-sm text-[#4B5563] overflow-hidden truncate">
-            {order?.notes || "No notes provided"}
-          </td>
+            {/* <td className="py-4 px-3 text-sm text-[#4B5563] overflow-hidden truncate">
+              {order?.notes || "No notes provided"}
+            </td> */}
 
           {/* ✅ Contact Number */}
           <td className="py-4 px-3 text-sm text-[#4B5563] overflow-hidden truncate">
@@ -2504,141 +2461,216 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
             {/* Order Type Summary Cards */}
             <div className="grid grid-cols-3 gap-4 mb-6">
               {/* New Orders Count */}
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-3 border border-green-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-green-600 font-medium uppercase tracking-wide">New Orders</p>
+                    <p className="text-xs text-green-600 font-medium uppercase">New Orders</p>
                     <p className="text-2xl font-bold text-green-700 mt-1">
                       {selectedItems?.filter(item => item.type === 'new')?.length || 0}
                     </p>
                   </div>
-                  <div className="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  </div>
+                  <div className="text-2xl">➕</div>
                 </div>
               </div>
 
               {/* Return Orders Count */}
-              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 border border-red-200">
+              <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-3 border border-red-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-red-600 font-medium uppercase tracking-wide">Return Orders</p>
+                    <p className="text-xs text-red-600 font-medium uppercase">Return Orders</p>
                     <p className="text-2xl font-bold text-red-700 mt-1">
                       {selectedItems?.filter(item => item.type === 'return')?.length || 0}
                     </p>
                   </div>
-                  <div className="w-10 h-10 bg-red-200 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                    </svg>
-                  </div>
+                  <div className="text-2xl">↩️</div>
                 </div>
               </div>
 
               {/* Exchange Orders Count */}
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 border border-blue-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Exchange Orders</p>
+                    <p className="text-xs text-blue-600 font-medium uppercase">Exchange Orders</p>
                     <p className="text-2xl font-bold text-blue-700 mt-1">
                       {selectedItems?.filter(item => item.type === 'exchange')?.length || 0}
                     </p>
                   </div>
-                  <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                    </svg>
-                  </div>
+                  <div className="text-2xl">🔄</div>
                 </div>
               </div>
             </div>
-          
-            {/* Items Table */}
-            <div className=" rounded-[12px] overflow-hidden">
-              <table className="min-w-full divide-y divide-[#E5E7EB]">
-                <thead className="">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-4 text-left text-sm font-medium text-[#4B5563] uppercase tracking-wider"
-                    >
-                      Order Type
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-4 text-left text-sm font-medium text-[#4B5563] uppercase tracking-wider"
-                    >
-                      Item Name
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-4 text-left text-sm font-medium text-[#4B5563] uppercase tracking-wider"
-                    >
-                      Quantity
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-4 text-left text-sm font-medium text-[#4B5563] uppercase tracking-wider"
-                    >
-                      Rate
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-4 text-left text-sm font-medium text-[#4B5563] uppercase tracking-wider"
-                    >
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className=" divide-y divide-[#E5E7EB]">
-                  {selectedItems?.map((item, index) => (
-                    <tr key={index} className="">
-                      {/* Order Type Badge */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`
-                          inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-                          ${item.type === 'new' ? 'bg-green-100 text-green-700 border border-green-200' : ''}
-                          ${item.type === 'return' ? 'bg-red-100 text-red-700 border border-red-200' : ''}
-                          ${item.type === 'exchange' ? 'bg-blue-100 text-blue-700 border border-blue-200' : ''}
-                          ${!item.type ? 'bg-gray-100 text-gray-700 border border-gray-200' : ''}
-                        `}>
-                          {item.type === 'new' && '🆕 New'}
-                          {item.type === 'return' && '↩️ Return'}
-                          {item.type === 'exchange' && '🔄 Exchange'}
-                          {!item.type && 'N/A'}
-                        </span>
-                      </td>
-                      
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#545454]">
-                        {item.title}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#545454]">
-                        {item.quantity}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#545454]">
-                        Rs {parseFloat(item.price).toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#545454]">
-                        Rs {parseFloat(item.points).toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
-                  {/* <tr className=" font-medium">
-                    <td
-                      colSpan="3"
-                      className="px-6 py-4 text-right text-sm text-[#1F2837]"
-                    >
-                      Net Total:
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#1F2837]">
-                      Rs {calculateNetTotal(selectedItems)}
-                    </td>
-                  </tr> */}
-                </tbody>
-              </table>
-            </div>
+
+            {/* NEW ORDERS SECTION */}
+            {selectedItems?.filter(item => item.type === 'new')?.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-green-700 mb-3 flex items-center gap-2">
+                  <span className="text-xl">🆕</span> New Orders
+                </h3>
+                <div className="rounded-lg overflow-x-auto border border-green-200">
+                  <table className="min-w-full divide-y divide-green-100">
+                    <thead className="bg-green-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-green-700 uppercase">Item Name</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-green-700 uppercase">Qty</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-green-700 uppercase">Rate</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-green-700 uppercase">Amount</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-green-700 uppercase">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-green-100">
+                      {selectedItems?.filter(item => item.type === 'new')?.map((item, index) => (
+                        <tr key={index} className="hover:bg-green-50">
+                          <td className="px-4 py-3 text-sm text-gray-700">{item.title}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">{item.quantity}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">₹{parseFloat(item.price).toFixed(2)}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">₹{parseFloat(item.points).toFixed(2)}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            <div className="max-w-[200px] truncate" title={item.notes || 'No notes'}>
+                              {item.notes || '-'}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="bg-green-100 font-semibold">
+                        <td colSpan="3" className="px-4 py-3 text-right text-sm text-green-800">Total:</td>
+                        <td className="px-4 py-3 text-sm text-green-800">
+                          ₹{selectedItems?.filter(item => item.type === 'new')?.reduce((sum, item) => sum + (parseFloat(item.points) * item.quantity), 0).toFixed(2)}
+                        </td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* RETURN ORDERS SECTION */}
+            {selectedItems?.filter(item => item.type === 'return')?.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-red-700 mb-3 flex items-center gap-2">
+                  <span className="text-xl">↩️</span> Return Orders
+                </h3>
+                <div className="rounded-lg overflow-x-auto border border-red-200">
+                  <table className="min-w-full divide-y divide-red-100">
+                    <thead className="bg-red-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Item Name</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Qty</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Rate</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Amount</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Image</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-red-100">
+                      {selectedItems?.filter(item => item.type === 'return')?.map((item, index) => (
+                        <tr key={index} className="hover:bg-red-50">
+                          <td className="px-4 py-3 text-sm text-gray-700">{item.title}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">{item.quantity}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">₹{parseFloat(item.price).toFixed(2)}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">₹{parseFloat(item.points).toFixed(2)}</td>
+                          <td className="px-4 py-3">
+                            {item.new_image ? (
+                              <img 
+                                src={item.new_image} 
+                                alt={item.title}
+                                className="w-12 h-12 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
+                                onClick={() => window.open(item.new_image, '_blank')}
+                              />
+                            ) : item.product?.product_image ? (
+                              <img 
+                                src={item.product.product_image} 
+                                alt={item.title}
+                                className="w-12 h-12 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
+                                onClick={() => window.open(item.product.product_image, '_blank')}
+                              />
+                            ) : (
+                              <span className="text-gray-400 text-xs">No image</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            <div className="max-w-[200px] truncate" title={item.notes || 'No notes'}>
+                              {item.notes || '-'}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="bg-red-100 font-semibold">
+                        <td colSpan="3" className="px-4 py-3 text-right text-sm text-red-800">Total:</td>
+                        <td className="px-4 py-3 text-sm text-red-800">
+                          ₹{selectedItems?.filter(item => item.type === 'return')?.reduce((sum, item) => sum + (parseFloat(item.points) * item.quantity), 0).toFixed(2)}
+                        </td>
+                        <td colSpan="2"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* EXCHANGE ORDERS SECTION */}
+            {selectedItems?.filter(item => item.type === 'exchange')?.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-blue-700 mb-3 flex items-center gap-2">
+                  <span className="text-xl">🔄</span> Exchange Orders
+                </h3>
+                <div className="rounded-lg overflow-x-auto border border-blue-200">
+                  <table className="min-w-full divide-y divide-blue-100">
+                    <thead className="bg-blue-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase">Item Name</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase">Qty</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase">Rate</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase">Amount</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase">Image</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-blue-100">
+                      {selectedItems?.filter(item => item.type === 'exchange')?.map((item, index) => (
+                        <tr key={index} className="hover:bg-blue-50">
+                          <td className="px-4 py-3 text-sm text-gray-700">{item.title}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">{item.quantity}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">₹{parseFloat(item.price).toFixed(2)}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">₹{parseFloat(item.points).toFixed(2)}</td>
+                          <td className="px-4 py-3">
+                            {item.new_image ? (
+                              <img 
+                                src={item.new_image} 
+                                alt={item.title}
+                                className="w-12 h-12 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
+                                onClick={() => window.open(item.new_image, '_blank')}
+                              />
+                            ) : item.product?.product_image ? (
+                              <img 
+                                src={item.product.product_image} 
+                                alt={item.title}
+                                className="w-12 h-12 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
+                                onClick={() => window.open(item.product.product_image, '_blank')}
+                              />
+                            ) : (
+                              <span className="text-gray-400 text-xs">No image</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            <div className="max-w-[200px] truncate" title={item.notes || 'No notes'}>
+                              {item.notes || '-'}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="bg-blue-100 font-semibold">
+                        <td colSpan="3" className="px-4 py-3 text-right text-sm text-blue-800">Total:</td>
+                        <td className="px-4 py-3 text-sm text-blue-800">
+                          ₹{selectedItems?.filter(item => item.type === 'exchange')?.reduce((sum, item) => sum + (parseFloat(item.points) * item.quantity), 0).toFixed(2)}
+                        </td>
+                        <td colSpan="2"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             {/* Close button */}
             <div className="mt-10 flex justify-center">

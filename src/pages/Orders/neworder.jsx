@@ -57,7 +57,7 @@ const NewOrder = () => {
         product_price: 0,
         product_points: 0,
         quantity: 1,
-        order_status: 0,
+        order_status: 1,
         product_obj: null,
         images: [],
       }],
@@ -70,7 +70,7 @@ const NewOrder = () => {
         product_price: 0,
         product_points: 0,
         quantity: 1,
-        order_status: 0,
+        order_status: 2,
         product_obj: null,
         images: [],
       }],
@@ -196,6 +196,9 @@ const NewOrder = () => {
   // Add item
   const addItemRow = () => {
     const currentFormType = formTypes[currentStep];
+    // Set correct order_status based on form type
+    const orderStatus = currentFormType === 'new' ? 0 : currentFormType === 'return' ? 1 : 2;
+    
     setAllOrdersData(prev => ({
       ...prev,
       [currentFormType]: {
@@ -208,7 +211,7 @@ const NewOrder = () => {
             product_price: 0,
             product_points: 0,
             quantity: 1,
-            order_status: 0,
+            order_status: orderStatus,
             product_obj: null,
             images: [],
           }
@@ -377,7 +380,7 @@ const NewOrder = () => {
           product_price: 0,
           product_points: 0,
           quantity: 1,
-          order_status: 0,
+          order_status: 0, // New order
           product_obj: null,
           images: [],
         }],
@@ -390,7 +393,7 @@ const NewOrder = () => {
           product_price: 0,
           product_points: 0,
           quantity: 1,
-          order_status: 0,
+          order_status: 1, // Return order
           product_obj: null,
           images: [],
         }],
@@ -403,7 +406,7 @@ const NewOrder = () => {
           product_price: 0,
           product_points: 0,
           quantity: 1,
-          order_status: 0,
+          order_status: 2, // Exchange order
           product_obj: null,
           images: [],
         }],
@@ -427,105 +430,105 @@ const NewOrder = () => {
     return { total_value, total_points };
   };
 
-  // Get orders to submit (only those with products)
-  const getOrdersToSubmit = () => {
-    const ordersToSubmit = [];
+  // Get all items to submit in one combined order
+  const getAllItemsToSubmit = () => {
+    const allItems = [];
+    let combinedNotes = [];
     
     Object.keys(allOrdersData).forEach(orderType => {
       const orderData = allOrdersData[orderType];
-      const hasProducts = orderData.items.some(item => item.product_id);
+      const itemsWithProducts = orderData.items.filter(item => item.product_id);
       
-      if (hasProducts) {
-        // Validate images for return/exchange orders
-        if ((orderType === 'return' || orderType === 'exchange')) {
-          const hasItemsWithoutImages = orderData.items
-            .filter(item => item.product_id)
-            .some(item => !item.images || item.images.length === 0);
-          
-          if (hasItemsWithoutImages) {
-            throw new Error(`Please upload images for all products in ${orderType} order.`);
-          }
+      if (itemsWithProducts.length > 0) {
+        // Validate images for return/exchange orders (order_status 1 or 2)
+        const hasItemsWithoutImages = itemsWithProducts.some(item => 
+          (item.order_status === 1 || item.order_status === 2) && 
+          (!item.images || item.images.length === 0)
+        );
+        
+        if (hasItemsWithoutImages) {
+          throw new Error(`Please upload images for all products in ${orderType} order.`);
         }
         
-        ordersToSubmit.push({
-          type: orderType,
-          data: orderData
-        });
+        // Add items to combined list
+        allItems.push(...itemsWithProducts);
+        
+        // Collect notes
+        if (orderData.notes) {
+          combinedNotes.push(`${orderType.toUpperCase()}: ${orderData.notes}`);
+        }
       }
     });
     
-    return ordersToSubmit;
+    return {
+      items: allItems,
+      notes: combinedNotes.join(' | ')
+    };
   };
 
-  // Submit all orders
+  // Submit all orders in one API call
   const submitAllOrders = async () => {
     if (!selectedLead) {
       return Swal.fire("Error", "Please select a shop owner.", "error");
     }
 
     try {
-      const ordersToSubmit = getOrdersToSubmit();
+      const { items: allItems, notes: combinedNotes } = getAllItemsToSubmit();
       
-      if (ordersToSubmit.length === 0) {
+      if (allItems.length === 0) {
         Swal.fire("Info", "No orders to create. Please add products to create orders.", "info");
         setShowSummary(false);
         return;
       }
 
       Swal.fire({
-        title: "Creating orders...",
+        title: "Creating order...",
         didOpen: () => Swal.showLoading(),
         allowOutsideClick: false,
       });
 
-      const promises = ordersToSubmit.map(async (order) => {
-        const formData = new FormData();
-        formData.append('salesman_id', Number(user?.id));
-        formData.append('shop_owner_id', Number(selectedLead?.customer_id || selectedLead?.id));
-        formData.append('order_type', order.type);
-        formData.append('notes', order.data.notes);
-
-        // Add items data
-        order.data.items
-          .filter(item => item.product_id)
-          .forEach((item, index) => {
-            formData.append(`items[${index}][product_id]`, item.product_id);
-            formData.append(`items[${index}][quantity]`, item.quantity);
-            formData.append(`items[${index}][product_price]`, item.product_price);
-            formData.append(`items[${index}][product_points]`, item.product_points);
-            formData.append(`items[${index}][order_status]`, item.order_status);
-            
-            // Add images for return/exchange orders
-            if (item.images && item.images.length > 0) {
-              item.images.forEach((image, imgIndex) => {
-                formData.append(`items[${index}][images][${imgIndex}]`, image.file);
-              });
-            }
-          });
-
-        return api.post("/orders", formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+      // Create one FormData with all items
+      const formData = new FormData();
+      formData.append('salesman_id', Number(user?.id));
+      formData.append('shop_owner_id', Number(selectedLead?.customer_id || selectedLead?.id));
+      formData.append('order_type', 'new'); // Keep as 'new' for backward compatibility
+      formData.append('notes', combinedNotes);
+      
+      // Add all items with their respective order_status
+      allItems.forEach((item, index) => {
+        formData.append(`items[${index}][product_id]`, item.product_id);
+        formData.append(`items[${index}][quantity]`, item.quantity);
+        formData.append(`items[${index}][product_price]`, item.product_price);
+        formData.append(`items[${index}][product_points]`, item.product_points);
+        formData.append(`items[${index}][order_status]`, item.order_status);
+        
+        // Add image only for return/exchange orders (order_status 1 or 2)
+        // Backend expects single image per item as "new_image"
+        if (item.images && item.images.length > 0 && item.images[0].file instanceof File) {
+          formData.append(`items[${index}][new_image]`, item.images[0].file);
+        }
+        // Don't send new_image field at all for items without images
       });
 
-      const results = await Promise.all(promises);
+      const response = await api.post("/orders", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
       Swal.close();
 
-      const successCount = results.filter(res => res.data?.success).length;
-      const failCount = results.length - successCount;
-
-      if (failCount === 0) {
-        Swal.fire("Success", `All ${successCount} orders created successfully!`, "success");
+      if (response.data?.success) {
+        Swal.fire("Success", "Order created successfully with all items!", "success");
         resetAllFormData();
         setCurrentStep(0);
       } else {
-        Swal.fire("Partial Success", `${successCount} orders created, ${failCount} failed.`, "warning");
+        Swal.fire("Error", response.data?.message || "Failed to create order.", "error");
       }
     } catch (error) {
       Swal.close();
-      Swal.fire("Error", error.message || "Failed to create orders.", "error");
+      console.error("Order submission error:", error);
+      Swal.fire("Error", error.message || "Failed to create order.", "error");
     }
   };
 
@@ -584,87 +587,102 @@ const NewOrder = () => {
         </div>
       </div>
 
-      {/* Lead selector */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium mb-2">
-          Select Shop Owner
-        </label>
-        <div className="relative overflow-visible" ref={leadDropdownRef}>
-          <input
-            type="text"
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#003A72]"
-            placeholder="Search shop owner..."
-            value={leadSearch}
-            onChange={(e) => {
-              setLeadSearch(e.target.value);
-              setLeadDropdownOpen(true);
-            }}
-            onFocus={() => setLeadDropdownOpen(true)}
-          />
-          {selectedLead && (
-            <button
-              className="absolute right-2 top-2 text-gray-500 hover:text-red-500"
-              onClick={() => {
-                setSelectedLead(null);
-                setLeadSearch("");
+      {/* Lead selector - Only show on first step (New Order) */}
+      {currentStep === 0 && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2">
+            Select Shop Owner
+          </label>
+          <div className="relative overflow-visible" ref={leadDropdownRef}>
+            <input
+              type="text"
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-[#003A72]"
+              placeholder="Search shop owner..."
+              value={leadSearch}
+              onChange={(e) => {
+                setLeadSearch(e.target.value);
+                setLeadDropdownOpen(true);
               }}
-            >
-              <FaTimes />
-            </button>
-          )}
+              onFocus={() => setLeadDropdownOpen(true)}
+            />
+            {selectedLead && (
+              <button
+                className="absolute right-2 top-2 text-gray-500 hover:text-red-500"
+                onClick={() => {
+                  setSelectedLead(null);
+                  setLeadSearch("");
+                }}
+              >
+                <FaTimes />
+              </button>
+            )}
 
-          {leadDropdownOpen && (
-            <div className="absolute z-[9999] mt-2 bg-white border border-gray-300 rounded-xl shadow-2xl max-h-64 overflow-y-auto w-full">
-              {leadsLoading ? (
-                <div className="p-4 text-center text-gray-500">Loading...</div>
-              ) : filteredLeads.length === 0 ? (
-                <div className="p-4 text-sm text-gray-500">
-                  {leads.length === 0
-                    ? "No assigned shop owners found"
-                    : "No matching shop owners"}
-                </div>
-              ) : (
-                filteredLeads.map((lead) => (
-                  <div
-                    key={lead.customer_id || lead.id}
-                    onClick={() => handleLeadSelect(lead)}
-                    className="p-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center"
-                    data-dropdown-item
-                  >
-                    <div>
-                      <div className="font-medium">{lead.customer_name}</div>
-                      <div className="text-xs text-gray-500">
-                        {lead.email || lead.contact}
+            {leadDropdownOpen && (
+              <div className="absolute z-[9999] mt-2 bg-white border border-gray-300 rounded-xl shadow-2xl max-h-64 overflow-y-auto w-full">
+                {leadsLoading ? (
+                  <div className="p-4 text-center text-gray-500">Loading...</div>
+                ) : filteredLeads.length === 0 ? (
+                  <div className="p-4 text-sm text-gray-500">
+                    {leads.length === 0
+                      ? "No assigned shop owners found"
+                      : "No matching shop owners"}
+                  </div>
+                ) : (
+                  filteredLeads.map((lead) => (
+                    <div
+                      key={lead.customer_id || lead.id}
+                      onClick={() => handleLeadSelect(lead)}
+                      className="p-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center"
+                      data-dropdown-item
+                    >
+                      <div>
+                        <div className="font-medium">{lead.customer_name}</div>
+                        <div className="text-xs text-gray-500">
+                          {lead.email || lead.contact}
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        Assigned: {lead.assigned_to || "-"}
                       </div>
                     </div>
-                    <div className="text-xs text-gray-400">
-                      Assigned: {lead.assigned_to || "-"}
-                    </div>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
+          {selectedLead && (
+            <div className="mt-3 p-3 bg-green-50 border border-green-300 rounded-xl text-sm">
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="font-semibold text-green-800">{selectedLead.customer_name}</div>
+                  <div className="text-green-600">{selectedLead.email || selectedLead.contact}</div>
+                  <div className="text-xs text-green-500 mt-1">✓ Selected for all order types</div>
+                </div>
+                <button
+                  onClick={resetAllFormData}
+                  className="text-xs text-gray-500 hover:text-red-500 px-2 py-1 border border-gray-300 rounded hover:border-red-300"
+                >
+                  Change Shop Owner
+                </button>
+              </div>
             </div>
           )}
         </div>
+      )}
 
-        {selectedLead && (
-          <div className="mt-3 p-3 bg-green-50 border border-green-300 rounded-xl text-sm">
-            <div className="flex justify-between items-center">
-              <div>
-                <div className="font-semibold text-green-800">{selectedLead.customer_name}</div>
-                <div className="text-green-600">{selectedLead.email || selectedLead.contact}</div>
-                <div className="text-xs text-green-500 mt-1">✓ Selected for all order types</div>
-              </div>
-              <button
-                onClick={resetAllFormData}
-                className="text-xs text-gray-500 hover:text-red-500 px-2 py-1 border border-gray-300 rounded hover:border-red-300"
-              >
-                Change Shop Owner
-              </button>
+      {/* Show selected shop owner info on return/exchange steps */}
+      {currentStep > 0 && selectedLead && (
+        <div className="mb-6 p-3 bg-green-50 border border-green-300 rounded-xl text-sm">
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <div className="font-semibold text-green-800">{selectedLead.customer_name}</div>
+              <div className="text-green-600 text-xs">{selectedLead.email || selectedLead.contact}</div>
             </div>
+            <div className="text-xs text-green-600 font-medium">✓ Selected</div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Image requirement notice for return/exchange */}
       {currentStep > 0 && (
