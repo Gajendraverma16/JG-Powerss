@@ -1,37 +1,42 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { TbDotsVertical } from "react-icons/tb";
-import { FiEdit } from "react-icons/fi";
-import api from "../../api";
+import React, { useCallback, useEffect, useState } from "react";
+import { TbDotsVertical, TbSearch } from "react-icons/tb";
 import Swal from "sweetalert2";
+import api from "../../api";
 
 const LeadSettings = () => {
-  const [activeScreen, setActiveScreen] = useState("status"); // 'status' or 'googleSheet'
+
   const [leadStatuses, setLeadStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddStatusModalOpen, setIsAddStatusModalOpen] = useState(false); 
   const [editingStatus, setEditingStatus] = useState(null);
   const [formData, setFormData] = useState({
     status_name: "",
   });
-  const [googleSheetLink, setGoogleSheetLink] = useState("");
 
-  // State for Add Status Modal
-  const [isAddStatusModalOpen, setIsAddStatusModalOpen] = useState(false);
-  const [newStatusData, setNewStatusData] = useState({
+   const [newStatusData, setNewStatusData] = useState({
     status_name: "",
   });
 
+  // pagination & search
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // fetch lead statuses 
   const fetchLeadStatuses = useCallback(async () => {
     try {
+      setLoading(true);
       const response = await api.get("/showleadstatus");
-      if (response.data.success) {
-        setLeadStatuses(response.data.data);
+      if (response.data?.success) {
+        setLeadStatuses(response.data.data || []);
       } else {
-        console.error("Failed to fetch Shop Owner Categories:", response.data.message);
+         setLeadStatuses(response.data?.data || []);
+       console.error("Failed to fetch Shop Owner Categories:", response.data.message);
       }
     } catch (err) {
-      console.error("Error fetching Shop Owner Categories:", err.message);
+           console.error("Error fetching Shop Owner Categories:", err.message);
     } finally {
       setLoading(false);
     }
@@ -41,40 +46,103 @@ const LeadSettings = () => {
     fetchLeadStatuses();
   }, [fetchLeadStatuses]);
 
-  const toggleDropdown = (statusId) => {
-    setActiveDropdown(activeDropdown === statusId ? null : statusId);
+  // search handler
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
   };
 
+  const handleNewStatusChange = (e) => {
+    const { name, value } = e.target;
+    setNewStatusData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // filter using searchQuery 
+  const filteredStatuses = leadStatuses.filter((status) => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      String(status.status_name || status.name || "")
+        .toLowerCase()
+        .includes(q) ||
+      String(status.status_id || status._id || "")
+        .toLowerCase()
+        .includes(q)
+    );
+  });
+
+  // pagination logic
+  const indexOfLast = currentPage * rowsPerPage;
+  const indexOfFirst = indexOfLast - rowsPerPage;
+  const currentData = filteredStatuses.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredStatuses.length / rowsPerPage);
+
+  // dropdown toggle
+  const toggleDropdown = (statusId) => {
+    setActiveDropdown((prev) => (prev === statusId ? null : statusId));
+  };
+
+  // open edit modal 
   const handleEdit = (status) => {
     setEditingStatus(status);
     setFormData({
-      status_name: status.status_name,
+      status_name: status.status_name || status.name || "",
     });
     setIsModalOpen(true);
     setActiveDropdown(null);
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  // close edit modal
+  const closeEditModal = () => {
+    setEditingStatus(null);
+    setFormData({ status_name: "" });
+    setIsModalOpen(false);
+    setActiveDropdown(null);
   };
 
-  const handleNewStatusChange = (e) => {
-    const { name, value } = e.target;
-    setNewStatusData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  // submit edit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingStatus) return;
 
-  const handleCloseAddStatusModal = () => {
-    setIsAddStatusModalOpen(false);
-    setNewStatusData({ status_name: "" }); // Reset the form data
-  };
+    const formattedData = {
+      name: formData.status_name,
+    };
 
+    try {
+      const response = await api.post(
+        `/updateleadstatus/${editingStatus.status_id || editingStatus._id}`,
+        formattedData
+      );
+      if (response.data?.success) {
+        setIsModalOpen(false);
+        await Swal.fire({
+          icon: "success",
+          title: "Categories Updated",
+          text: `${formData.status_name} was successfully updated.`,
+          confirmButtonColor: "#0e4053",
+        });
+        fetchLeadStatuses();
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: response.data?.message || "Failed to update Categories.",
+          confirmButtonColor: "#DD6B55",
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: err?.message || "An error occurred while updating the Categories.",
+        confirmButtonColor: "#DD6B55",
+      });
+    }
+    setActiveDropdown(null);
+  };
+ 
+  // add status submit 
   const handleAddStatusSubmit = async (e) => {
     e.preventDefault();
     const loadingAlert = Swal.fire({
@@ -93,33 +161,35 @@ const LeadSettings = () => {
       const response = await api.post("/addleadstatus", formattedData);
       await loadingAlert.close();
 
-      if (response.data.success) {
-        handleCloseAddStatusModal();
+      if (response.data?.success) {
+        setIsAddStatusModalOpen(false);
+        setNewStatusData({ status_name: "" });
         await Swal.fire({
           icon: "success",
-          title: "Shop Owner Categories Added!",
-          text: `${newStatusData.status_name} has been successfully added.`, // Corrected text
+          title: "Categories Added!",
+          text: `${formattedData.name} has been successfully added.`,
           confirmButtonColor: "#0e4053",
         });
-        fetchLeadStatuses(); // Refetch statuses after adding
+        fetchLeadStatuses();
       } else {
-        throw new Error(response.data.message || "Failed to add Shop Owner Categories.");
+        throw new Error(response.data?.message || "Failed to add Categories.");
       }
     } catch (err) {
       await loadingAlert.close();
       Swal.fire({
         icon: "error",
         title: "Add Failed",
-        text: err.message || "An error occurred while adding the Shop Owner Categories.",
+        text: err?.message || "An error occurred while adding the Categories.",
         confirmButtonColor: "#DD6B55",
       });
     }
   };
 
+  // delete 
   const handleDelete = async (statusId) => {
     const result = await Swal.fire({
       title: "Are you sure?",
-      text: "This Shop Owner Categories will be deleted permanently.",
+      text: "This Categories will be deleted permanently.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -130,148 +200,29 @@ const LeadSettings = () => {
     if (result.isConfirmed) {
       try {
         const response = await api.get(`/deletestatus/${statusId}`);
-        if (!response.data.success) {
+      
+        if (!response.data?.success) {
           await Swal.fire({
             icon: "success",
             title: "Deleted!",
-            text: "Shop Owner Categories has been removed.",
+            text: "Categories has been removed.",
             confirmButtonColor: "#0e4053",
           });
-          fetchLeadStatuses(); // Refetch statuses after deleting
+          fetchLeadStatuses();
         } else {
-          throw new Error(response.data.message || "Failed to delete Shop Owner Categories.");
+          throw new Error(response.data?.message || "Failed to delete Categories.");
         }
       } catch (err) {
         Swal.fire({
           icon: "error",
           title: "Delete Failed",
-          text: err.message || "An error occurred while deleting the Shop Owner Categories.",
+          text: err?.message || "An error occurred while deleting the Categories.",
           confirmButtonColor: "#DD6B55",
         });
       }
     }
     setActiveDropdown(null);
   };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!editingStatus) return;
-
-    const formattedData = {
-      name: formData.status_name,
-    };
-
-    try {
-      const response = await api.post(
-        `/updateleadstatus/${editingStatus.status_id}`,
-        formattedData
-      );
-      if (response.data.success) {
-        setIsModalOpen(false);
-        await Swal.fire({
-          icon: "success",
-          title: "Shop Owner Categories Updated",
-          text: `${formData.status_name} was successfully updated.`,
-          confirmButtonColor: "#0e4053",
-        });
-        fetchLeadStatuses(); // Refetch statuses after updating
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Update Failed",
-          text: response.data.message || "Failed to update Shop Owner Categories.",
-          confirmButtonColor: "#DD6B55",
-        });
-      }
-    } catch (err) {
-      Swal.fire({
-        icon: "error",
-        title: "Update Failed",
-        text: err.message || "An error occurred while updating the Shop Owner Categories.",
-        confirmButtonColor: "#DD6B55",
-      });
-    }
-    setActiveDropdown(null);
-  };
-
-  // const handleGoogleSheetSubmit = async (e) => {
-  //   e.preventDefault();
-  //   const loadingAlert = Swal.fire({
-  //     title: "Importing Google Sheet...",
-  //     allowOutsideClick: false,
-  //     didOpen: () => {
-  //       Swal.showLoading();
-  //     },
-  //   });
-
-  //   try {
-  //     const response = await api.post("/google-sheet", {
-  //       sheet_url: googleSheetLink,
-  //     });
-  //     await loadingAlert.close();
-
-  //     if (response.data.success) {
-  //       await Swal.fire({
-  //         icon: "success",
-  //         title: "Sheet Imported!",
-  //         text: response.data.message || "Google Sheet imported successfully.",
-  //         confirmButtonColor: "#0e4053",
-  //       });
-  //       setGoogleSheetLink(""); // Clear the input
-  //     } else {
-  //       throw new Error(response.data.message || "Failed to import sheet.");
-  //     }
-  //   } catch (err) {
-  //     await loadingAlert.close();
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Import Failed",
-  //       text: err.message || "An error occurred while importing the sheet.",
-  //       confirmButtonColor: "#DD6B55",
-  //     });
-  //   }
-  // };
-
-  // const handleDownloadSample = async () => {
-  //   const loadingAlert = Swal.fire({
-  //     title: "Downloading Sample...",
-  //     allowOutsideClick: false,
-  //     didOpen: () => {
-  //       Swal.showLoading();
-  //     },
-  //   });
-  //   try {
-  //     const response = await api.get("/sheet-sample-download", {
-  //       responseType: "blob", // Important for downloading files
-  //     });
-  //     await loadingAlert.close();
-
-  //     const url = window.URL.createObjectURL(new Blob([response.data]));
-  //     const link = document.createElement("a");
-  //     link.href = url;
-  //     link.setAttribute("download", "sample_sheet.csv"); // Or get filename from Content-Disposition header
-  //     document.body.appendChild(link);
-  //     link.click();
-  //     link.remove();
-
-  //     Swal.fire({
-  //       icon: "success",
-  //       title: "Download Initiated",
-  //       text: "Your sample file download should begin shortly.",
-  //       confirmButtonColor: "#0e4053",
-  //     });
-  //   } catch (err) {
-  //     await loadingAlert.close();
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Download Failed",
-  //       text:
-  //         err.response?.data?.message ||
-  //         "An error occurred while downloading the sample file.",
-  //       confirmButtonColor: "#DD6B55",
-  //     });
-  //   }
-  // };
 
   if (loading) {
     return (
@@ -282,406 +233,239 @@ const LeadSettings = () => {
   }
 
   return (
-    <div className="w-full h-auto min-h-[300px] p-4 md:p-6 relative bg-gradient-to-br from-white to-[#E7F4FF] rounded-[10px] shadow-[2px_2px_6px_rgba(24,95,235,0.1)] flex flex-col">
-      {/* Header Section */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-        {/* Title */}
-        <div className="flex gap-6">
-           <h2
-              className={`text-[20px] md:text-[22px] font-medium text-[#1F2837] whitespace-nowrap pb-1 ${
-                activeScreen === "Shop Owner Categories"
-                  ? "border-b-2 border-[#0e4053]"
-                  : "border-b-2 border-transparent"
-              }`}
-            >
-               Categories
-            </h2>
-          {/* <button
-            onClick={() => setActiveScreen("Shop Owner Categories")}
-            className="focus:outline-none"
-          >
-            <h2
-              className={`text-[20px] md:text-[22px] font-medium text-[#1F2837] whitespace-nowrap pb-1 ${
-                activeScreen === "Shop Owner Categories"
-                  ? "border-b-2 border-[#0e4053]"
-                  : "border-b-2 border-transparent"
-              }`}
-            >
-              Shop Owner Categories
-            </h2>
-          </button> */}
-          {/* <button
-            onClick={() => setActiveScreen("googleSheet")}
-            className="focus:outline-none"
-          >
-            <h2
-              className={`text-[20px] md:text-[22px] font-medium text-[#1F2837] whitespace-nowrap pb-1 ${
-                activeScreen === "googleSheet"
-                  ? "border-b-2 border-[#0e4053]"
-                  : "border-b-2 border-transparent"
-              }`}
-            >
-              Google Sheet
-            </h2>
-          </button> */}
-        </div>
+    <div className="w-full px-4 py-6 md:px-10 md:py-10">
+      <div className="relative mx-auto flex min-h-[440px] max-w-5xl flex-col rounded-[18px] border border-white/60 bg-gradient-to-br from-white via-[#F5FAFF] to-[#E7F4FF] p-6 shadow-[0px_20px_45px_rgba(20,84,182,0.08)] md:p-8">
+        {/* Header */}
+        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <h1 className="text-[20px] md:text-[24px] font-semibold text-[#1F2837]">
+            <span className="inline-block border-b-2 border-[#0e4053] pb-1">
+              Categories
+            </span>
+          </h1>
 
-        {activeScreen === "status" ? (
-          <div className="flex items-center gap-3 md:gap-4">
-            {/* Add Status button - user didn't specify, but often needed */}
-            <button
-              onClick={() => setIsAddStatusModalOpen(true)}
-              className="hover:bg-[#ee7f1b] bg-[#ef7e1b] text-white h-[44px] px-8 rounded-[8px] flex items-center justify-center"
-            >
-              Add Categories
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-3 md:gap-4">
-            {/* No additional buttons needed for Google Sheet view */}
-          </div>
-        )}
-      </div>
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+            {/* Search Bar */}
+            <div className="relative">
+              <TbSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search categories..."
+                className="h-[44px] pl-10 pr-4 rounded-[10px] border border-gray-300 bg-white focus:ring-2 focus:ring-[#0e4053] outline-none text-sm"
+              />
+            </div>
 
-      {activeScreen === "status" ? (
-        <>
-          {/* Status List Table (Desktop) */}
-          <div className="hidden md:block w-full flex-grow">
-            <div className="w-full rounded-lg overflow-hidden">
-              {/* Header */}
-              <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563]">
-                <div className="font-medium text-sm text-left">Categories ID</div>
-                <div className="font-medium text-sm text-left">Categories Name</div>
-                <div className="font-medium text-sm text-left">Actions</div>
-                <div /> {/* Empty header for spacing */}
-                <div /> {/* New empty column */}
+            <div className="flex items-center gap-2">
+              {/* Pagination top */}
+              <div className="flex items-center gap-2 ">
+                <label className="text-sm text-[#4B5563]">Show</label>
+                <select
+                  className="border border-gray-300 rounded-md text-sm px-2 py-1"
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    setRowsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                </select>
               </div>
 
-              {/* Body */}
-              <div className="pb-20">
-                {leadStatuses?.length === 0 ? (
-                  <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-8 text-center text-[#4B5563] border-b border-gray-200 items-center last:border-b-0  transition-colors">
-                    <div className="lg:col-span-5">
-                      No Categories available.
-                    </div>{" "}
-                    {/* Adjusted colspan for the new grid */}
-                  </div>
-                ) : (
-                  leadStatuses?.map((status) => (
-                    <div
-                      key={status.status_id}
-                      className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_1fr] gap-x-4 px-6 py-4 border-b border-gray-200 items-center last:border-b-0  transition-colors"
-                    >
-                      <div className="text-sm text-[#4B5563] text-left">
-                        {status.status_id}
-                      </div>
-                      <div className="text-sm text-[#4B5563] text-left whitespace-nowrap">
-                        {status.status_name}
-                      </div>
-                      <div className="relative text-left">
-                        {" "}
-                        {/* Removed flex justify-center for left alignment */}
-                        <button
-                          onClick={() => toggleDropdown(status.status_id)}
-                          className="p-2 text-[#4B5563] hover:bg-Duskwood-200  rounded-full transition-colors"
-                        >
-                          <TbDotsVertical className="w-4 h-4" />
-                        </button>
-                        {activeDropdown === status.status_id && (
-                          <div className="relative">
-                            <div
-                              ref={(el) => {
-                                if (el) {
-                                  el.scrollIntoView({
-                                    behavior: "smooth",
-                                    block: "nearest",
-                                  });
-                                }
-                              }}
-                              className="absolute left-0 w-24 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-10 overflow-hidden"
-                            >
-                              {" "}
-                              {/* Aligned dropdown to the left */}
-                              <button
-                                onClick={() => handleEdit(status)}
-                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors"
-                                >
-                                  <path
-                                    fill="currentColor"
-                                    d="M4 14v-2h7v2zm0-4V8h11v2zm0-4V4h11v2zm9 14v-3.075l6.575-6.55l3.075 3.05L16.075 20zm7.5-6.575l-.925-.925zm-6 5.075h.95l3.025-3.05l-.45-.475l-.475-.45l-3.05 3.025zm3.525-3.525l-.475-.45l.925.925z"
-                                  />
-                                </svg>
-                                <span className="group-hover:text-white transition-colors">
-                                  Edit
-                                </span>
-                              </button>
-                              <svg
-                                className="w-full h-[1px]"
-                                viewBox="0 0 100 1"
-                                preserveAspectRatio="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <polygon
-                                  points="0,0 50,1 100,0"
-                                  fill="#E5E7EB"
-                                />
-                              </svg>
-                              <button
-                                onClick={() => handleDelete(status.status_id)}
-                                className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors"
-                                >
-                                  <path
-                                    fill="currentColor"
-                                    d="M7.616 20q-.672 0-1.144-.472T6 18.385V6H5V5h4v-.77h6V5h4v1h-1v12.385q0 .69-.462 1.153T16.384 20zM17 6H7v12.385q0 .269.173.442t.443.173h8.769q.23 0 .423-.192t.192-.424zM9.808 17h1V8h-1zm3.384 0h1V8h-1zM7 6v13z"
-                                  />
-                                </svg>
-                                <span className="group-hover:text-white transition-colors">
-                                  Delete
-                                </span>
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div /> {/* New empty column */}
-                    </div>
-                  ))
-                )}
-              </div>
+              <button
+                onClick={() => {
+                  setIsAddStatusModalOpen(true);
+                  setNewStatusData({ status_name: "" });
+                }}
+                className="h-[44px] rounded-[10px] bg-[#003A72] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(0,58,114,0.4)] "
+              >
+                Add Categories
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Status List Cards (Mobile) */}
-          <div className="md:hidden w-full space-y-4 pb-32 flex-grow">
-            {leadStatuses?.length === 0 ? (
-              <div className="py-8 px-6 text-center text-[#4B5563]">
-                No lead statuses available.
+        {/* Desktop Table */}
+        <div className="hidden md:block flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] p-4">
+          <div className="grid md:grid-cols-[1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] font-medium text-sm">
+            <div>Categories ID</div>
+            <div>Categories Name</div>
+            <div>Actions</div>
+          </div>
+
+          <div className="pb-6">
+            {leadStatuses.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">No categories available.</div>
+            ) : filteredStatuses.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
+                No categories found matching "{searchQuery}"
               </div>
             ) : (
-              leadStatuses?.map((status) => (
+              currentData.map((status) => (
                 <div
-                  key={status.status_id}
-                  className="rounded-lg shadow p-4 border border-gray-200/80"
+                  key={status.status_id || status._id}
+                  className="grid md:grid-cols-[1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                      <div className="space-y-1 pr-2">
-                        <p className="font-bold text-lg text-[#1F2837]">
-                          {status.status_name}
-                        </p>
-                        <p className="text-sm text-gray-500 break-all">
-                          ID: {status.status_id}
-                        </p>
+                  <div>{status._id || status.status_id}</div>
+                  <div>{status.status_name || status.name}</div>
+                  <div className="relative">
+                    <button
+                      onClick={() => toggleDropdown(status.status_id || status._id)}
+                      className="p-2 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
+                    >
+                      <TbDotsVertical className="w-4 h-4" />
+                    </button>
+                    {activeDropdown === (status.status_id || status._id) && (
+                      <div className="absolute left-0 w-24 rounded-md shadow-md bg-white z-10 border border-gray-200 mt-2">
+                        <button
+                          onClick={() => handleEdit(status)}
+                          className="px-2 py-1 text-sm  w-full text-left hover:text-white hover:bg-[#003A72]"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(status.status_id || status._id)}
+                          className="px-2 py-1 text-sm  w-full text-left hover:text-white hover:bg-[#003A72]"
+                        >
+                          Delete
+                        </button>
                       </div>
-                    </div>
-                    <div className="relative">
-                      <button
-                        onClick={() => toggleDropdown(status.status_id)}
-                        className="p-2 text-[#4B5563] rounded-full hover:bg-gray-100"
-                      >
-                        <TbDotsVertical className="w-5 h-5" />
-                      </button>
-                      {activeDropdown === status.status_id && (
-                        <div className="absolute right-0 mt-1 w-28 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-20 overflow-hidden">
-                          <div
-                            ref={(el) => {
-                              if (el) {
-                                el.scrollIntoView({
-                                  behavior: "smooth",
-                                  block: "nearest",
-                                });
-                              }
-                            }}
-                          >
-                            <button
-                              onClick={() => handleEdit(status)}
-                              className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors first:rounded-t-md"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                className="mr-2 w-4 h-4 fill-current text-[#4B5563] group-hover:text-white transition-colors"
-                              >
-                                <path
-                                  fill="currentColor"
-                                  d="M4 14v-2h7v2zm0-4V8h11v2zm0-4V4h11v2zm9 14v-3.075l6.575-6.55l3.075 3.05L16.075 20zm7.5-6.575l-.925-.925zm-6 5.075h.95l3.025-3.05l-.45-.475l-.475-.45l-3.05 3.025zm3.525-3.525l-.475-.45l.925.925z"
-                                />
-                              </svg>
-                              <span className="group-hover:text-white transition-colors">
-                                Edit
-                              </span>
-                            </button>
-                            <svg
-                              className="w-full h-[1px]"
-                              viewBox="0 0 100 1"
-                              preserveAspectRatio="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
-                            </svg>
-                            <button
-                              onClick={() => handleDelete(status.status_id)}
-                              className="group flex items-center px-3 py-2 text-sm text-[#4B5563] hover:bg-[#ee7f1b] w-full transition-colors last:rounded-b-md"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                className="mr-2 w-4 h-4 fill-current text-[#4B5463] group-hover:text-white transition-colors"
-                              >
-                                <path
-                                  fill="currentColor"
-                                  d="M7.616 20q-.672 0-1.144-.472T6 18.385V6H5V5h4v-.77h6V5h4v1h-1v12.385q0 .69-.462 1.153T16.384 20zM17 6H7v12.385q0 .269.173.442t.443.173h8.769q.23 0 .423-.192t.192-.424zM9.808 17h1V8h-1zm3.384 0h1V8h-1zM7 6v13z"
-                                />
-                              </svg>
-                              <span className="group-hover:text-white transition-colors">
-                                Delete
-                              </span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </div>
               ))
             )}
           </div>
-        </>
-      ) : (
-        <div className="w-full flex-grow">
-          {/* <form  className="space-y-5">
-            <label
-              htmlFor="googleSheetLink"
-              className="block text-[#4B5563] text-[16px] mb-2"
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="grid grid-cols-1 gap-4 md:hidden">
+          {currentData.map((status) => (
+            <div
+              key={status.status_id || status._id}
+              className="p-4 rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] shadow-sm relative"
             >
-              Google Sheet Link
-            </label>
-            <input
-              type="url"
-              id="googleSheetLink"
-              name="googleSheetLink"
-              value={googleSheetLink}
-              onChange={(e) => setGoogleSheetLink(e.target.value)}
-              placeholder="https://docs.google.com/spreadsheets/d/e/2PACX-XXXXX/pub?output=csv"
-              className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
-              required
-            />
-            <div className="flex justify-between items-center ">
-              <p className="text-[10px] sm:text-sm lg:text-sm text-gray-500 w- ">
-                Publish your spreadsheet to the web in CSV format (e.g., File →
-                Share → Publish to web → Select CSV) <br /> and ensure it’s
-                publicly viewable or shared with the service account.
-              </p>
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="font-semibold text-[#1F2837] text-[18px]">
+                    {status.status_name || status.name}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    ID: {status._id || status.status_id}
+                  </p>
+                </div>
+                <button
+                  onClick={() => toggleDropdown(status.status_id || status._id)}
+                  className="p-1 text-[#4B5563] hover:bg-[#F1F5FB] rounded-full"
+                >
+                  <TbDotsVertical className="w-5 h-5" />
+                </button>
+                {activeDropdown === (status.status_id || status._id) && (
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      onClick={() => handleEdit(status)}
+                      className="px-3 py-1 text-sm rounded-md bg-[#003A72] text-white"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(status.status_id || status._id)}
+                      className="px-3 py-1 text-sm rounded-md bg-gray-300 text-[#1F2837]"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+          </div>
+          ))}
+        </div>
+
+        {/* Pagination bottom */}
+        {filteredStatuses.length > 0 && (
+          <div className="flex flex-col md:flex-row justify-between items-center mt-6">
+            <div className="text-sm text-gray-600 mb-3 md:mb-0">
+              Showing {indexOfFirst + 1} to {Math.min(indexOfLast, filteredStatuses.length)} of{" "}
+              {filteredStatuses.length} entries
+              {searchQuery && ` (filtered from ${leadStatuses.length} total)`}
+            </div>
+            <div className="flex items-center gap-2">
               <button
-                type="button"
-                onClick={handleDownloadSample}
-                className="text-[11px] sm:text-sm lg:text-base text-[#ef7e1b] hover:underline focus:outline-none focus:ring-2 focus:ring-[#0e4053] rounded-md px-2 py-1 transition-colors duration-200 whitespace-nowrap"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="px-3 py-1 border rounded disabled:opacity-50"
               >
-                Download Sample File
+                Prev
+              </button>
+              <span className="text-sm">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Next
               </button>
             </div>
-            <button
-              type="submit"
-              className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
-            >
-              Import Sheet
-            </button>
-          </form> */}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
-      {/* Edit Status Modal */}
+      {/* Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50 border-white/30">
           <div
-            className="absolute inset-0 bg-gray-50/10 backdrop-blur-sm border border-white/30"
-            onClick={() => setIsModalOpen(false)}
+            className="absolute inset-0 bg-gray-50/10 backdrop-blur-sm"
+            onClick={closeEditModal}
           />
           <div className="w-11/12 max-w-[600px] max-h-[90vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-lg relative z-10">
             <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+              onClick={closeEditModal}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
             >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M13 1L1 13"
-                  stroke="#1F2837"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M1 1L13 13"
-                  stroke="#1F2837"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 1L1 13" stroke="#1F2837" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M1 1L13 13" stroke="#1F2837" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
-            <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">
-              Edit  Categories
-            </h2>
+
+            <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">Edit Categories</h2>
+
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-2">
-                  <label className="block text-[#4B5563] text-[16px] mb-2">
-                    Categories ID
-                  </label>
+                  <label className="block text-[#4B5563] text-[16px] mb-2">Categories ID</label>
                   <input
                     type="text"
-                    value={editingStatus?.status_id || ""}
+                    value={editingStatus?.status_id || editingStatus?._id || ""}
                     className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 text-[#545454] focus:ring-2 focus:ring-[#0e4053] outline-none cursor-not-allowed"
                     readOnly
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <label className="block text-[#4B5563] text-[16px] mb-2">
-                     Categories Name
-                  </label>
+                  <label className="block text-[#4B5563] text-[16px] mb-2">Categories Name</label>
                   <div className="relative">
                     <input
                       type="text"
                       name="status_name"
                       value={formData.status_name}
-                      onChange={handleInputChange}
+                      onChange={(e) => setFormData((p) => ({ ...p, status_name: e.target.value }))}
                       className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454] placeholder-[#545454]"
                     />
                     <button className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <FiEdit className="w-5 h-5 text-gray-500" />
+                      {/* small edit icon (SVG) */}
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#6B7280" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/></svg>
                     </button>
                   </div>
                 </div>
               </div>
+
               <div className="mt-10 flex justify-center">
-                <button
-                  type="submit"
-                  className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
-                >
+                <button type="submit" className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px]  transition-colors">
                   Save
                 </button>
               </div>
@@ -690,50 +474,36 @@ const LeadSettings = () => {
         </div>
       )}
 
-      {/* Add Status Modal */}
+      {/* Add Status Modal  */}
       {isAddStatusModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50 border-white/30">
           <div
-            className="absolute inset-0 bg-gray-50/10 backdrop-blur-sm border border-white/30"
-            onClick={handleCloseAddStatusModal}
+            className="absolute inset-0 bg-gray-50/10 backdrop-blur-sm"
+            onClick={() => {
+              setIsAddStatusModalOpen(false);
+              setNewStatusData({ status_name: "" });
+            }}
           />
           <div className="w-11/12 max-w-[600px] max-h-[90vh] overflow-y-auto p-6 md:p-8 rounded-2xl bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF] shadow-lg relative z-10">
             <button
-              onClick={handleCloseAddStatusModal}
-              className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
+              onClick={() => {
+                setIsAddStatusModalOpen(false);
+                setNewStatusData({ status_name: "" });
+              }}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors"
             >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M13 1L1 13"
-                  stroke="#1F2837"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M1 1L13 13"
-                  stroke="#1F2837"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 1L1 13" stroke="#1F2837" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M1 1L13 13" stroke="#1F2837" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
-            <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">
-              Add New Categories
-            </h2>
+
+            <h2 className="text-[29px] font-medium text-[#1F2837] mb-8">Add New Categories</h2>
+
             <form onSubmit={handleAddStatusSubmit}>
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-2">
-                  <label className="block text-[#4B5563] text-[16px] mb-2">
-                     Categories Name
-                  </label>
+                  <label className="block text-[#4B5563] text-[16px] mb-2">Categories Name</label>
                   <input
                     type="text"
                     name="status_name"
@@ -745,11 +515,9 @@ const LeadSettings = () => {
                   />
                 </div>
               </div>
+
               <div className="mt-10 flex justify-center">
-                <button
-                  type="submit"
-                  className="w-[207px] h-[46px] bg-[#ef7e1b] text-white rounded-[10px] hover:bg-[#ee7f1b] transition-colors"
-                >
+                <button type="submit" className="w-[207px] h-[46px] bg-[#003A72] text-white rounded-[10px]  transition-colors">
                   Add Categories
                 </button>
               </div>
@@ -762,3 +530,5 @@ const LeadSettings = () => {
 };
 
 export default LeadSettings;
+
+

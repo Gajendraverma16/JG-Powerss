@@ -3,7 +3,7 @@ import { TbDotsVertical, TbSearch } from "react-icons/tb";
 import Swal from "sweetalert2";
 import api from "../../api";
 
-const Village = () => {
+  const Village = () => {
   const [villages, setVillages] = useState([]);
   const [branches, setBranches] = useState([]);
   const [routes, setRoutes] = useState([]);
@@ -16,21 +16,21 @@ const Village = () => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [editId, setEditId] = useState(null);
 
-  const [formData, setFormData] = useState({
+   const [formData, setFormData] = useState({
     branch_id: "",
     route_id: "",
     area_id: "",
     village_name: "",
-  });
+    });
 
-  // Search
-  const [searchQuery, setSearchQuery] = useState("");
+    // Search
+     const [searchQuery, setSearchQuery] = useState("");
 
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+   // Pagination
+   const [currentPage, setCurrentPage] = useState(1);
+   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const fetchVillages = useCallback(async () => {
+   const fetchVillages = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.get("/villages");
@@ -41,18 +41,18 @@ const Village = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+   }, []);
 
-  const fetchBranches = useCallback(async () => {
+   const fetchBranches = useCallback(async () => {
     try {
       const res = await api.get("/branches");
       if (res.data.status) setBranches(res.data.data);
     } catch (err) {
       console.error("Error fetching branches:", err.message);
     }
-  }, []);
+   }, []);
 
-  const fetchRoutes = useCallback(async () => {
+   const fetchRoutes = useCallback(async () => {
     try {
       const res = await api.get("/routes");
       if (res.data?.data) setRoutes(res.data.data);
@@ -60,9 +60,9 @@ const Village = () => {
     } catch (err) {
       console.error("Error fetching routes:", err.message);
     }
-  }, []);
+   }, []);
 
-  const fetchAreas = useCallback(async () => {
+   const fetchAreas = useCallback(async () => {
     try {
       const res = await api.get("/areas");
       if (res.data?.data) setAreas(res.data.data);
@@ -70,37 +70,37 @@ const Village = () => {
     } catch (err) {
       console.error("Error fetching areas:", err.message);
     }
-  }, []);
+   }, []);
 
-  useEffect(() => {
+   useEffect(() => {
     fetchBranches();
     fetchRoutes();
     fetchAreas();
     fetchVillages();
-  }, [fetchBranches, fetchRoutes, fetchAreas, fetchVillages]);
+   }, [fetchBranches, fetchRoutes, fetchAreas, fetchVillages]);
 
   // Filters
-  useEffect(() => {
+   useEffect(() => {
     if (formData.branch_id) {
       setFilteredRoutes(
         routes.filter((r) => String(r.branch_id) === String(formData.branch_id))
       );
     } else setFilteredRoutes([]);
-  }, [formData.branch_id, routes]);
+   }, [formData.branch_id, routes]);
 
-  useEffect(() => {
+   useEffect(() => {
     if (formData.route_id) {
       setFilteredAreas(
         areas.filter((a) => String(a.route_id) === String(formData.route_id))
       );
     } else setFilteredAreas([]);
-  }, [formData.route_id, areas]);
+   }, [formData.route_id, areas]);
 
-  const handleInputChange = (name, value) => {
+   const handleInputChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+   };
 
-  const handleCancel = () => {
+   const handleCancel = () => {
     setFormData({
       branch_id: "",
       route_id: "",
@@ -110,9 +110,9 @@ const Village = () => {
     setEditId(null);
     setIsEditing(false);
     setIsModalOpen(false);
-  };
+   };
 
-  const handleSubmit = async (e) => {
+   const handleSubmit = async (e) => {
     e.preventDefault();
     const { branch_id, route_id, area_id, village_name } = formData;
     if (!branch_id || !route_id || !area_id || !village_name) {
@@ -144,9 +144,9 @@ const Village = () => {
     } finally {
       setLoading(false);
     }
-  };
+   };
 
-  const handleEdit = (v) => {
+   const handleEdit = (v) => {
     setFormData({
       branch_id: v.branch_id,
       route_id: v.route_id,
@@ -157,9 +157,9 @@ const Village = () => {
     setIsEditing(true);
     setIsModalOpen(true);
     setActiveDropdown(null);
-  };
+   };
 
-  const handleDelete = async (id) => {
+    const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
       text: "This will permanently delete the village.",
@@ -182,50 +182,50 @@ const Village = () => {
         setLoading(false);
       }
     }
-  };
+   };
 
-  const toggleDropdown = (id) => {
+   const toggleDropdown = (id) => {
     setActiveDropdown((prev) => (prev === id ? null : id));
-  };
+   };
 
-  // Search filter
-  const filteredVillages = villages.filter((v) => {
-    const query = searchQuery.toLowerCase();
+   // Search filter
+   const filteredVillages = villages.filter((v) => {
+   const query = searchQuery.toLowerCase();
     return (
       v.village_name?.toLowerCase().includes(query) ||
       v.branch?.branch_name?.toLowerCase().includes(query) ||
       v.route?.route_name?.toLowerCase().includes(query) ||
       v.area?.area_name?.toLowerCase().includes(query)
     );
-  });
+   });
 
-  // Pagination logic
-  const totalPages = Math.ceil(filteredVillages.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentVillages = filteredVillages.slice(startIndex, startIndex + itemsPerPage);
+   // Pagination logic
+   const totalPages = Math.ceil(filteredVillages.length / itemsPerPage);
+   const startIndex = (currentPage - 1) * itemsPerPage;
+   const currentVillages = filteredVillages.slice(startIndex, startIndex + itemsPerPage);
 
-  const handlePreviousPage = () =>
+   const handlePreviousPage = () =>
     currentPage > 1 && setCurrentPage((p) => p - 1);
-  const handleNextPage = () =>
+   const handleNextPage = () =>
     currentPage < totalPages && setCurrentPage((p) => p + 1);
   const handleItemsPerPageChange = (e) => {
     setItemsPerPage(Number(e.target.value));
     setCurrentPage(1);
-  };
+   };
 
-  const handleSearchChange = (e) => {
+   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1); // Reset to first page on search
-  };
+   };
 
-  if (loading)
+   if (loading)
     return (
       <div className="w-full min-h-[797px] flex items-center justify-center">
         Loading villages...
       </div>
     );
 
-  return (
+   return (
     <div className="w-full px-4 py-6 md:px-10 md:py-10">
       <div className="relative mx-auto flex min-h-[440px] max-w-5xl flex-col rounded-[18px] border border-white/60 bg-gradient-to-br from-white via-[#F5FAFF] to-[#E7F4FF] p-6 shadow-[0px_20px_45px_rgba(20,84,182,0.08)] md:p-8">
 
@@ -288,8 +288,9 @@ const Village = () => {
         </div>
 
 
-        {/* Desktop Table */}
-        <div className="hidden md:block flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF]">
+    {/* Desktop Table */}
+    
+        <div className="hidden md:block flex-1 overflow-hidden rounded-[16px] border border-[#E3ECF7] bg-gradient-to-br from-white to-[#F6FAFF] p-4">
           <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 text-[#4B5563] font-medium text-sm">
             <div>Branch</div>
             <div>Route</div>
