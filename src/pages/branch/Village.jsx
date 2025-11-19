@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { TbDotsVertical } from "react-icons/tb";
+import { TbDotsVertical, TbSearch } from "react-icons/tb";
 import Swal from "sweetalert2";
 import api from "../../api";
 
@@ -22,6 +22,9 @@ const Village = () => {
     area_id: "",
     village_name: "",
   });
+
+  // Search
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -185,10 +188,21 @@ const Village = () => {
     setActiveDropdown((prev) => (prev === id ? null : id));
   };
 
+  // Search filter
+  const filteredVillages = villages.filter((v) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      v.village_name?.toLowerCase().includes(query) ||
+      v.branch?.branch_name?.toLowerCase().includes(query) ||
+      v.route?.route_name?.toLowerCase().includes(query) ||
+      v.area?.area_name?.toLowerCase().includes(query)
+    );
+  });
+
   // Pagination logic
-  const totalPages = Math.ceil(villages.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredVillages.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentVillages = villages.slice(startIndex, startIndex + itemsPerPage);
+  const currentVillages = filteredVillages.slice(startIndex, startIndex + itemsPerPage);
 
   const handlePreviousPage = () =>
     currentPage > 1 && setCurrentPage((p) => p - 1);
@@ -197,6 +211,11 @@ const Village = () => {
   const handleItemsPerPageChange = (e) => {
     setItemsPerPage(Number(e.target.value));
     setCurrentPage(1);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
   };
 
   if (loading)
@@ -217,7 +236,20 @@ const Village = () => {
               Villages
             </span>
           </h1>
-             <div className="flex items-center gap-2">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+            {/* Search Bar */}
+            <div className="relative">
+              <TbSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search villages..."
+                className="h-[44px] pl-10 pr-4 rounded-[10px] border border-gray-300 bg-white focus:ring-2 focus:ring-[#0e4053] outline-none text-sm"
+              />
+            </div>
+            
+            <div className="flex items-center gap-2">
           {/* Pagination top */}
           {villages.length > 0 && (
            <div className="flex items-center gap-2 ">
@@ -236,22 +268,23 @@ const Village = () => {
             </div>
           )}
 
-          <button
-            onClick={() => {
-              setIsModalOpen(true);
-              setIsEditing(false);
-              setFormData({
-                branch_id: "",
-                route_id: "",
-                area_id: "",
-                village_name: "",
-              });
-            }}
-           className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
-          >
-            Add Village
-          </button>
-        </div>
+              <button
+                onClick={() => {
+                  setIsModalOpen(true);
+                  setIsEditing(false);
+                  setFormData({
+                    branch_id: "",
+                    route_id: "",
+                    area_id: "",
+                    village_name: "",
+                  });
+                }}
+                className="h-[44px] rounded-[10px] bg-[#ef7e1b] px-6 text-sm font-medium text-white shadow-[0px_6px_18px_rgba(239,126,27,0.4)] hover:bg-[#ee7f1b]"
+              >
+                Add Village
+              </button>
+            </div>
+          </div>
         </div>
 
 
@@ -271,8 +304,12 @@ const Village = () => {
               <div className="text-center py-6 text-gray-500">
                 No villages available.
               </div>
+            ) : filteredVillages.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
+                No villages found matching "{searchQuery}"
+              </div>
             ) : (
-              currentVillages.map((v, index) => (
+              currentVillages.map((v) => (
                 <div
                   key={v.id}
                   className="grid md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-x-4 px-6 py-4 border-b border-gray-200 items-center"
@@ -280,7 +317,7 @@ const Village = () => {
                   <div>{v.branch?.branch_name || "N/A"}</div>
                   <div>{v.route?.route_name || "N/A"}</div>
                   <div>{v.area?.area_name || "N/A"}</div>
-                  <div>{startIndex + index + 1}</div>
+                  <div>{v.id}</div>
                   <div>{v.village_name}</div>
 
                   <div className="relative text-left">
@@ -375,12 +412,13 @@ const Village = () => {
         </div>
 
         {/* Pagination */}
-        {villages.length > 0 && (
+        {filteredVillages.length > 0 && (
           <div className="flex flex-col md:flex-row items-center justify-between mt-4 text-sm text-gray-600 px-2">
             <span>
               Showing {startIndex + 1} to{" "}
-              {Math.min(startIndex + itemsPerPage, villages.length)} of{" "}
-              {villages.length} entries
+              {Math.min(startIndex + itemsPerPage, filteredVillages.length)} of{" "}
+              {filteredVillages.length} entries
+              {searchQuery && ` (filtered from ${villages.length} total)`}
             </span>
 
             <div className="flex items-center gap-3 mt-2 md:mt-0">

@@ -483,15 +483,23 @@ const CustomLeadManager = () => {
   const fetchUsers = async () => {
     try {
       const response = await api.get("/userlist");
-      if (response.data.success) {
-        // Filter users where is_approved is true
-        const approvedUsers = response.data.result.filter(
-          (user) => user.is_approved
-        );
-        setUsers(approvedUsers);
+      if (response.data.success && response.data.result) {
+        // Check if result is an array before filtering
+        if (Array.isArray(response.data.result)) {
+          // Filter users where is_approved is true
+          const approvedUsers = response.data.result.filter(
+            (user) => user.is_approved
+          );
+          setUsers(approvedUsers);
+        } else {
+          // If result is not an array, set empty array
+          setUsers([]);
+        }
+      } else {
+        setUsers([]);
       }
     } catch (err) {
-      console.error("Error fetching users:", err);
+      setUsers([]);
     }
   };
 
@@ -499,7 +507,7 @@ const CustomLeadManager = () => {
   const fetchStatuses = async () => {
     try {
       const response = await api.get("/showleadstatus");
-      console.log(response.data, "response.data");
+
       if (response.data.success) {
         setStatuses(response.data.data);
       }

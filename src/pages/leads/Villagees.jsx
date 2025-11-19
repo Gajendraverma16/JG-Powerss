@@ -12,10 +12,9 @@ const Villagees = () => {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(10);
   const [selectedVillages, setSelectedVillages] = useState([]);
   const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] = useState(false);
-  const itemsPerPageDropdownRef = useRef(null);
  const { isCollapsed } = useContext(SidebarContext);
 const { user } = useAuth();
 const assigneeDropdownRef = useRef(null);
@@ -91,7 +90,7 @@ const [isUpdating, setIsUpdating] = useState(false);
       setIsUpdating(true);
 
       // TODO: Replace with actual API endpoint when provided
-      const response = await api.post(`/villages/${editingVillage.id}/update-shop-counts`, {
+      await api.post(`/villages/${editingVillage.id}/update-shop-counts`, {
         total_shops: editTotalShops,
         active_shops: editActiveShops,
         inactive_shops: editInactiveShops,
@@ -153,12 +152,6 @@ const [isUpdating, setIsUpdating] = useState(false);
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
-        itemsPerPageDropdownRef.current &&
-        !itemsPerPageDropdownRef.current.contains(e.target)
-      ) {
-        setIsItemsPerPageDropdownOpen(false);
-      }
-      if (
         assigneeDropdownRef.current &&
         !assigneeDropdownRef.current.contains(e.target)
       ) {
@@ -207,8 +200,7 @@ const [isUpdating, setIsUpdating] = useState(false);
     }
   };
 
-  const [isItemsPerPageDropdownOpen, setIsItemsPerPageDropdownOpen] =
-    useState(false);
+
 
   // ✅ Pagination controls
   const handlePreviousPage = () => {
@@ -278,10 +270,7 @@ const [isUpdating, setIsUpdating] = useState(false);
     }
   };
 
-  const handleOpenBulkModal = () => {
-    console.log("Opening modal, users available:", users.length);
-    setIsBulkAssignModalOpen(true);
-  };
+
 
   if (loading) {
     return (
@@ -412,15 +401,6 @@ const [isUpdating, setIsUpdating] = useState(false);
                     {village.village_name}
                   </td>
                   <td className="py-4 px-6 text-sm text-[#4B5563]">
-                    {village.total_shops || 0}
-                  </td>
-                  <td className="py-4 px-6 text-sm text-[#4B5563]">
-                    {village.active_shops || 0}
-                  </td>
-                  <td className="py-4 px-6 text-sm text-[#4B5563]">
-                    {village.inactive_shops || 0}
-                  </td>
-                  <td className="py-4 px-6 text-sm text-[#4B5563]">
                     {village.user?.name || "Not Assigned"}
                   </td>
                   <td className="py-4 px-6 text-sm text-[#4B5563]">
@@ -432,7 +412,7 @@ const [isUpdating, setIsUpdating] = useState(false);
                   <td className="py-4 px-6 text-sm text-[#4B5563]">
                     {village.inactive_shops || 0}
                   </td>
-                  <td className="py-4  text-sm">
+                  <td className="py-4 px-6 text-sm">
                     <button
                       onClick={() => handleOpenEditModal(village)}
                       className="bg-[#ef7e1b] hover:bg-[#e86d00] text-white px-3 py-1 rounded-md text-xs"

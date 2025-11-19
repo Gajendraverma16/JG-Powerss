@@ -83,18 +83,32 @@ export function AuthProvider({ children }) {
         try {
           // 1. Get all roles
           const rolesRes = await api.get("/roles");
-          console.log("[AuthContext] Roles response:", rolesRes.data);
           if (rolesRes.data && rolesRes.data.success) {
             const roles = rolesRes.data.data;
-            console.log("[AuthContext] Roles fetched:", roles);
             // 2. Find role id by name
             const userRoleName = user.role;
-            console.log(
-              "[AuthContext] User role from user object:",
-              userRoleName
-            );
-            const matchedRole = roles.find((r) => r.name === userRoleName);
-            console.log("[AuthContext] Matched role:", matchedRole);
+
+
+            
+            // Try flexible matching for role names (handle spaces, case differences, variations)
+            const matchedRole = roles.find((r) => {
+              const normalizedRoleName = r.name.toLowerCase().replace(/\s+/g, '');
+              const normalizedUserRole = userRoleName.toLowerCase().replace(/\s+/g, '');
+              
+              // Direct match
+              if (normalizedRoleName === normalizedUserRole || r.name === userRoleName) {
+                return true;
+              }
+              
+              // Handle salesman variations
+              const salesmanVariations = ['salesman', 'salesmen', 'sales'];
+              if (salesmanVariations.includes(normalizedUserRole) && salesmanVariations.includes(normalizedRoleName)) {
+                return true;
+              }
+              
+              return false;
+            });
+
             if (matchedRole) {
               // 3. Fetch permissions for this role id
               const permsRes = await api.get(
@@ -123,25 +137,21 @@ export function AuthProvider({ children }) {
               } else {
                 setRolePermissions([]);
                 localStorage.removeItem("rolePermissions");
-                console.log(
-                  "[AuthContext] Permissions cleared (no data returned)"
-                );
+
               }
             } else {
               setRolePermissions([]);
               localStorage.removeItem("rolePermissions");
-              console.log("[AuthContext] Permissions cleared (role not found)");
+
             }
           } else {
             setRolePermissions([]);
             localStorage.removeItem("rolePermissions");
-            console.log(
-              "[AuthContext] Permissions cleared (roles fetch failed)"
-            );
+
           }
         } catch (err) {
           // Optionally handle error (e.g., network issue)
-          console.log("[AuthContext] Permissions fetch error:", err);
+
         }
       }
     };
@@ -150,9 +160,7 @@ export function AuthProvider({ children }) {
     } else if (user && user.role === "admin") {
       setRolePermissions("ALL");
       localStorage.setItem("rolePermissions", JSON.stringify("ALL"));
-      console.log(
-        "[AuthContext] Admin role detected, all permissions enabled."
-      );
+
     }
     return () => {
       if (intervalId) clearInterval(intervalId);
@@ -194,21 +202,34 @@ export function AuthProvider({ children }) {
           // Admin gets all permissions immediately
           setRolePermissions("ALL");
           localStorage.setItem("rolePermissions", JSON.stringify("ALL"));
-          console.log(
-            "[AuthContext] Admin role detected during login, all permissions enabled."
-          );
+
         } else {
           // For non-admin users, fetch permissions from API
           try {
             // 1. Get all roles
             const rolesRes = await api.get("/roles");
-            console.log("[AuthContext] Roles response:", rolesRes.data);
             if (rolesRes.data && rolesRes.data.success) {
               const roles = rolesRes.data.data;
-              console.log("[AuthContext] Roles fetched:", roles);
               // 2. Find role id by name
               const userRoleName = userInfo.role;
-              const matchedRole = roles.find((r) => r.name === userRoleName);
+              // Try flexible matching for role names (handle spaces, case differences, variations)
+              const matchedRole = roles.find((r) => {
+                const normalizedRoleName = r.name.toLowerCase().replace(/\s+/g, '');
+                const normalizedUserRole = userRoleName.toLowerCase().replace(/\s+/g, '');
+                
+                // Direct match
+                if (normalizedRoleName === normalizedUserRole || r.name === userRoleName) {
+                  return true;
+                }
+                
+                // Handle salesman variations
+                const salesmanVariations = ['salesman', 'salesmen', 'sales'];
+                if (salesmanVariations.includes(normalizedUserRole) && salesmanVariations.includes(normalizedRoleName)) {
+                  return true;
+                }
+                
+                return false;
+              });
               if (matchedRole) {
                 // 3. Fetch permissions for this role id
                 const permsRes = await api.get(
@@ -246,10 +267,7 @@ export function AuthProvider({ children }) {
               localStorage.removeItem("rolePermissions");
             }
           } catch (err) {
-            console.log(
-              "[AuthContext] Permissions fetch error during login:",
-              err
-            );
+
             setRolePermissions([]);
             localStorage.removeItem("rolePermissions");
           }
