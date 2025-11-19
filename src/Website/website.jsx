@@ -143,50 +143,52 @@ const slides = [
       <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
       
       {/* Navigation */}
-   <nav
-    className={`
-    z-50 w-full 
-     shadow-lg border-b border-gray-100 sticky top-0
-    sm:bg-transparent sm:shadow-none sm:border-none sm:absolute sm:top-0
-    md:bg-transparent md:shadow-none md:border-none md:absolute md:top-0
-       `}
+      <nav
+  className="
+    z-50 w-full
+    bg-transparent 
+    shadow-none border-none 
+    absolute top-0
+  "
 >
-           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20t">
-            
-            {/* Logo */}
-            <div className="flex items-center ">
-              <img
-                style={{ height: "80px" }}
-                src={logo}
-                alt="Logo"
-              />
-            </div>
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex justify-between items-center h-24">
+      
+      {/* Logo */}
+      <div className="flex items-center">
+        <img
+          className="h-20 w-auto"   
+          src={logo}
+          alt="Logo"
+        />
+      </div>
 
-            {/* Desktop Button */}
-             <div className="hidden md:flex items-center space-x-4 ">
-      <button
-        type="button"
-        onClick={() => navigate("/login")}
-        className="font-medium rounded-lg transition-colors duration-200 cursor-pointer whitespace-nowrap flex items-center justify-center border-2 border-white text-white hover:bg-[#ef7e1b] hover:text-white px-4 py-2 text-base"
-      >
-        Sign In
-      </button>
+      {/* Desktop Button */}
+      <div className="hidden md:flex items-center">
+        <button
+          type="button"
+          onClick={() => navigate("/login")}
+          className="font-medium rounded-lg transition-colors duration-200 cursor-pointer whitespace-nowrap flex items-center justify-center border-2 border-white text-white hover:bg-[#ef7e1b] hover:text-white px-4 py-2 text-base"
+        >
+          Sign In
+        </button>
+      </div>
+
+      {/* Mobile Button */}
+      <div className="md:hidden flex items-center">
+        <button
+          type="button"
+          onClick={() => navigate("/login")}
+          className="font-medium rounded-lg transition-colors duration-200 cursor-pointer whitespace-nowrap flex items-center justify-center border-2 border-[#ef7e1b] text-[#ef7e1b] hover:bg-[#ef7e1b] hover:text-white px-4 py-2 text-base"
+        >
+          Sign In
+        </button>
+      </div>
+
     </div>
+  </div>
+</nav>
 
-            {/* Mobile Menu Button */}
-            <div className="md:hidden bg-transparent">
-         <button
-                type="button"
-                 onClick={() => navigate("/login")}
-                className="font-medium rounded-lg transition-colors duration-200 cursor-pointer whitespace-nowrap flex items-center justify-center border-2 border-[#ef7e1b] text-[#ef7e1b] hover:bg-[#ef7e1b] hover:text-white px-4 py-2 text-base"
-              >
-                Sign In
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       <main>
         {/* Hero Section with Slider */}
