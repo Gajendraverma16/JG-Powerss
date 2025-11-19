@@ -33,6 +33,7 @@ import Village from "@/pages/branch/Village";
 import Villagees from "@/pages/leads/Villagees";
 
 
+
 function PrivateRoute({ children, roles }) {
   const { user, loading, rolePermissions } = useAuth();
   if (loading) {
@@ -229,7 +230,7 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
-
+        
         <Route
           path="Order/new"
           element={
