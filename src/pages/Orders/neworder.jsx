@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import Swal from "sweetalert2";
 import api from "../../api";
 import { useAuth } from "../../auth/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FaPlus, FaMinus, FaTimes, FaArrowLeft, FaArrowRight, FaCamera } from "react-icons/fa";
 
 /**
@@ -20,6 +21,12 @@ import { FaPlus, FaMinus, FaTimes, FaArrowLeft, FaArrowRight, FaCamera } from "r
 
 const NewOrder = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Check if we're in edit mode
+  const editOrder = location.state?.quotation;
+  const isEditMode = !!editOrder;
   
   // Form navigation state
   const [currentStep, setCurrentStep] = useState(0); // 0: New Order, 1: Return Order, 2: Exchange Order
@@ -173,6 +180,99 @@ const NewOrder = () => {
 
     return () => (canceled = true);
   }, []);
+
+  // Populate form data in edit mode
+  useEffect(() => {
+    if (isEditMode && editOrder && leads.length > 0 && products.length > 0) {
+      // Set selected shop owner
+      const shopOwner = leads.find(l => l.customer_id === editOrder.shop_owner_id || l.id === editOrder.shop_owner_id);
+      if (shopOwner) {
+        setSelectedLead(shopOwner);
+        setLeadSearch(shopOwner.customer_name || "");
+      }
+
+      // Group items by order_status
+      const newItems = editOrder.items?.filter(item => item.order_status === "0" || item.order_status === 0) || [];
+      const returnItems = editOrder.items?.filter(item => item.order_status === "1" || item.order_status === 1) || [];
+      const exchangeItems = editOrder.items?.filter(item => item.order_status === "2" || item.order_status === 2) || [];
+
+      // Helper to convert item to form format
+      const convertItem = (item, orderStatus) => {
+        // Clean up image URL (remove duplicate /public/)
+        const imageUrl = item.new_image_url ? item.new_image_url.replace('/public/public/', '/public/') : null;
+        
+        console.log('Converting item:', item.title, 'Image URL:', imageUrl);
+        
+        return {
+          product_id: item.product_id,
+          title: item.title,
+          product_price: parseFloat(item.price),
+          product_points: parseFloat(item.points),
+          quantity: item.quantity,
+          order_status: orderStatus,
+          product_obj: item.product || products.find(p => p.id === item.product_id),
+          images: imageUrl ? [{
+            file: null,
+            preview: imageUrl,
+            existing: true
+          }] : [],
+        };
+      };
+
+      // Parse notes
+      const notesObj = { new: "", return: "", exchange: "" };
+      if (editOrder.notes) {
+        const notesParts = editOrder.notes.split(' | ');
+        notesParts.forEach(part => {
+          if (part.startsWith('NEW:')) notesObj.new = part.replace('NEW:', '').trim();
+          if (part.startsWith('RETURN:')) notesObj.return = part.replace('RETURN:', '').trim();
+          if (part.startsWith('EXCHANGE:')) notesObj.exchange = part.replace('EXCHANGE:', '').trim();
+        });
+      }
+
+      setAllOrdersData({
+        new: {
+          items: newItems.length > 0 ? newItems.map(item => convertItem(item, 0)) : [{
+            product_id: "",
+            title: "",
+            product_price: 0,
+            product_points: 0,
+            quantity: 1,
+            order_status: 0,
+            product_obj: null,
+            images: [],
+          }],
+          notes: notesObj.new
+        },
+        return: {
+          items: returnItems.length > 0 ? returnItems.map(item => convertItem(item, 1)) : [{
+            product_id: "",
+            title: "",
+            product_price: 0,
+            product_points: 0,
+            quantity: 1,
+            order_status: 1,
+            product_obj: null,
+            images: [],
+          }],
+          notes: notesObj.return
+        },
+        exchange: {
+          items: exchangeItems.length > 0 ? exchangeItems.map(item => convertItem(item, 2)) : [{
+            product_id: "",
+            title: "",
+            product_price: 0,
+            product_points: 0,
+            quantity: 1,
+            order_status: 2,
+            product_obj: null,
+            images: [],
+          }],
+          notes: notesObj.exchange
+        }
+      });
+    }
+  }, [isEditMode, editOrder, leads, products]);
 
   // Filter products by search
   const getFilteredProducts = (term) => {
@@ -482,7 +582,7 @@ const NewOrder = () => {
       }
 
       Swal.fire({
-        title: "Creating order...",
+        title: isEditMode ? "Updating order..." : "Creating order...",
         didOpen: () => Swal.showLoading(),
         allowOutsideClick: false,
       });
@@ -495,22 +595,43 @@ const NewOrder = () => {
       formData.append('notes', combinedNotes);
       
       // Add all items with their respective order_status
-      allItems.forEach((item, index) => {
+      for (let index = 0; index < allItems.length; index++) {
+        const item = allItems[index];
+        
         formData.append(`items[${index}][product_id]`, item.product_id);
         formData.append(`items[${index}][quantity]`, item.quantity);
         formData.append(`items[${index}][product_price]`, item.product_price);
         formData.append(`items[${index}][product_points]`, item.product_points);
         formData.append(`items[${index}][order_status]`, item.order_status);
         
-        // Add image only for return/exchange orders (order_status 1 or 2)
-        // Backend expects single image per item as "new_image"
-        if (item.images && item.images.length > 0 && item.images[0].file instanceof File) {
-          formData.append(`items[${index}][new_image]`, item.images[0].file);
+        // Handle images for return/exchange orders (order_status 1 or 2)
+        if (item.images && item.images.length > 0) {
+          if (item.images[0].file instanceof File) {
+            // New image uploaded
+            formData.append(`items[${index}][new_image]`, item.images[0].file);
+          } else if (item.images[0].existing && item.images[0].preview) {
+            // Existing image - fetch and convert to blob, then send
+            try {
+              const response = await fetch(item.images[0].preview);
+              const blob = await response.blob();
+              const filename = item.images[0].preview.split('/').pop();
+              const file = new File([blob], filename, { type: blob.type });
+              formData.append(`items[${index}][new_image]`, file);
+            } catch (error) {
+              console.error('Error fetching existing image:', error);
+              // Fallback: send existing_image URL
+              formData.append(`items[${index}][existing_image]`, item.images[0].preview);
+            }
+          }
         }
         // Don't send new_image field at all for items without images
-      });
+      }
 
-      const response = await api.post("/orders", formData, {
+      // Use update endpoint if in edit mode
+      const apiUrl = isEditMode ? `/orders/update/${editOrder.id}` : "/orders";
+      const apiMethod = isEditMode ? 'post' : 'post'; // Both use POST
+
+      const response = await api[apiMethod](apiUrl, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -519,11 +640,16 @@ const NewOrder = () => {
       Swal.close();
 
       if (response.data?.success) {
-        Swal.fire("Success", "Order created successfully with all items!", "success");
-        resetAllFormData();
-        setCurrentStep(0);
+        await Swal.fire("Success", isEditMode ? "Order updated successfully!" : "Order created successfully with all items!", "success");
+        if (isEditMode) {
+          // Navigate back and force page reload to fetch fresh data
+          window.location.href = '/Order/testorder';
+        } else {
+          resetAllFormData();
+          setCurrentStep(0);
+        }
       } else {
-        Swal.fire("Error", response.data?.message || "Failed to create order.", "error");
+        Swal.fire("Error", response.data?.message || `Failed to ${isEditMode ? 'update' : 'create'} order.`, "error");
       }
     } catch (error) {
       Swal.close();
@@ -581,7 +707,7 @@ const NewOrder = () => {
         
         {/* Step Description */}
         <div className="text-center text-gray-600 text-sm mb-6">
-          {currentStep === 0 && (selectedLead ? `Create a new order for ${selectedLead.customer_name}` : "Create a new order for shop owner")}
+          {currentStep === 0 && (selectedLead ? `${isEditMode ? 'Update' : 'Create a new'} order for ${selectedLead.customer_name}` : `${isEditMode ? 'Update' : 'Create a new'} order for shop owner`)}
           {currentStep === 1 && (selectedLead ? `Process return order for ${selectedLead.customer_name} with product images` : "Process return order with product images")}
           {currentStep === 2 && (selectedLead ? `Process exchange order for ${selectedLead.customer_name} with product images` : "Process exchange order with product images")}
         </div>
@@ -921,26 +1047,22 @@ const NewOrder = () => {
                   >
                     <FaCamera /> Add
                   </label>
-                  {it.images && it.images.length > 0 && (
-                    <div className="flex flex-wrap gap-1 max-w-20">
-                      {it.images.map((image, imgIdx) => (
-                        <div key={imgIdx} className="relative">
-                          <img
-                            src={image?.preview || ''}
-                            alt="Product"
-                            className="w-8 h-8 object-cover rounded border"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
-                          <button
-                            onClick={() => removeImage(idx, imgIdx)}
-                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
+                  {it.images && it.images.length > 0 && it.images[0] && (
+                    <div className="relative">
+                      <img
+                        src={it.images[0].preview || ''}
+                        alt="Product"
+                        className="w-8 h-8 object-cover rounded border"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                      <button
+                        onClick={() => removeImage(idx, 0)}
+                        className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
+                      >
+                        ×
+                      </button>
                     </div>
                   )}
                 </div>
@@ -1108,26 +1230,22 @@ const NewOrder = () => {
                   >
                     <FaCamera /> Add Images
                   </label>
-                  {it.images && it.images.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {it.images.map((image, imgIdx) => (
-                        <div key={imgIdx} className="relative">
-                          <img
-                            src={image?.preview || ''}
-                            alt="Product"
-                            className="w-16 h-16 object-cover rounded border"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
-                          <button
-                            onClick={() => removeImage(idx, imgIdx)}
-                            className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
+                  {it.images && it.images.length > 0 && it.images[0] && (
+                    <div className="relative inline-block">
+                      <img
+                        src={it.images[0].preview || ''}
+                        alt="Product"
+                        className="w-16 h-16 object-cover rounded border"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                      <button
+                        onClick={() => removeImage(idx, 0)}
+                        className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
+                      >
+                        ×
+                      </button>
                     </div>
                   )}
                 </div>
@@ -1161,7 +1279,7 @@ const NewOrder = () => {
       </div>
 
       {/* Notes / Reason */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           {currentStep === 0 
             ? "Notes" 
@@ -1182,7 +1300,7 @@ const NewOrder = () => {
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
         />
-      </div>
+      </div> */}
 
       {/* Totals */}
       <div className="flex justify-between items-center flex-wrap gap-4 bg-[#f9fafb] border border-gray-300 rounded-xl p-5">
@@ -1218,8 +1336,8 @@ const NewOrder = () => {
               </>
             ) : (
               <>
-                <span className="hidden lg:inline">Review & Create Order</span>
-                <span className="lg:hidden">Review & Create</span>
+                <span className="hidden lg:inline">{isEditMode ? 'Review & Update Order' : 'Review & Create Order'}</span>
+                <span className="lg:hidden">{isEditMode ? 'Review & Update' : 'Review & Create'}</span>
                 <FaArrowRight />
               </>
             )}
@@ -1302,7 +1420,7 @@ const NewOrder = () => {
                   onClick={submitAllOrders}
                   className="bg-[#003A72] text-white px-4 lg:px-6 py-3 rounded-xl font-semibold hover:bg-[#004B8D] order-1 lg:order-2"
                 >
-                  Create Orders
+                  {isEditMode ? 'Update Order' : 'Create Orders'}
                 </button>
               </div>
             </div>

@@ -14,10 +14,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { RxCross2 } from "react-icons/rx";
 import "../../styles/scrollbar.css";
 import { SidebarContext } from "../../components/Layout";
+import { useAuth } from "../../auth/AuthContext";
 
 const TestOrder = () => {
   const { statusId, statusName } = useParams(); // Get statusId and statusName from URL
   const navigate = useNavigate(); // Initialize navigate
+  const { user } = useAuth(); // Get user info
 
   const dynamicApiEndpoint = statusId
     ? `/leadstatus/${statusId}`
@@ -85,6 +87,10 @@ const TestOrder = () => {
   // New state for modal to display items and calculate net total for each quotation
   const [selectedItems, setSelectedItems] = useState(null);
   const [isItemsModalOpen, setIsItemsModalOpen] = useState(false);
+  
+  // Image preview modal state
+  const [previewImage, setPreviewImage] = useState(null);
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
 
   // New state for "Created" date filter
   const [createdDateRangeDropdownOpen, setCreatedDateRangeDropdownOpen] =
@@ -126,7 +132,7 @@ const TestOrder = () => {
     const fetchQuotations = async () => {
       try {
         const response = await api.get(dynamicApiEndpoint); // Use dynamicApiEndpoint
-        // console.log(response.data);
+        console.log('Orders API Response:', response.data);
         if (response.data.success) {
           // Map order_status to type for each item
           const ordersWithTypes = response.data.data.map(order => ({
@@ -135,9 +141,20 @@ const TestOrder = () => {
               // Convert order_status to number if it's a string
               const status = typeof item.order_status === 'string' ? parseInt(item.order_status) : item.order_status;
               const type = status === 0 ? 'new' : status === 1 ? 'return' : status === 2 ? 'exchange' : 'new';
+              
+              // Fix: If new_image_url is missing but new_image exists, construct the URL
+              let imageUrl = item.new_image_url;
+              if (!imageUrl && item.new_image) {
+                // Construct full URL from new_image path
+                imageUrl = `${import.meta.env.VITE_API_URL}/${item.new_image}`;
+              }
+              
+              console.log('Item:', item.title, 'new_image:', item.new_image, 'constructed URL:', imageUrl);
+              
               return {
                 ...item,
-                type: type
+                type: type,
+                new_image_url: imageUrl // Add/override with constructed URL
               };
             })
           }));
@@ -1002,7 +1019,7 @@ const handleDelete = async (id) => {
 
         {/* Actions: Create Lead + Display Dropdown + Bulk Actions */}
         <div className="flex flex-wrap items-center gap-3 md:gap-4 lg:gap-4">
-          {selectedLeads.length > 0 && (
+          {selectedLeads.length > 0 && user?.role !== 'sales man' && (
             <>
               <button
                 className="hover:bg-red-500
@@ -1928,17 +1945,17 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                     <>
                       {newCount > 0 && (
                         <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
-                          N: {newCount}
+                          New 
                         </span>
                       )}
                       {returnCount > 0 && (
                         <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full">
-                          R: {returnCount}
+                          Return
                         </span>
                       )}
                       {exchangeCount > 0 && (
                         <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
-                          E: {exchangeCount}
+                          Exchange
                         </span>
                       )}
                     </>
@@ -2011,30 +2028,34 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                   data-dropdown-id={order?.id}
                   className="absolute left-3 w-24 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-10 overflow-hidden"
                 >
-                  {/* <button
+                  <button
                     onClick={() => handleEdit(order)}
                     className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors first:rounded-t-md"
                   >
                     <FiEdit className="mr-2 w-4 h-4 group-hover:text-white" />
                     <span className="group-hover:text-white">Edit</span>
-                  </button> */}
-
-                  <svg
-                    className="w-full h-[1px]"
-                    viewBox="0 0 100 1"
-                    preserveAspectRatio="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
-                  </svg>
-
-                  <button
-                    onClick={() => handleDelete(order?.id)}
-                    className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
-                  >
-                    <FiTrash2 className="mr-2 w-4 h-4 group-hover:text-white" />
-                    <span className="group-hover:text-white">Delete</span>
                   </button>
+
+                  {user?.role !== 'sales man' && (
+                    <>
+                      <svg
+                        className="w-full h-[1px]"
+                        viewBox="0 0 100 1"
+                        preserveAspectRatio="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
+                      </svg>
+
+                      <button
+                        onClick={() => handleDelete(order?.id)}
+                        className="group flex items-center px-2 py-1 text-sm text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors last:rounded-b-md"
+                      >
+                        <FiTrash2 className="mr-2 w-4 h-4 group-hover:text-white" />
+                        <span className="group-hover:text-white">Delete</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -2111,31 +2132,34 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
 
               {activeDropdown === order?.id && (
                 <div className="absolute right-0 top-8 w-24 rounded-md shadow-md bg-gradient-to-br from-white to-[#E7F4FF] z-20 overflow-hidden">
-                  {/* Edit (optional) */}
-                  {/* <button
+                  <button
                     onClick={() => handleEdit(order)}
                     className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors"
                   >
                     <FiEdit className="mr-2 w-4 h-4 group-hover:text-white" />
                     <span className="group-hover:text-white">Edit</span>
-                  </button> */}
-
-                  <svg
-                    className="w-full h-[1px]"
-                    viewBox="0 0 100 1"
-                    preserveAspectRatio="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
-                  </svg>
-
-                  <button
-                    onClick={() => handleDelete(order?.id)}
-                    className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors"
-                  >
-                    <FiTrash2 className="mr-2 w-4 h-4 group-hover:text-white" />
-                    <span className="group-hover:text-white">Delete</span>
                   </button>
+
+                  {user?.role !== 'sales man' && (
+                    <>
+                      <svg
+                        className="w-full h-[1px]"
+                        viewBox="0 0 100 1"
+                        preserveAspectRatio="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <polygon points="0,0 50,1 100,0" fill="#E5E7EB" />
+                      </svg>
+
+                      <button
+                        onClick={() => handleDelete(order?.id)}
+                        className="group flex items-center px-3 py-2 text-xs text-[#4B5563] hover:bg-[#004B8D] w-full transition-colors"
+                      >
+                        <FiTrash2 className="mr-2 w-4 h-4 group-hover:text-white" />
+                        <span className="group-hover:text-white">Delete</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -2145,7 +2169,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
         {/* Order Details */}
         <div className="p-4 space-y-3">
           {/* Notes */}
-          <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+          {/* <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
             <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
               <svg
                 className="w-4 h-4 text-gray-600"
@@ -2169,7 +2193,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                 {order?.notes || "No notes provided"}
               </p>
             </div>
-          </div>
+          </div> */}
 
           {/* Contact */}
           <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
@@ -2240,17 +2264,17 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                     <>
                       {newCount > 0 && (
                         <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[9px] font-medium">
-                          New: {newCount}
+                          New
                         </span>
                       )}
                       {returnCount > 0 && (
                         <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-[9px] font-medium">
-                          Return: {returnCount}
+                          Return
                         </span>
                       )}
                       {exchangeCount > 0 && (
                         <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[9px] font-medium">
-                          Exchange: {exchangeCount}
+                          Exchange  
                         </span>
                       )}
                     </>
@@ -2418,7 +2442,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
 
           {/* Glassmorphism modal container */}
           <div
-            className="w-11/12 max-w-[1000px] max-h-[90vh] overflow-y-auto p-6 md:p-8
+            className="w-[95%] sm:w-11/12 max-w-[1000px] max-h-[90vh] overflow-y-auto p-4 sm:p-6 md:p-8
               rounded-2xl
               bg-gradient-to-br from-[#FFFFFF] to-[#E6F4FF]
               shadow-lg
@@ -2459,7 +2483,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
             </h2>
            
             {/* Order Type Summary Cards */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
               {/* New Orders Count */}
               <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-3 border border-green-200">
                 <div className="flex items-center justify-between">
@@ -2503,175 +2527,141 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
             {/* NEW ORDERS SECTION */}
             {selectedItems?.filter(item => item.type === 'new')?.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-green-700 mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold  mb-3 flex items-center gap-2">
                   <span className="text-xl">🆕</span> New Orders
                 </h3>
-                <div className="rounded-lg overflow-x-auto border border-green-200">
-                  <table className="min-w-full divide-y divide-green-100">
-                    <thead className="bg-green-50">
+                <div className="rounded-lg overflow-x-auto border border-green-200 shadow-sm">
+                  <table className="min-w-full">
+                    <thead className="bg-white">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-green-700 uppercase">Item Name</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-green-700 uppercase">Qty</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-green-700 uppercase">Rate</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-green-700 uppercase">Amount</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-green-700 uppercase">Notes</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Item Name</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Qty</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Rate</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Amount</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-green-100">
                       {selectedItems?.filter(item => item.type === 'new')?.map((item, index) => (
-                        <tr key={index} className="hover:bg-green-50">
-                          <td className="px-4 py-3 text-sm text-gray-700">{item.title}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">{item.quantity}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">₹{parseFloat(item.price).toFixed(2)}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">₹{parseFloat(item.points).toFixed(2)}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">
-                            <div className="max-w-[200px] truncate" title={item.notes || 'No notes'}>
-                              {item.notes || '-'}
-                            </div>
-                          </td>
+                        <tr key={index} className="">
+                          <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700">{item.title}</td>
+                          <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">{item.quantity}</td>
+                          <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">₹{parseFloat(item.price).toFixed(2)}</td>
+                          <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">₹{parseFloat(item.value).toFixed(2)}</td>
                         </tr>
                       ))}
                       <tr className="bg-green-100 font-semibold">
-                        <td colSpan="3" className="px-4 py-3 text-right text-sm text-green-800">Total:</td>
-                        <td className="px-4 py-3 text-sm text-green-800">
-                          ₹{selectedItems?.filter(item => item.type === 'new')?.reduce((sum, item) => sum + (parseFloat(item.points) * item.quantity), 0).toFixed(2)}
+                        <td colSpan="3" className="px-2 sm:px-4 py-2 sm:py-3 text-right text-xs sm:text-sm text-green-800">Total:</td>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-green-800 whitespace-nowrap">
+                          ₹{selectedItems?.filter(item => item.type === 'new')?.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0).toFixed(2)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+        {/* RETURN ORDERS SECTION */}
+{selectedItems?.filter(item => item.type === 'return')?.length > 0 && (
+    <div className="mb-6">
+        <h3 className="text-lg font-semibold  mb-3 flex items-center gap-2">
+            <span className="text-xl">↩️</span> Return Orders
+        </h3>
+        <div className="rounded-lg overflow-x-auto border border-red-200 shadow-sm">
+            <table className="min-w-full">
+                <thead className="bg-white">
+                    <tr>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">Item Name</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Qty</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Rate</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">Amount</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">Image</th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-red-100">
+                    {selectedItems?.filter(item => item.type === 'return')?.map((item, index) => (
+                        <tr key={index} className="">
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700">{item.title}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">{item.quantity}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">₹{parseFloat(item.price).toFixed(2)}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">₹{parseFloat(item.value).toFixed(2)}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3">
+                                {item.new_image_url ? (
+                                    <img 
+                                        src={item.new_image_url.replace('/public/public/', '/public/')} 
+                                        alt={item.title}
+                                        className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
+                                        onClick={() => { setPreviewImage(item.new_image_url.replace('/public/public/', '/public/')); setIsImagePreviewOpen(true); }}
+                                    />
+                                ) : (
+                                    <span className="text-gray-400 text-[10px] sm:text-xs">No image</span>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
+                    <tr className="bg-red-100 font-semibold">
+                        <td colSpan="3" className="px-2 sm:px-4 py-2 sm:py-3 text-right text-xs sm:text-sm text-red-800">Total:</td>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-800 whitespace-nowrap">
+                            ₹{selectedItems?.filter(item => item.type === 'return')?.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0).toFixed(2)}
                         </td>
                         <td></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+)}
 
-            {/* RETURN ORDERS SECTION */}
-            {selectedItems?.filter(item => item.type === 'return')?.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-red-700 mb-3 flex items-center gap-2">
-                  <span className="text-xl">↩️</span> Return Orders
-                </h3>
-                <div className="rounded-lg overflow-x-auto border border-red-200">
-                  <table className="min-w-full divide-y divide-red-100">
-                    <thead className="bg-red-50">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Item Name</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Qty</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Rate</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Amount</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Image</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Notes</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-red-100">
-                      {selectedItems?.filter(item => item.type === 'return')?.map((item, index) => (
-                        <tr key={index} className="hover:bg-red-50">
-                          <td className="px-4 py-3 text-sm text-gray-700">{item.title}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">{item.quantity}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">₹{parseFloat(item.price).toFixed(2)}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">₹{parseFloat(item.points).toFixed(2)}</td>
-                          <td className="px-4 py-3">
-                            {item.new_image ? (
-                              <img 
-                                src={item.new_image} 
-                                alt={item.title}
-                                className="w-12 h-12 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
-                                onClick={() => window.open(item.new_image, '_blank')}
-                              />
-                            ) : item.product?.product_image ? (
-                              <img 
-                                src={item.product.product_image} 
-                                alt={item.title}
-                                className="w-12 h-12 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
-                                onClick={() => window.open(item.product.product_image, '_blank')}
-                              />
-                            ) : (
-                              <span className="text-gray-400 text-xs">No image</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-600">
-                            <div className="max-w-[200px] truncate" title={item.notes || 'No notes'}>
-                              {item.notes || '-'}
-                            </div>
-                          </td>
+{/* EXCHANGE ORDERS SECTION */}
+{selectedItems?.filter(item => item.type === 'exchange')?.length > 0 && (
+    <div className="mb-6">
+        <h3 className="text-lg font-semibold  mb-3 flex items-center gap-2">
+            <span className="text-xl">🔄</span> Exchange Orders
+        </h3>
+        <div className="rounded-lg overflow-x-auto border border-blue-200 shadow-sm">
+            <table className="min-w-full">
+                <thead className="bg-white">
+                    <tr>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Item Name</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Qty</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Rate</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Amount</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Image</th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-blue-100">
+                    {selectedItems?.filter(item => item.type === 'exchange')?.map((item, index) => (
+                        <tr key={index} className="">
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700">{item.title}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">{item.quantity}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">₹{parseFloat(item.price).toFixed(2)}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">₹{parseFloat(item.value).toFixed(2)}</td>
+                            <td className="px-2 sm:px-4 py-2 sm:py-3">
+                                {item.new_image_url ? (
+                                    <img 
+                                        src={item.new_image_url.replace('/public/public/', '/public/')} 
+                                        alt={item.title}
+                                        className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
+                                        onClick={() => { setPreviewImage(item.new_image_url.replace('/public/public/', '/public/')); setIsImagePreviewOpen(true); }}
+                                    />
+                                ) : (
+                                    <span className="text-gray-400 text-[10px] sm:text-xs">No image</span>
+                                )}
+                            </td>
                         </tr>
-                      ))}
-                      <tr className="bg-red-100 font-semibold">
-                        <td colSpan="3" className="px-4 py-3 text-right text-sm text-red-800">Total:</td>
-                        <td className="px-4 py-3 text-sm text-red-800">
-                          ₹{selectedItems?.filter(item => item.type === 'return')?.reduce((sum, item) => sum + (parseFloat(item.points) * item.quantity), 0).toFixed(2)}
+                    ))}
+                    <tr className="bg-blue-100 font-semibold">
+                        <td colSpan="3" className="px-2 sm:px-4 py-2 sm:py-3 text-right text-xs sm:text-sm text-blue-800">Total:</td>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-blue-800 whitespace-nowrap">
+                            ₹{selectedItems?.filter(item => item.type === 'exchange')?.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0).toFixed(2)}
                         </td>
-                        <td colSpan="2"></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* EXCHANGE ORDERS SECTION */}
-            {selectedItems?.filter(item => item.type === 'exchange')?.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-blue-700 mb-3 flex items-center gap-2">
-                  <span className="text-xl">🔄</span> Exchange Orders
-                </h3>
-                <div className="rounded-lg overflow-x-auto border border-blue-200">
-                  <table className="min-w-full divide-y divide-blue-100">
-                    <thead className="bg-blue-50">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase">Item Name</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase">Qty</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase">Rate</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase">Amount</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase">Image</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-blue-700 uppercase">Notes</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-blue-100">
-                      {selectedItems?.filter(item => item.type === 'exchange')?.map((item, index) => (
-                        <tr key={index} className="hover:bg-blue-50">
-                          <td className="px-4 py-3 text-sm text-gray-700">{item.title}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">{item.quantity}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">₹{parseFloat(item.price).toFixed(2)}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">₹{parseFloat(item.points).toFixed(2)}</td>
-                          <td className="px-4 py-3">
-                            {item.new_image ? (
-                              <img 
-                                src={item.new_image} 
-                                alt={item.title}
-                                className="w-12 h-12 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
-                                onClick={() => window.open(item.new_image, '_blank')}
-                              />
-                            ) : item.product?.product_image ? (
-                              <img 
-                                src={item.product.product_image} 
-                                alt={item.title}
-                                className="w-12 h-12 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
-                                onClick={() => window.open(item.product.product_image, '_blank')}
-                              />
-                            ) : (
-                              <span className="text-gray-400 text-xs">No image</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-600">
-                            <div className="max-w-[200px] truncate" title={item.notes || 'No notes'}>
-                              {item.notes || '-'}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                      <tr className="bg-blue-100 font-semibold">
-                        <td colSpan="3" className="px-4 py-3 text-right text-sm text-blue-800">Total:</td>
-                        <td className="px-4 py-3 text-sm text-blue-800">
-                          ₹{selectedItems?.filter(item => item.type === 'exchange')?.reduce((sum, item) => sum + (parseFloat(item.points) * item.quantity), 0).toFixed(2)}
-                        </td>
-                        <td colSpan="2"></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+)}
             {/* Close button */}
             <div className="mt-10 flex justify-center">
               <button
@@ -2684,6 +2674,50 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
           </div>
         </div>
       )}
+
+      {/* Image Preview Modal */}
+      {isImagePreviewOpen && previewImage && (
+        <div className="fixed inset-0 flex items-center justify-center z-[60] bg-black/80 backdrop-blur-sm" onClick={() => setIsImagePreviewOpen(false)}>
+          <div className="relative max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            {/* Close button */}
+            <button
+              onClick={() => setIsImagePreviewOpen(false)}
+              className="absolute -top-10 right-0 sm:-top-12 sm:-right-12 w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors shadow-lg z-10"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 14 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M13 1L1 13"
+                  stroke="#1F2837"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M1 1L13 13"
+                  stroke="#1F2837"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            
+            {/* Image */}
+            <img 
+              src={previewImage} 
+              alt="Preview"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Pagination Controls */}
       {filteredQuotations?.length > 0 && (
         <div className="flex justify-center pt-7 mt-auto">
@@ -2770,4 +2804,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
 };
 
 export default TestOrder;
+
+
+
 
