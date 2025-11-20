@@ -331,7 +331,7 @@ const fetchDashboard = async () => {
         </div>
 
         {/* Total Products */}
-        <div
+        {/* <div
           className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
                      w-full sm:w-[48%] lg:w-[30%] min-w-[280px] group cursor-pointer"
           style={{
@@ -359,10 +359,10 @@ const fetchDashboard = async () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Total Users */}
-        <div
+        {/* <div
           className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
                      w-full sm:w-[48%] lg:w-[30%] min-w-[280px] group cursor-pointer"
           style={{
@@ -392,7 +392,7 @@ const fetchDashboard = async () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Orders & Revenue Section */}
@@ -503,7 +503,7 @@ const fetchDashboard = async () => {
         </div> */}
 
         {/* Distribution with Icons */}
-        <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-2xl shadow-md p-6 border border-[#E9EAEA]">
+        {/* <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-2xl shadow-md p-6 border border-[#E9EAEA]">
           <h3 className="text-lg font-semibold text-[#1F2837] mb-6">Location Distribution</h3>
           <div className="space-y-4">
             {[
@@ -574,7 +574,7 @@ const fetchDashboard = async () => {
               );
             })}
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Top Users Section */}

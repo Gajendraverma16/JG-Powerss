@@ -41,6 +41,7 @@ const NewOrder = () => {
 
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(false);
+  const [organizationLimit, setOrganizationLimit] = useState(null);
 
   // Store data for all three forms separately
   const [allOrdersData, setAllOrdersData] = useState({
@@ -177,6 +178,31 @@ const NewOrder = () => {
         setProducts([]);
       })
       .finally(() => setProductsLoading(false));
+
+    return () => (canceled = true);
+  }, []);
+
+  // Fetch organization data to get limit
+  useEffect(() => {
+    let canceled = false;
+
+    api
+      .get("/orglist")
+      .then((res) => {
+        if (canceled) return;
+        const result = res?.data?.result;
+        if (result) {
+          // Get the first organization's limit
+          const firstOrgKey = Object.keys(result)[0];
+          if (firstOrgKey && result[firstOrgKey]) {
+            const limit = parseFloat(result[firstOrgKey].limit || 0);
+            setOrganizationLimit(limit);
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching organization data:", err);
+      });
 
     return () => (canceled = true);
   }, []);
@@ -438,6 +464,30 @@ const NewOrder = () => {
         const hasItemsWithoutImages = itemsWithProducts.some(item => !item.images || item.images.length === 0);
         if (hasItemsWithoutImages) {
           return Swal.fire("Error", `Please upload images for all products in ${currentOrderType} order before proceeding.`, "error");
+        }
+      }
+    }
+
+    // Check limit for exchange orders before proceeding to summary
+    if (currentStep === 2 && currentOrderType === 'exchange') {
+      // Check if user has added any products in exchange order
+      const exchangeItemsWithProducts = items.filter(item => item.product_id);
+      
+      // Only check limit if user has added exchange products
+      if (exchangeItemsWithProducts.length > 0) {
+        // Calculate the NEW ORDER total (not exchange order total)
+        const newOrderTotal = allOrdersData.new.items
+          .filter(item => item.product_id)
+          .reduce((sum, item) => sum + (item.quantity * item.product_price), 0);
+        
+        // Check if organization limit is set and if new order total is less than limit
+        if (organizationLimit !== null && newOrderTotal < organizationLimit) {
+          return Swal.fire({
+            icon: "error",
+            title: "Exchange Not Available",
+            text: `Your new order total (₹${newOrderTotal.toLocaleString()}) is less than the minimum limit (₹${organizationLimit.toLocaleString()}). Exchange is not available for orders below this limit.`,
+            confirmButtonColor: "#003A72"
+          });
         }
       }
     }
@@ -1306,14 +1356,32 @@ const NewOrder = () => {
       <div className="flex justify-between items-center flex-wrap gap-4 bg-[#f9fafb] border border-gray-300 rounded-xl p-5">
         {(() => {
           const { total_value, total_points } = calculateTotals();
+          const isExchangeStep = currentStep === 2;
+          
+          // Calculate new order total for exchange limit check
+          const newOrderTotal = allOrdersData.new.items
+            .filter(item => item.product_id)
+            .reduce((sum, item) => sum + (item.quantity * item.product_price), 0);
+          
+          const isBelowLimit = isExchangeStep && organizationLimit !== null && newOrderTotal < organizationLimit;
+          
           return (
-            <div>
+            <div className="flex-1">
               <div className="text-2xl font-bold text-[#003A72]">
                 Total: ₹{total_value.toLocaleString()}
               </div>
               <div className="text-lg text-gray-500">
                 Total Points: {total_points.toLocaleString()}
               </div>
+              {isExchangeStep && organizationLimit !== null && (
+                <div className={`mt-2 text-sm font-medium ${isBelowLimit ? 'text-red-600' : 'text-green-600'}`}>
+                  {isBelowLimit ? (
+                    <>⚠️ New order total (₹{newOrderTotal.toLocaleString()}) is below limit (₹{organizationLimit.toLocaleString()}) - Exchange not available</>
+                  ) : (
+                    <>✓ New order total (₹{newOrderTotal.toLocaleString()}) meets minimum limit (₹{organizationLimit.toLocaleString()})</>
+                  )}
+                </div>
+              )}
             </div>
           );
         })()}
