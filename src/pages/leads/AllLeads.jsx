@@ -5233,7 +5233,7 @@ useEffect(() => {
                   </div>
 
                   {/* City & Source Row */}
-                  <div className="grid grid-cols-2 gap-2">
+                  {/* <div className="grid grid-cols-2 gap-2">
                     <div className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
                       <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
                         <svg
@@ -5321,7 +5321,7 @@ useEffect(() => {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Assigned To & Follow Up Row */}
                   <div className="grid grid-cols-2 gap-2">
@@ -5351,7 +5351,7 @@ useEffect(() => {
                       </div>
                     </div> */}
 
-                    <div className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
+                    {/* <div className="flex items-center space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
                       <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
                         <svg
                           className="w-3 h-3 text-gray-600"
@@ -5375,7 +5375,7 @@ useEffect(() => {
                           {formatDateTimeForTable(lead.follow_up_date)}
                         </p>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                   {/* Requirements */}
                   <div className="flex items-start space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
@@ -5403,14 +5403,74 @@ useEffect(() => {
                       </p>
                     </div>
                   </div>
+
+                  {/* Village Name */}
+                  <div className="flex items-start space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
+                    <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
+                      <svg
+                        className="w-3 h-3 text-gray-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.5"
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.5"
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] ml-1 font-medium text-gray-500 uppercase tracking-wide">
+                        Village Name
+                      </p>
+                      <p className="text-[10px] ml-1 text-gray-900 leading-relaxed">
+                        {getVillageName(lead.village)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Village Assigned */}
+                  <div className="flex items-start space-x-1 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer">
+                    <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
+                      <svg
+                        className="w-3 h-3 text-gray-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.5"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] ml-1 font-medium text-gray-500 uppercase tracking-wide">
+                        Village Assigned
+                      </p>
+                      <p className="text-[10px] ml-1 text-gray-900 leading-relaxed">
+                        {lead.village_assigned_member}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Status Footer */}
                 <div className="px-3 sm:px-4 py-3  border-t border-gray-100 rounded-b-2xl">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-gray-600">
+                    {/* <span className="text-xs font-medium text-gray-600">
                       Status
-                    </span>
+                    </span> */}
                     <span
                       className={`
                   px-3 py-1 rounded-full text-xs font-medium

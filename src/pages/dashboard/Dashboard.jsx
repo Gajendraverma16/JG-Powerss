@@ -205,7 +205,7 @@ const fetchDashboard = async () => {
     totalRoutes: 48,
     totalAreas: 156,
     totalVillages: 320,
-    totalProducts: 150,
+    totalProducts: 40,
     totalOrders: 1250,
     newOrders: 85,
     returnOrders: 23,
@@ -471,7 +471,7 @@ const fetchDashboard = async () => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Orders Bar Chart */}
-        <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-2xl shadow-md p-6 border border-[#E9EAEA]">
+        {/* <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-2xl shadow-md p-6 border border-[#E9EAEA]">
           <h3 className="text-lg font-semibold text-[#1F2837] mb-6">Orders Overview</h3>
           <div className="h-64 flex items-center justify-center">
             <div className="w-full h-full flex items-end justify-around gap-4">
@@ -500,7 +500,7 @@ const fetchDashboard = async () => {
               ))}
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Distribution with Icons */}
         <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-2xl shadow-md p-6 border border-[#E9EAEA]">
@@ -578,7 +578,7 @@ const fetchDashboard = async () => {
       </div>
 
       {/* Top Users Section */}
-      <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-2xl shadow-md p-6 border border-[#E9EAEA]">
+      {/* <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-2xl shadow-md p-6 border border-[#E9EAEA]">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-[#1F2837]">Top Performing Users</h3>
           <BsLightningChargeFill className="text-[#003A72] text-xl" />
@@ -618,7 +618,7 @@ const fetchDashboard = async () => {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </>
   ) : (
     /* SALESMAN DASHBOARD */
@@ -764,7 +764,7 @@ const fetchDashboard = async () => {
         </div>
 
         {/* Top Product Sale */}
-        <div
+        {/* <div
           className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
                      w-full sm:w-[48%] lg:w-[30%] min-w-[280px]"
           style={{
@@ -802,7 +802,7 @@ const fetchDashboard = async () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Quick Actions */}
         <div
@@ -843,17 +843,17 @@ const fetchDashboard = async () => {
       <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Chart - Takes 1 column (50%) */}
         <div className="lg:col-span-1">
-          <AreaChart />
+          {/* <AreaChart /> */}
         </div>
         
         {/* Side Stats Card - Takes 1 column (50%) */}
         <div className="lg:col-span-1">
-          <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-2xl shadow-md p-5 border border-[#E9EAEA] h-[280px] flex flex-col">
-            <h3 className="text-base font-semibold text-[#1F2837] mb-3">Monthly Summary</h3>
+          <div>
+            {/* <h3 className="text-base font-semibold text-[#1F2837] mb-3">Monthly Summary</h3> */}
             
             <div className="space-y-3 flex-1 overflow-y-auto">
               {/* This Month */}
-              <div className="bg-white rounded-lg p-3 border border-gray-100">
+              {/* <div className="bg-white rounded-lg p-3 border border-gray-100">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs text-[#727A90]">This Month</span>
                   <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Active</span>
@@ -862,10 +862,10 @@ const fetchDashboard = async () => {
                   <span className="text-2xl font-bold text-[#003A72]">₹ 12.5K</span>
                   <span className="text-xs text-green-600 font-medium">↑ 15%</span>
                 </div>
-              </div>
+              </div> */}
 
               {/* Target Progress */}
-              <div className="bg-white rounded-lg p-3 border border-gray-100">
+              {/* <div className="bg-white rounded-lg p-3 border border-gray-100">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs text-[#727A90]">Monthly Target</span>
                   <span className="text-xs font-semibold text-[#1F2837]">75%</span>
@@ -874,10 +874,10 @@ const fetchDashboard = async () => {
                   <div className="bg-gradient-to-r from-[#003A72] to-[#003A72] h-2 rounded-full transition-all duration-500" style={{ width: '75%' }}></div>
                 </div>
                 <p className="text-[10px] text-[#727A90]">₹ 15K / ₹ 20K</p>
-              </div>
+              </div> */}
 
               {/* Quick Stats */}
-              <div className="grid grid-cols-2 gap-2">
+              {/* <div className="grid grid-cols-2 gap-2">
                 <div className="bg-gradient-to-br from-[#003A72]/10 to-[#003A72]/5 rounded-lg p-2 border border-[#003A72]/20">
                   <p className="text-[10px] text-[#727A90] mb-0.5">Avg. Order</p>
                   <p className="text-lg font-bold text-[#003A72]">₹ 850</p>
@@ -886,10 +886,10 @@ const fetchDashboard = async () => {
                   <p className="text-[10px] text-[#727A90] mb-0.5">Conversion</p>
                   <p className="text-lg font-bold text-[#27AE60]">68%</p>
                 </div>
-              </div>
+              </div> */}
 
               {/* Top Achievement */}
-              <div className="bg-gradient-to-r from-[#0e4053] to-[#0d3847] rounded-lg p-3 text-white">
+              {/* <div className="bg-gradient-to-r from-[#0e4053] to-[#0d3847] rounded-lg p-3 text-white">
                 <div className="flex items-center gap-2">
                   <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -901,14 +901,14 @@ const fetchDashboard = async () => {
                     <p className="text-sm font-semibold">Best Sales This Week!</p>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
       </div>
 
       {/* Your Rank Section */}
-      <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-xl shadow-md p-6 border border-[#E9EAEA]">
+      {/* <div className="bg-gradient-to-br from-white to-[#E7F4FF] rounded-xl shadow-md p-6 border border-[#E9EAEA]">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-[#1F2837]">Your Performance Rank</h3>
           <div className="flex items-center gap-2 bg-gradient-to-r from-[#003A72] to-[#003A72] text-white px-4 py-2 rounded-full">
@@ -935,7 +935,8 @@ const fetchDashboard = async () => {
             <p className="text-xs text-[#727A90] mt-1">Based on 120 reviews</p>
           </div>
         </div>
-      </div>
+      </div> */}
+      
     </>
   )}
 
