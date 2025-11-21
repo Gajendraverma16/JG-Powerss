@@ -2810,6 +2810,21 @@ const villageObj = areaObj?.villages?.find(
 
 villageId = Number(villageObj?.village_id) || 0;
 
+// Fallback to existing village_id if calculation fails
+if (villageId === 0 && formData.village_id) {
+  villageId = Number(formData.village_id);
+}
+
+// Validate village_id before proceeding
+if (!villageId || villageId === 0) {
+  await Swal.fire({
+    icon: "warning",
+    title: "Village Required",
+    text: "Please select a valid Branch, Route, Area, and Village before updating.",
+    confirmButtonColor: "#003A72",
+  });
+  return;
+}
 
 safeAppend("village", villageId);
 
