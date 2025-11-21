@@ -226,10 +226,13 @@ const NewOrder = () => {
       const convertItem = (item, orderStatus) => {
         // Clean up image URL (remove duplicate /public/)
         const imageUrl = item.new_image_url ? item.new_image_url.replace('/public/public/', '/public/') : null;
+        // Store the original image path from backend (without /public/ prefix for backend)
+        const imagePath = item.new_image ? item.new_image : null;
         
-        console.log('Converting item:', item.title, 'Image URL:', imageUrl);
+        console.log('Converting item:', item.title, 'Image URL:', imageUrl, 'Image Path:', imagePath);
         
         return {
+          item_id: item.id, // Store item ID for edit mode
           product_id: item.product_id,
           title: item.title,
           product_price: parseFloat(item.price),
@@ -240,7 +243,8 @@ const NewOrder = () => {
           images: imageUrl ? [{
             file: null,
             preview: imageUrl,
-            existing: true
+            existing: true,
+            path: imagePath // Store original path for backend
           }] : [],
         };
       };
@@ -648,33 +652,40 @@ const NewOrder = () => {
       for (let index = 0; index < allItems.length; index++) {
         const item = allItems[index];
         
+        // If editing existing item, send item_id so backend can update instead of creating new
+        if (isEditMode && item.item_id) {
+          formData.append(`items[${index}][id]`, item.item_id);
+        }
+        
         formData.append(`items[${index}][product_id]`, item.product_id);
         formData.append(`items[${index}][quantity]`, item.quantity);
         formData.append(`items[${index}][product_price]`, item.product_price);
         formData.append(`items[${index}][product_points]`, item.product_points);
         formData.append(`items[${index}][order_status]`, item.order_status);
         
-        // Handle images for return/exchange orders (order_status 1 or 2)
+        // Handle images - always send both existing_image and new_image fields
         if (item.images && item.images.length > 0) {
-          if (item.images[0].file instanceof File) {
-            // New image uploaded
-            formData.append(`items[${index}][new_image]`, item.images[0].file);
-          } else if (item.images[0].existing && item.images[0].preview) {
-            // Existing image - fetch and convert to blob, then send
-            try {
-              const response = await fetch(item.images[0].preview);
-              const blob = await response.blob();
-              const filename = item.images[0].preview.split('/').pop();
-              const file = new File([blob], filename, { type: blob.type });
-              formData.append(`items[${index}][new_image]`, file);
-            } catch (error) {
-              console.error('Error fetching existing image:', error);
-              // Fallback: send existing_image URL
-              formData.append(`items[${index}][existing_image]`, item.images[0].preview);
-            }
+          const firstImage = item.images[0];
+          
+          // Check if this is a NEW image upload (has file property and it's a File object)
+          if (firstImage.file instanceof File) {
+            // User uploaded a NEW image
+            formData.append(`items[${index}][existing_image]`, '');
+            formData.append(`items[${index}][new_image]`, firstImage.file);
+          } else if (firstImage.existing && firstImage.path) {
+            // Existing image - send the path and null for new_image
+            formData.append(`items[${index}][existing_image]`, firstImage.path);
+            // Don't append new_image, let it be null/undefined
+          } else {
+            // No image
+            formData.append(`items[${index}][existing_image]`, '');
+            // Don't append new_image, let it be null/undefined
           }
+        } else {
+          // No images at all
+          formData.append(`items[${index}][existing_image]`, '');
+          // Don't append new_image, let it be null/undefined
         }
-        // Don't send new_image field at all for items without images
       }
 
       // Use update endpoint if in edit mode

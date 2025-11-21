@@ -200,7 +200,7 @@ const fetchDashboard = async () => {
 
   // Admin Dashboard Data with Dummy Values
   const [adminStats, setAdminStats] = useState({
-    totalShopOwners: 245,
+    totalShopOwners: 80,
     totalBranches: 12,
     totalRoutes: 48,
     totalAreas: 156,
