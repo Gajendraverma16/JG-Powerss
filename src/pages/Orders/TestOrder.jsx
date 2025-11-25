@@ -712,16 +712,17 @@ switch (filters.contact) {
         }
       });
 
-      // Calculate totals
+      // Get items by type
       const newOrderItems = selectedItems.filter(item => item.type === 'new');
       const returnOrderItems = selectedItems.filter(item => item.type === 'return');
       const exchangeOrderItems = selectedItems.filter(item => item.type === 'exchange');
       const exchangeReturningItems = selectedItems.filter(item => item.type === 'exchange' && item.exchange_type === 'returning');
 
-      const newOrderTotal = newOrderItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
-      const returnOrderTotal = returnOrderItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
-      const exchangeOrderTotal = exchangeOrderItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
-      const grandTotal = newOrderTotal + exchangeOrderTotal;
+      // Use totals from API instead of calculating locally
+      const newOrderTotal = parseFloat(selectedOrder?.total_new_orders || 0);
+      const returnOrderTotal = 0; // Returns don't add to payment
+      const exchangeOrderTotal = parseFloat(selectedOrder?.total_exchange_orders || 0);
+      const grandTotal = parseFloat(selectedOrder?.grand_total || 0);
 
       // Create PDF Document
       const MyDocument = (
@@ -795,8 +796,8 @@ switch (filters.contact) {
                     </View>
                   ))}
                   <View style={[pdfStyles.totalRow, { backgroundColor: '#fee2e2' }]}>
-                    <Text style={[pdfStyles.tableCellBold, { flex: 5, textAlign: 'right' }]}>Total:</Text>
-                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'right' }]}>Rs. {returnOrderTotal.toFixed(2)}</Text>
+                    {/* <Text style={[pdfStyles.tableCellBold, { flex: 5, textAlign: 'right' }]}>Total:</Text> */}
+                    {/* <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'right' }]}>Rs. {returnOrderTotal.toFixed(2)}</Text> */}
                   </View>
                 </View>
               </View>
@@ -837,14 +838,14 @@ switch (filters.contact) {
               </View>
               <View style={pdfStyles.grandTotalRow}>
                 <Text style={pdfStyles.grandTotalLabel}>Return Orders</Text>
-                <Text style={pdfStyles.grandTotalValue}>Rs. {returnOrderTotal.toFixed(2)}</Text>
+                <Text style={pdfStyles.grandTotalValue}>Rs. 0</Text>
               </View>
               <View style={pdfStyles.grandTotalRow}>
                 <Text style={pdfStyles.grandTotalLabel}>Exchange Orders</Text>
                 <Text style={pdfStyles.grandTotalValue}>Rs. {exchangeOrderTotal.toFixed(2)}</Text>
               </View>
               <View style={pdfStyles.finalTotal}>
-                <Text style={pdfStyles.finalTotalLabel}>Grand Total</Text>
+                <Text style={pdfStyles.finalTotalLabel}>Grand Total</Text>    
                 <Text style={pdfStyles.finalTotalValue}>Rs. {grandTotal.toFixed(2)}</Text>
               </View>
             </View>
@@ -2877,7 +2878,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                       <tr className="bg-green-100 font-semibold">
                         <td colSpan="3" className="px-2 sm:px-4 py-2 sm:py-3 text-right text-xs sm:text-sm text-green-800">Total:</td>
                         <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-green-800 whitespace-nowrap">
-                          ₹{selectedItems?.filter(item => item.type === 'new')?.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0).toFixed(2)}
+                          ₹{parseFloat(selectedOrder?.total_new_orders || 0).toFixed(2)}
                         </td>
                       </tr>
                     </tbody>
