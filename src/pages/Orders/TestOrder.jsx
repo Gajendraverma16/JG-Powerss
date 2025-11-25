@@ -1,4 +1,4 @@
-  import React, { useState, useEffect, useRef, useContext, use } from "react";
+﻿  import React, { useState, useEffect, useRef, useContext, use } from "react";
 import {
   FiChevronDown,
   FiEdit,
@@ -7,6 +7,7 @@ import {
   FiTrash2,
 } from "react-icons/fi";
 import { TbDotsVertical } from "react-icons/tb";
+import { FaFilePdf } from "react-icons/fa";
 import api from "../../api";
 import Swal from "sweetalert2";
 import { FaCheck } from "react-icons/fa6";
@@ -15,6 +16,7 @@ import { RxCross2 } from "react-icons/rx";
 import "../../styles/scrollbar.css";
 import { SidebarContext } from "../../components/Layout";
 import { useAuth } from "../../auth/AuthContext";
+import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer';
 
 const TestOrder = () => {
   const { statusId, statusName } = useParams(); // Get statusId and statusName from URL
@@ -86,6 +88,7 @@ const TestOrder = () => {
 
   // New state for modal to display items and calculate net total for each quotation
   const [selectedItems, setSelectedItems] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [isItemsModalOpen, setIsItemsModalOpen] = useState(false);
   
   // Image preview modal state
@@ -140,7 +143,9 @@ const TestOrder = () => {
             items: order.items?.map(item => {
               // Convert order_status to number if it's a string
               const status = typeof item.order_status === 'string' ? parseInt(item.order_status) : item.order_status;
-              const type = status === 0 ? 'new' : status === 1 ? 'return' : status === 2 ? 'exchange' : 'new';
+              // Map order_status: 0=new, 1=return, 2=exchange_old, 3=exchange_new
+              const type = status === 0 ? 'new' : status === 1 ? 'return' : (status === 2 || status === 3) ? 'exchange' : 'new';
+              const exchangeType = status === 2 ? 'returning' : status === 3 ? 'receiving' : null;
               
               // Fix: If new_image_url is missing but new_image exists, construct the URL
               let imageUrl = item.new_image_url;
@@ -149,11 +154,13 @@ const TestOrder = () => {
                 imageUrl = `${import.meta.env.VITE_API_URL}/${item.new_image}`;
               }
               
-              console.log('Item:', item.title, 'new_image:', item.new_image, 'constructed URL:', imageUrl);
+              console.log('Item:', item.title, 'order_status:', status, 'type:', type, 'exchangeType:', exchangeType);
               
               return {
                 ...item,
                 type: type,
+                exchange_type: exchangeType,
+                order_status: status,
                 new_image_url: imageUrl // Add/override with constructed URL
               };
             })
@@ -569,6 +576,312 @@ switch (filters.contact) {
     }
   };
 
+  // PDF Styles for Items Details
+  const pdfStyles = StyleSheet.create({
+    page: {
+      padding: 30,
+      fontSize: 10,
+      fontFamily: 'Helvetica',
+    },
+    header: {
+      fontSize: 18,
+      marginBottom: 10,
+      color: '#003A72',
+      fontWeight: 'bold',
+    },
+    subHeader: {
+      fontSize: 12,
+      marginBottom: 20,
+      color: '#666',
+    },
+    summaryCards: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 20,
+      gap: 10,
+    },
+    summaryCard: {
+      flex: 1,
+      padding: 10,
+      borderRadius: 5,
+      border: '1px solid #ddd',
+    },
+    cardTitle: {
+      fontSize: 9,
+      color: '#666',
+      marginBottom: 5,
+      textTransform: 'uppercase',
+    },
+    cardValue: {
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    section: {
+      marginBottom: 15,
+      padding: 10,
+      border: '1px solid #ddd',
+      borderRadius: 5,
+    },
+    sectionTitle: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: '#003A72',
+      marginBottom: 10,
+    },
+    table: {
+      marginTop: 10,
+    },
+    tableHeader: {
+      flexDirection: 'row',
+      backgroundColor: '#f3f4f6',
+      padding: 8,
+      borderBottom: '1px solid #ddd',
+    },
+    tableRow: {
+      flexDirection: 'row',
+      padding: 8,
+      borderBottom: '1px solid #eee',
+    },
+    tableCell: {
+      fontSize: 9,
+    },
+    tableCellBold: {
+      fontSize: 9,
+      fontWeight: 'bold',
+    },
+    totalRow: {
+      flexDirection: 'row',
+      padding: 8,
+      backgroundColor: '#f0f9ff',
+      fontWeight: 'bold',
+    },
+    grandTotalSection: {
+      marginTop: 20,
+      padding: 15,
+      backgroundColor: '#dcfce7',
+      border: '2px solid #15803d',
+      borderRadius: 5,
+    },
+    grandTotalRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 5,
+    },
+    grandTotalLabel: {
+      fontSize: 11,
+      fontWeight: 'bold',
+    },
+    grandTotalValue: {
+      fontSize: 11,
+      fontWeight: 'bold',
+    },
+    finalTotal: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 10,
+      paddingTop: 10,
+      borderTop: '2px solid #15803d',
+    },
+    finalTotalLabel: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: '#15803d',
+    },
+    finalTotalValue: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#15803d',
+    },
+  });
+
+  // Export Items Details to PDF
+  const exportItemsDetailsToPDF = async () => {
+    try {
+      if (!selectedItems || selectedItems.length === 0) {
+        Swal.fire("Error", "No items to export", "error");
+        return;
+      }
+
+      // Show loading
+      Swal.fire({
+        title: 'Generating PDF...',
+        text: 'Please wait while we create your PDF',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // Calculate totals
+      const newOrderItems = selectedItems.filter(item => item.type === 'new');
+      const returnOrderItems = selectedItems.filter(item => item.type === 'return');
+      const exchangeOrderItems = selectedItems.filter(item => item.type === 'exchange');
+      const exchangeReturningItems = selectedItems.filter(item => item.type === 'exchange' && item.exchange_type === 'returning');
+
+      const newOrderTotal = newOrderItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+      const returnOrderTotal = returnOrderItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+      const exchangeOrderTotal = exchangeOrderItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+      const grandTotal = newOrderTotal + exchangeOrderTotal;
+
+      // Create PDF Document
+      const MyDocument = (
+        <Document>
+          <Page size="A4" style={pdfStyles.page}>
+            <Text style={pdfStyles.header}>Order Items Details</Text>
+            <Text style={pdfStyles.subHeader}>
+              Customer: {selectedOrder?.shop_owner?.customer_name || 'N/A'}
+            </Text>
+
+            {/* Summary Cards */}
+            <View style={pdfStyles.summaryCards}>
+              <View style={pdfStyles.summaryCard}>
+                <Text style={pdfStyles.cardTitle}>New Orders</Text>
+                <Text style={[pdfStyles.cardValue, { color: '#15803d' }]}>{newOrderItems.length}</Text>
+              </View>
+              <View style={pdfStyles.summaryCard}>
+                <Text style={pdfStyles.cardTitle}>Return Orders</Text>
+                <Text style={[pdfStyles.cardValue, { color: '#dc2626' }]}>{returnOrderItems.length}</Text>
+              </View>
+              <View style={pdfStyles.summaryCard}>
+                <Text style={pdfStyles.cardTitle}>Exchange Orders</Text>
+                <Text style={[pdfStyles.cardValue, { color: '#2563eb' }]}>{exchangeReturningItems.length}</Text>
+              </View>
+            </View>
+
+            {/* New Orders */}
+            {newOrderItems.length > 0 && (
+              <View style={pdfStyles.section}>
+                <Text style={pdfStyles.sectionTitle}>New Orders</Text>
+                <View style={pdfStyles.table}>
+                  <View style={pdfStyles.tableHeader}>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 3 }]}>Product</Text>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'center' }]}>Qty</Text>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'right' }]}>Rate</Text>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'right' }]}>Amount</Text>
+                  </View>
+                  {newOrderItems.map((item, idx) => (
+                    <View key={idx} style={pdfStyles.tableRow}>
+                      <Text style={[pdfStyles.tableCell, { flex: 3 }]}>{item.title}</Text>
+                      <Text style={[pdfStyles.tableCell, { flex: 1, textAlign: 'center' }]}>{item.quantity}</Text>
+                      <Text style={[pdfStyles.tableCell, { flex: 1, textAlign: 'right' }]}>Rs. {parseFloat(item.price).toFixed(2)}</Text>
+                      <Text style={[pdfStyles.tableCell, { flex: 1, textAlign: 'right' }]}>Rs. {parseFloat(item.value).toFixed(2)}</Text>
+                    </View>
+                  ))}
+                  <View style={[pdfStyles.totalRow, { backgroundColor: '#dcfce7' }]}>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 5, textAlign: 'right' }]}>Total:</Text>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'right' }]}>Rs. {newOrderTotal.toFixed(2)}</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* Return Orders */}
+            {returnOrderItems.length > 0 && (
+              <View style={pdfStyles.section}>
+                <Text style={pdfStyles.sectionTitle}>Return Orders</Text>
+                <View style={pdfStyles.table}>
+                  <View style={pdfStyles.tableHeader}>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 3 }]}>Product</Text>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'center' }]}>Qty</Text>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'right' }]}>Rate</Text>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'right' }]}>Amount</Text>
+                  </View>
+                  {returnOrderItems.map((item, idx) => (
+                    <View key={idx} style={pdfStyles.tableRow}>
+                      <Text style={[pdfStyles.tableCell, { flex: 3 }]}>{item.title}</Text>
+                      <Text style={[pdfStyles.tableCell, { flex: 1, textAlign: 'center' }]}>{item.quantity}</Text>
+                      <Text style={[pdfStyles.tableCell, { flex: 1, textAlign: 'right' }]}>Rs. {parseFloat(item.price).toFixed(2)}</Text>
+                      <Text style={[pdfStyles.tableCell, { flex: 1, textAlign: 'right' }]}>Rs. {parseFloat(item.value).toFixed(2)}</Text>
+                    </View>
+                  ))}
+                  <View style={[pdfStyles.totalRow, { backgroundColor: '#fee2e2' }]}>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 5, textAlign: 'right' }]}>Total:</Text>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'right' }]}>Rs. {returnOrderTotal.toFixed(2)}</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* Exchange Orders */}
+            {exchangeOrderItems.length > 0 && (
+              <View style={pdfStyles.section}>
+                <Text style={pdfStyles.sectionTitle}>Exchange Orders</Text>
+                <View style={pdfStyles.table}>
+                  <View style={pdfStyles.tableHeader}>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 3 }]}>Product</Text>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'center' }]}>Qty</Text>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'right' }]}>Rate</Text>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'right' }]}>Amount</Text>
+                  </View>
+                  {exchangeOrderItems.map((item, idx) => (
+                    <View key={idx} style={pdfStyles.tableRow}>
+                      <Text style={[pdfStyles.tableCell, { flex: 3 }]}>{item.title}</Text>
+                      <Text style={[pdfStyles.tableCell, { flex: 1, textAlign: 'center' }]}>{item.quantity}</Text>
+                      <Text style={[pdfStyles.tableCell, { flex: 1, textAlign: 'right' }]}>Rs. {parseFloat(item.price).toFixed(2)}</Text>
+                      <Text style={[pdfStyles.tableCell, { flex: 1, textAlign: 'right' }]}>Rs. {parseFloat(item.value).toFixed(2)}</Text>
+                    </View>
+                  ))}
+                  <View style={[pdfStyles.totalRow, { backgroundColor: '#dbeafe' }]}>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 5, textAlign: 'right' }]}>Total:</Text>
+                    <Text style={[pdfStyles.tableCellBold, { flex: 1, textAlign: 'right' }]}>Rs. {exchangeOrderTotal.toFixed(2)}</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* Grand Total */}
+            <View style={pdfStyles.grandTotalSection}>
+              <View style={pdfStyles.grandTotalRow}>
+                <Text style={pdfStyles.grandTotalLabel}>New Orders</Text>
+                <Text style={pdfStyles.grandTotalValue}>Rs. {newOrderTotal.toFixed(2)}</Text>
+              </View>
+              <View style={pdfStyles.grandTotalRow}>
+                <Text style={pdfStyles.grandTotalLabel}>Return Orders</Text>
+                <Text style={pdfStyles.grandTotalValue}>Rs. {returnOrderTotal.toFixed(2)}</Text>
+              </View>
+              <View style={pdfStyles.grandTotalRow}>
+                <Text style={pdfStyles.grandTotalLabel}>Exchange Orders</Text>
+                <Text style={pdfStyles.grandTotalValue}>Rs. {exchangeOrderTotal.toFixed(2)}</Text>
+              </View>
+              <View style={pdfStyles.finalTotal}>
+                <Text style={pdfStyles.finalTotalLabel}>Grand Total</Text>
+                <Text style={pdfStyles.finalTotalValue}>Rs. {grandTotal.toFixed(2)}</Text>
+              </View>
+            </View>
+          </Page>
+        </Document>
+      );
+
+      // Generate PDF blob
+      const blob = await pdf(MyDocument).toBlob();
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const customerName = selectedOrder?.shop_owner?.customer_name?.replace(/\s+/g, '_') || 'Customer';
+      const date = new Date().toISOString().split('T')[0];
+      link.download = `Order_Items_${customerName}_${date}.pdf`;
+      link.click();
+      
+      // Cleanup
+      URL.revokeObjectURL(url);
+      
+      Swal.close();
+      Swal.fire({
+        icon: 'success',
+        title: 'PDF Downloaded!',
+        text: 'Order items details have been saved',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      Swal.close();
+      Swal.fire("Error", "Failed to generate PDF: " + error.message, "error");
+    }
+  };
+
   const handleBulkDelete = async () => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -802,12 +1115,14 @@ const handleDelete = async (id) => {
   };
 
   // Function to open items modal
-  const handleShowItems = (items, e) => {
+  const handleShowItems = (items, order, e) => {
     e.stopPropagation();
     console.log('Items received:', items);
+    console.log('Order received:', order);
     console.log('First item type:', items?.[0]?.type);
     console.log('First item order_status:', items?.[0]?.order_status);
     setSelectedItems(items);
+    setSelectedOrder(order);
     setIsItemsModalOpen(true);
   };
 
@@ -1921,12 +2236,12 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
           <td className="py-4 px-3 text-sm text-[#4B5563]">
             <div
               className="inline-flex flex-col gap-1.5 cursor-pointer"
-              onClick={(e) => handleShowItems(order.items, e)}
+              onClick={(e) => handleShowItems(order.items, order, e)}
             >
               {/* Total and Items Count */}
               <div className="inline-flex items-center gap-2 bg-Duskwood-50 px-3 py-1.5 rounded-full hover:bg-Duskwood-100 transition-colors">
                 <span className="font-medium text-[#1F2837] whitespace-nowrap">
-                  Rs {parseFloat(order.total_value || 0).toFixed(2)}
+                  Rs {parseFloat(order.grand_total || 0).toFixed(2)}
                 </span>
                 <div className="h-3.5 w-[1px] bg-Duskwood-200"></div>
                 <span className="text-xs text-Duskwood-600 whitespace-nowrap">
@@ -2225,7 +2540,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
           {/* Total with Order Type Counts */}
           <div
             className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer"
-            onClick={(e) => handleShowItems(order?.items, e)}
+            onClick={(e) => handleShowItems(order?.items, order, e)}
           >
             <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center shadow-sm">
               <svg
@@ -2247,7 +2562,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                 Total
               </p>
               <p className="text-sm font-semibold text-gray-900">
-                ₹{parseFloat(order.total_value || 0).toFixed(2)}{" "}
+                ₹{parseFloat(order.grand_total || 0).toFixed(2)}{" "}
                 <span className="text-xs text-gray-500">
                   ({order?.items?.length || 0} items)
                 </span>
@@ -2477,10 +2792,20 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
               </svg>
             </button>
 
-            {/* Modal title */}
-            <h2 className="text-[24px] sm:text-[29px] font-medium text-[#1F2837] mb-4">
-              Items Details
-            </h2>
+            {/* Modal title and Export button */}
+            <div className="flex justify-between items-center mb-4  pr-12">
+              <h2 className="text-[24px] sm:text-[29px] font-medium text-[#1F2837]">
+                Items Details
+              </h2>
+              <button
+                onClick={exportItemsDetailsToPDF}
+                className="flex items-center gap-2 bg-red-600 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors text-sm whitespace-nowrap"
+                title="Export to PDF"
+              >
+                <FaFilePdf className="text-base sm:text-lg" />
+                <span className="hidden sm:inline">Export PDF</span>
+              </button>
+            </div>
            
             {/* Order Type Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -2516,7 +2841,7 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                   <div>
                     <p className="text-xs text-blue-600 font-medium uppercase">Exchange Orders</p>
                     <p className="text-2xl font-bold text-blue-700 mt-1">
-                      {selectedItems?.filter(item => item.type === 'exchange')?.length || 0}
+                      {selectedItems?.filter(item => item.type === 'exchange' && item.exchange_type === 'returning')?.length || 0}
                     </p>
                   </div>
                   <div className="text-2xl">🔄</div>
@@ -2534,10 +2859,10 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                   <table className="min-w-full">
                     <thead className="bg-white">
                       <tr>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Item Name</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">Product</th>
                         <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Qty</th>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Rate</th>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Amount</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">Rate</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">Amount</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-green-100">
@@ -2599,13 +2924,13 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
                             </td>
                         </tr>
                     ))}
-                    <tr className="bg-red-100 font-semibold">
-                        <td colSpan="3" className="px-2 sm:px-4 py-2 sm:py-3 text-right text-xs sm:text-sm text-red-800">Total:</td>
+                    {/* <tr className="bg-red-100 font-semibold">
+                        <td colSpan="3" className="px-2 sm:px-4 py-2 sm:py-3 text-right text-xs sm:text-sm text-red-800">Total (No Payment):</td>
                         <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-800 whitespace-nowrap">
-                            ₹{selectedItems?.filter(item => item.type === 'return')?.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0).toFixed(2)}
+                            ₹0.00
                         </td>
                         <td></td>
-                    </tr>
+                    </tr> */}
                 </tbody>
             </table>
         </div>
@@ -2622,46 +2947,140 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
             <table className="min-w-full">
                 <thead className="bg-white">
                     <tr>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Item Name</th>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Qty</th>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Rate</th>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Amount</th>
-                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium  uppercase whitespace-nowrap">Image</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">Product</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">Qty</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">Exchange With</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">Old Price</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">New Price</th>
+                        <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">Images</th>
+                        {/* <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-[10px] sm:text-xs font-medium uppercase whitespace-nowrap">Difference</th>   */}
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-blue-100">
-                    {selectedItems?.filter(item => item.type === 'exchange')?.map((item, index) => (
-                        <tr key={index} className="">
-                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700">{item.title}</td>
-                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">{item.quantity}</td>
-                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">₹{parseFloat(item.price).toFixed(2)}</td>
-                            <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">₹{parseFloat(item.value).toFixed(2)}</td>
-                            <td className="px-2 sm:px-4 py-2 sm:py-3">
-                                {item.new_image_url ? (
-                                    <img 
-                                        src={item.new_image_url.replace('/public/public/', '/public/')} 
-                                        alt={item.title}
-                                        className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
-                                        onClick={() => { setPreviewImage(item.new_image_url.replace('/public/public/', '/public/')); setIsImagePreviewOpen(true); }}
-                                    />
-                                ) : (
-                                    <span className="text-gray-400 text-[10px] sm:text-xs">No image</span>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                    <tr className="bg-blue-100 font-semibold">
-                        <td colSpan="3" className="px-2 sm:px-4 py-2 sm:py-3 text-right text-xs sm:text-sm text-blue-800">Total:</td>
-                        <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-blue-800 whitespace-nowrap">
-                            ₹{selectedItems?.filter(item => item.type === 'exchange')?.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0).toFixed(2)}
+                    {(() => {
+                        const returningItems = selectedItems?.filter(item => item.type === 'exchange' && item.exchange_type === 'returning') || [];
+                        const receivingItems = selectedItems?.filter(item => item.type === 'exchange' && item.exchange_type === 'receiving') || [];
+                        
+                        return returningItems.map((returningItem, index) => {
+                            const receivingItem = receivingItems[index];
+                            const oldPrice = parseFloat(returningItem.price) * returningItem.quantity;
+                            const newPrice = receivingItem ? parseFloat(receivingItem.price) * receivingItem.quantity : 0;
+                            const difference = newPrice - oldPrice;
+                            
+                            return (
+                                <tr key={index} className="hover:bg-blue-50">
+                                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700">
+                                        <div className="flex items-center gap-2">
+                                            {/* <span className="text-red-600 font-semibold text-xs">📤</span> */}
+                                            <span>{returningItem.title}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">{returningItem.quantity}</td>
+                                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700">
+                                        {receivingItem ? (
+                                            <div className="flex items-center gap-2">
+                                                {/* <span className="text-green-600 font-semibold text-xs">📥</span> */}
+                                                <span>{receivingItem.title}</span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-400">-</span>
+                                        )}
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">₹{oldPrice.toFixed(2)}</td>
+                                    <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 whitespace-nowrap">
+                                        {receivingItem ? `₹${newPrice.toFixed(2)}` : '-'}
+                                    </td>
+                                    <td className="px-2 sm:px-4 py-2 sm:py-3">
+                                        <div className="flex items-center gap-2">
+                                            {returningItem.new_image_url ? (
+                                                <img 
+                                                    src={returningItem.new_image_url.replace('/public/public/', '/public/')} 
+                                                    alt={returningItem.title}
+                                                    className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded border cursor-pointer hover:scale-110 transition-transform"
+                                                    onClick={() => { setPreviewImage(returningItem.new_image_url.replace('/public/public/', '/public/')); setIsImagePreviewOpen(true); }}
+                                                />
+                                            ) : (
+                                                <span className="text-gray-400 text-[10px] sm:text-xs">No image</span>     
+                                            )}
+                                        </div>
+                                    </td>
+                                    {/* <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm whitespace-nowrap">
+                                        <span className={`font-semibold ${difference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {difference >= 0 ? '+' : ''}₹{difference.toFixed(2)}
+                                        </span>
+                                    </td> */}
+                                </tr>
+                            );
+                        });
+                    })()}
+                    {/* <tr className="bg-blue-100 font-semibold">
+                        <td colSpan="6" className="px-2 sm:px-4 py-2 sm:py-3 text-right text-xs sm:text-sm text-blue-800">
+                            Total Exchange Difference:
                         </td>
-                        <td></td>
-                    </tr>
+                        <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-blue-800 whitespace-nowrap">
+                            ₹{(() => {
+                                const returningTotal = selectedItems?.filter(item => item.type === 'exchange' && item.exchange_type === 'returning')?.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0) || 0;
+                                const receivingTotal = selectedItems?.filter(item => item.type === 'exchange' && item.exchange_type === 'receiving')?.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0) || 0;
+                                return (receivingTotal - returningTotal).toFixed(2);
+                            })()}
+                        </td>
+                    </tr> */}
                 </tbody>
             </table>
         </div>
     </div>
 )}
+
+            {/* Grand Total Summary */}
+            {selectedOrder && (
+                <div className="mt-6 bg-white rounded-xl shadow-lg border-2 border-[#003A72] overflow-hidden">
+                    <div className="bg-[#003A72] text-white px-4 py-3">
+                        <h4 className="text-base font-bold">💰 Payment Summary</h4>
+                    </div>
+                    <div className="p-4">
+                        <div className="space-y-2 mb-3">
+                            {selectedOrder.total_new_orders > 0 && (
+                                <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span className="text-gray-700 font-medium">New Order</span>
+                                    <span className="text-lg font-semibold text-gray-900">₹{parseFloat(selectedOrder.total_new_orders).toFixed(2)}</span>
+                                </div>
+                            )}
+                            {selectedOrder.total_new_orders > 0 && (
+                                <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span className="text-gray-700 font-medium">Return/Replacment</span>
+                                    <span className="text-lg font-semibold text-gray-900">₹0.00</span>
+                                </div>
+                            )}
+                            {selectedOrder.total_exchange_orders > 0 && (
+                                <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span className="text-gray-700 font-medium">Exchange Product(Incoming)</span>
+                                    <span className="text-lg font-semibold text-gray-900">₹{parseFloat(selectedOrder.total_exchange_orders).toFixed(2)}</span>
+                                </div>
+                            )}
+                             {selectedOrder.total_exchange_orders > 0 && (
+                                <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span className="text-red-700 font-medium">Exchange Items (Outgoing)</span>
+                                    <span className="text-lg font-semibold text-red-700"> -₹{parseFloat(selectedOrder.total_replace_orders).toFixed(2)}</span>
+                                </div>
+                            )}
+                        </div>
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border-2 border-green-500">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <div className="text-sm text-green-700 font-semibold uppercase">Grand Total</div>
+                                    {/* <div className="text-xs text-green-600">Total Points</div> */}
+                                </div>
+                                <div className="text-3xl font-bold text-green-700">
+                                    ₹{parseFloat(selectedOrder.grand_total).toFixed(2)}
+    
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Close button */}
             <div className="mt-10 flex justify-center">
               <button

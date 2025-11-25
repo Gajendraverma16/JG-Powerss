@@ -1912,8 +1912,34 @@ useEffect(() => {
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+  const handleSearchChange = async (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    // Check if the search term looks like a mobile number (10 digits)
+    const mobileNumberPattern = /^\d{10}$/;
+    if (mobileNumberPattern.test(value.trim())) {
+      try {
+        setLoading(true);
+        const response = await api.get(`/leads/search?contact_number=${value.trim()}`);
+        if (response.data.success && response.data.result) {
+          // Update leads with search results
+          setLeads(Array.isArray(response.data.result) ? response.data.result : [response.data.result]);
+        } else {
+          // If no results found, show empty array
+          setLeads([]);
+        }
+      } catch (err) {
+        console.error("Error searching by mobile number:", err);
+        // On error, fetch all leads again
+        await fetchLeads();
+      } finally {
+        setLoading(false);
+      }
+    } else if (value.trim() === "") {
+      // If search is cleared, fetch all leads
+      await fetchLeads();
+    }
   };
 
   const handlePreviousPage = () => {

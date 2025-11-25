@@ -140,7 +140,23 @@ import api from "../../api";
       await fetchVillages();
       handleCancel();
     } catch (err) {
-      Swal.fire("Error", "Failed to save village", "error");
+      // Check if error is due to duplicate village
+      const errorMessage = err.response?.data?.message || err.message || "";
+      if (errorMessage.toLowerCase().includes("already") || errorMessage.toLowerCase().includes("exist") || errorMessage.toLowerCase().includes("duplicate")) {
+        Swal.fire({
+          icon: "info",
+          title: "Village Already Exists",
+          text: "This village name already exists for the selected branch, route, and area.",
+          confirmButtonColor: "#003A72"
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to save village",
+          confirmButtonColor: "#DD6B55"
+        });
+      }
     } finally {
       setLoading(false);
     }

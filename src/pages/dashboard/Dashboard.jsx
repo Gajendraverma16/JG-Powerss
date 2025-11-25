@@ -164,7 +164,7 @@ const fetchDashboard = async () => {
       const dailyData = data.daily || {};
       
       // Set API data from daily summary
-      setVillageAPI(data.assigned_villages || null);
+      setVillageAPI(dailyData.total_villages_assigned || null);
       setOrdersAPI({
         totalOrders: dailyData.total_new_orders || null,
         newOrders: dailyData.total_new_orders || null,
@@ -172,7 +172,7 @@ const fetchDashboard = async () => {
         exchangeOrders: 0, // Not in API response
       });
       setPointsAPI(dailyData.total_points || null);
-      setAmountAPI(dailyData.total_amount || null);
+      setAmountAPI(dailyData.grand_total || null);
     } else {
       // API response not successful, use dummy data
       setVillageAPI(null);
@@ -292,9 +292,9 @@ const fetchOrderSummary = async () => {
   // Simple Revenue Chart Component
   const RevenueTrendChart = ({ data }) => {
     if (!data) return null;
-    const daily = parseFloat(data.daily?.total_amount || 0);
-    const weekly = parseFloat(data.weekly?.total_amount || 0);
-    const monthly = parseFloat(data.monthly?.total_amount || 0);
+    const daily = parseFloat(data.daily?.grand_total || 0);
+    const weekly = parseFloat(data.weekly?.grand_total || 0);
+    const monthly = parseFloat(data.monthly?.grand_total || 0);
     const max = Math.max(daily, weekly, monthly, 100) * 1.2;
     const getHeight = (val) => `${(val / max) * 100}%`;
 
@@ -334,7 +334,7 @@ const fetchOrderSummary = async () => {
   // Calculate KPIs
   const getKPIs = (data) => {
     if (!data) return { aov: 0, pointsRate: 0 };
-    const totalAmount = parseFloat(data.total?.total_amount || 0);
+    const totalAmount = parseFloat(data.total?.grand_total || 0);
     const totalOrders = parseInt(data.total?.total_new_orders || 0);
     const totalPoints = parseInt(data.total?.total_points || 0);
     const aov = totalOrders > 0 ? (totalAmount / totalOrders).toFixed(0) : 0;
@@ -544,6 +544,40 @@ const fetchOrderSummary = async () => {
           </div>
         </div>
 
+        {/* Total Villages Assigned */}
+        <div
+          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
+                     w-full sm:w-[48%] lg:w-[30%] min-w-[280px] group cursor-pointer"
+          style={{
+            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
+          }}
+        >
+          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
+          <div
+            className="relative z-10 rounded-[14px] min-h-[150px] h-full
+                       px-5 pt-5 pb-3 flex flex-col justify-between
+                       shadow-[0_4px_20px_rgba(0,0,0,0.08)] group-hover:shadow-[0_8px_30px_rgba(0,58,114,0.15)] transition-all duration-300"
+            style={{ background: "linear-gradient(45deg, white, #e6f4fb)" }}
+          >
+            <div className="flex justify-between">
+              <div>
+                <div className="text-[#003A72] text-[32px] font-extrabold font-quicksand group-hover:scale-105 transition-transform duration-300">
+                  {villageAPI ?? 0}
+                </div>
+                <div className="text-black font-semibold text-[15px]">
+                  Total Villages Assigned
+                </div>
+              </div>
+              <div className="bg-[#003A7233] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-[#003A72]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Quick Actions */}
         <div
           className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
@@ -607,7 +641,7 @@ const fetchOrderSummary = async () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-[#727A90]">Amount</span>
-                  <span className="text-sm font-semibold text-green-600">₹ {orderSummary.daily?.total_amount || '0.00'}</span>
+                  <span className="text-sm font-semibold text-green-600">₹ {orderSummary.daily?.grand_total || '0.00'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-[#727A90]">Points</span>
@@ -637,7 +671,7 @@ const fetchOrderSummary = async () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-[#727A90]">Amount</span>
-                  <span className="text-sm font-semibold text-green-600">₹ {orderSummary.weekly?.total_amount || '0.00'}</span>
+                  <span className="text-sm font-semibold text-green-600">₹ {orderSummary.weekly?.grand_total || '0.00'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-[#727A90]">Points</span>
@@ -667,7 +701,7 @@ const fetchOrderSummary = async () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-[#727A90]">Amount</span>
-                  <span className="text-sm font-semibold text-green-600">₹ {orderSummary.monthly?.total_amount || '0.00'}</span>
+                  <span className="text-sm font-semibold text-green-600">₹ {orderSummary.monthly?.grand_total || '0.00'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-[#727A90]">Points</span>
@@ -697,7 +731,7 @@ const fetchOrderSummary = async () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-white/80">Amount</span>
-                  <span className="text-sm font-semibold text-green-300">₹ {orderSummary.total?.total_amount || '0.00'}</span>
+                  <span className="text-sm font-semibold text-green-300">₹ {orderSummary.total?.grand_total || '0.00'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-white/80">Points</span>
