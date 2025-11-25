@@ -231,7 +231,8 @@ const fetchOrderSummary = async () => {
   ]);
 
   useEffect(() => {
-    if (user.role === "admin") {
+    const normalizedRole = user.role?.toLowerCase().replace(/\s+/g, '');
+    if (user.role === "admin" || normalizedRole === "salesman") {
       fetchAdminDashboardData();
     }
   }, [user.role]);
@@ -348,64 +349,14 @@ const fetchOrderSummary = async () => {
   
   <div className="box-border max-w-7xl w-full md:w-[95vw] lg:max-w-[1180px] mx-auto px-2 sm:px-4 lg:px-0 overflow-x-hidden">
   
-  {/* ADMIN DASHBOARD */}
-  {user.role === "admin" ? (
+  {/* ADMIN & SALESMAN DASHBOARD - SAME LAYOUT */}
+  {user.role === "admin" || user.role?.toLowerCase().replace(/\s+/g, '') === "salesman" ? (
     <>
       {/* Welcome Header */}
       <div className="mb-6">
-        {/* <h1 className="text-2xl md:text-3xl font-bold text-[#1F2837]">Admin Dashboard</h1>
-        <p className="text-[#727A90] mt-1">Welcome back! Here's what's happening today.</p> */}
-      </div>
-
-      {/* Main Stats Grid */}
-      <div className="flex flex-wrap justify-start gap-4 md:gap-6 mb-6">
-        {/* Total Shop Owners */}
-        <div
-          className="relative inline-block p-[3px] rounded-2xl overflow-hidden 
-                     w-full sm:w-[48%] lg:w-[30%] min-w-[280px] group cursor-pointer"
-          style={{
-            backgroundImage: `linear-gradient(to top right, transparent 70%, #003A72)`,
-          }}
-        >
-          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] bg-[#003A72] rounded-full blur-[30px]" />
-          <div
-            className="relative z-10 rounded-[14px] min-h-[150px] h-full
-                       px-5 pt-5 pb-3 flex flex-col justify-between
-                       shadow-[0_4px_20px_rgba(0,0,0,0.08)] group-hover:shadow-[0_8px_30px_rgba(52,152,219,0.15)] transition-all duration-300"
-            style={{ background: "linear-gradient(45deg, white, #f0f9ff)" }}
-          >
-            <div className="flex justify-between">
-              <div>
-                <div className="text-[#003A72] text-[32px] font-extrabold font-quicksand group-hover:scale-105 transition-transform duration-300">
-                  {adminStats.totalShopOwners}+
-                </div>
-                <div className="text-black font-semibold text-[15px]">
-                Today Total Customers
-                </div>
-              </div>
-              <div className="bg-[#003A7233] rounded-full w-[60px] h-[60px] flex justify-center items-center mt-1.5 group-hover:scale-110 transition-transform duration-300">
-                <BsFillPersonLinesFill className="text-[#003A72] text-[30px]" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Orders & Revenue Section */}
-      <div className="flex flex-wrap justify-start gap-4 md:gap-6 mb-6">
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-      </div>
-    </>
-  ) : (
-    /* SALESMAN DASHBOARD */
-    <>
-      {/* Welcome Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-semi-bold text-[#1F2837] mt-1 ml-2 ">Welcome back, {user?.name || 'Salesman'}!</h1>
+        <h1 className="text-2xl md:text-3xl font-semi-bold text-[#1F2837] mt-1 ml-2 ">
+          Welcome back, {user?.username || user?.name || (user?.role === 'admin' ? 'Admin' : 'User')}!
+        </h1>
         <p className="text-[#727A90] mt-1 ml-2">Here's your performance overview</p>
       </div>
 
@@ -829,7 +780,7 @@ const fetchOrderSummary = async () => {
       </div>
       
     </>
-  )}
+  ) : null}
 
   <div className="w-[30%] flex justify-center"></div>
 

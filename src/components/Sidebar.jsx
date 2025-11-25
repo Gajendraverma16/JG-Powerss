@@ -297,7 +297,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile }) {
 
   // Filter menu items based on role and permissions
   const items = sidebarMenu.reduce((acc, item) => {
-    if (item.label === "Settings") {
+    // ✅ Always show Dashboard for everyone (including salesmen)
+    if (item.label === "Dashboard") {
+      acc.push(item);
+    }
+    else if (item.label === "Settings") {
       if (user.role === "admin") {
         acc.push(item);
       } else {
@@ -311,7 +315,14 @@ export default function Sidebar({ isCollapsed, setIsCollapsed, isMobile }) {
           });
         }
       }
-    } else if (["Leads", "Quotation", "Product","Create New"].includes(item.label)) {
+    } 
+    // Handle Shop Owners (map to Leads permission)
+    else if (item.label === "Shop Owners") {
+      if (hasViewPermission("Leads")) {
+        acc.push(item);
+      }
+    }
+    else if (["Leads", "Quotation", "Product","Create New"].includes(item.label)) {
     // Only show if user has "view" permission for this module
     if (hasViewPermission(item.label)) {
       // For Quotation, filter 'Create New' child if no create permission

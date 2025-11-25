@@ -52,7 +52,7 @@ const NewOrder = () => {
         title: "",
         product_price: 0,
         product_points: 0,
-        quantity: 1,
+        quantity: 0,
         order_status: 0,
         product_obj: null,
         images: [],
@@ -65,7 +65,7 @@ const NewOrder = () => {
         title: "",
         product_price: 0,
         product_points: 0,
-        quantity: 1,
+        quantity: 0,
         order_status: 1,
         product_obj: null,
         images: [],
@@ -78,7 +78,7 @@ const NewOrder = () => {
         title: "",
         product_price: 0,
         product_points: 0,
-        quantity: 1,
+        quantity: 0,
         order_status: 2,
         product_obj: null,
         images: [],
@@ -267,10 +267,25 @@ const NewOrder = () => {
         
         // Add exchange_with fields for exchange orders
         if (orderStatus === 2) {
-          baseItem.exchange_with_product_id = item.exchange_with_product_id || "";
-          baseItem.exchange_with_title = item.exchange_with_title || "";
-          baseItem.exchange_with_price = parseFloat(item.exchange_with_price || 0);
-          baseItem.exchange_with_obj = item.exchange_with_product || products.find(p => p.id === item.exchange_with_product_id) || null;
+          // Try to find the corresponding "new product" (order_status = 3) from the items
+          const newProductItem = editOrder.items?.find(i => 
+            (i.order_status === "3" || i.order_status === 3) && 
+            i.quantity === item.quantity
+          );
+          
+          if (newProductItem) {
+            // If we found the new product item, use its data
+            baseItem.exchange_with_product_id = newProductItem.product_id || "";
+            baseItem.exchange_with_title = newProductItem.title || "";
+            baseItem.exchange_with_price = parseFloat(newProductItem.price || 0);
+            baseItem.exchange_with_obj = newProductItem.product || products.find(p => p.id === newProductItem.product_id) || null;
+          } else {
+            // Fallback to direct fields if they exist
+            baseItem.exchange_with_product_id = item.exchange_with_product_id || "";
+            baseItem.exchange_with_title = item.exchange_with_title || "";
+            baseItem.exchange_with_price = parseFloat(item.exchange_with_price || 0);
+            baseItem.exchange_with_obj = item.exchange_with_product || products.find(p => p.id === item.exchange_with_product_id) || null;
+          }
         }
         
         return baseItem;
@@ -294,7 +309,7 @@ const NewOrder = () => {
             title: "",
             product_price: 0,
             product_points: 0,
-            quantity: 1,
+            quantity: 0,
             order_status: 0,
             product_obj: null,
             images: [],
@@ -307,7 +322,7 @@ const NewOrder = () => {
             title: "",
             product_price: 0,
             product_points: 0,
-            quantity: 1,
+            quantity: 0,
             order_status: 1,
             product_obj: null,
             images: [],
@@ -320,7 +335,7 @@ const NewOrder = () => {
             title: "",
             product_price: 0,
             product_points: 0,
-            quantity: 1,
+            quantity: 0,
             order_status: 2,
             product_obj: null,
             images: [],
@@ -365,7 +380,7 @@ const NewOrder = () => {
       title: "",
       product_price: 0,
       product_points: 0,
-      quantity: 1,
+      quantity: 0,
       order_status: orderStatus,
       product_obj: null,
       images: [],
@@ -393,8 +408,6 @@ const NewOrder = () => {
 
   // Remove item
   const removeItemRow = (index) => {
-    if (items.length === 1)
-      return Swal.fire("Error", "At least one product is required.", "error");
     const currentFormType = formTypes[currentStep];
     setAllOrdersData(prev => ({
       ...prev,
@@ -419,7 +432,7 @@ const NewOrder = () => {
         title: product.item_name,
         product_price: parseFloat(product.price || 0),
         product_points: parseInt(product.item_points || 0),
-        quantity: updated[idx].quantity || 1, // Keep existing quantity
+        quantity: updated[idx].quantity || 0, // Keep existing quantity
         product_obj: product,
         images: updated[idx].images || [],
       };
@@ -491,7 +504,7 @@ const NewOrder = () => {
     const currentFormType = formTypes[currentStep];
     setAllOrdersData(prev => {
       const updated = [...prev[currentFormType].items];
-      updated[idx].quantity = Math.max(1, parseInt(val || 1));
+      updated[idx].quantity = Math.max(0, parseInt(val || 0));
       return {
         ...prev,
         [currentFormType]: {
@@ -630,7 +643,7 @@ const NewOrder = () => {
           title: "",
           product_price: 0,
           product_points: 0,
-          quantity: 1,
+          quantity: 0,
           order_status: 0, // New order
           product_obj: null,
           images: [],
@@ -643,7 +656,7 @@ const NewOrder = () => {
           title: "",
           product_price: 0,
           product_points: 0,
-          quantity: 1,
+          quantity: 0,
           order_status: 1, // Return order
           product_obj: null,
           images: [],
@@ -656,7 +669,7 @@ const NewOrder = () => {
           title: "",
           product_price: 0,
           product_points: 0,
-          quantity: 1,
+          quantity: 0,
           order_status: 2, // Exchange order
           product_obj: null,
           images: [],
@@ -718,7 +731,20 @@ const NewOrder = () => {
           
           // For exchange orders, also add the new product as a separate item
           if (orderType === 'exchange' && item.exchange_with_product_id) {
-            allItems.push({
+            // In edit mode, try to find the existing "new product" item_id
+            let newProductItemId = null;
+            if (isEditMode && editOrder?.items) {
+              const existingNewProductItem = editOrder.items.find(i => 
+                (i.order_status === "3" || i.order_status === 3) && 
+                i.product_id === item.exchange_with_product_id &&
+                i.quantity === item.quantity
+              );
+              if (existingNewProductItem) {
+                newProductItemId = existingNewProductItem.id;
+              }
+            }
+            
+            const newProductItem = {
               product_id: item.exchange_with_product_id,
               title: item.exchange_with_title,
               product_price: item.exchange_with_price,
@@ -727,7 +753,14 @@ const NewOrder = () => {
               order_status: 3, // New product to receive (order_status = 3)
               product_obj: item.exchange_with_obj,
               images: [], // New product doesn't need images
-            });
+            };
+            
+            // Add item_id if in edit mode
+            if (newProductItemId) {
+              newProductItem.item_id = newProductItemId;
+            }
+            
+            allItems.push(newProductItem);
           }
         });
         

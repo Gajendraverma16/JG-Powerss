@@ -23,6 +23,13 @@ const TestOrder = () => {
   const navigate = useNavigate(); // Initialize navigate
   const { user } = useAuth(); // Get user info
 
+  // Helper function to check if user is salesman (handles spaces and case variations)
+  const isSalesman = () => {
+    if (!user?.role) return false;
+    const normalizedRole = user.role.toLowerCase().replace(/\s+/g, '');
+    return normalizedRole === 'salesman' || normalizedRole === 'sales' || normalizedRole === 'salesmen';
+  };
+
   const dynamicApiEndpoint = statusId
     ? `/leadstatus/${statusId}`
     : "/orders";
@@ -135,7 +142,6 @@ const TestOrder = () => {
     const fetchQuotations = async () => {
       try {
         const response = await api.get(dynamicApiEndpoint); // Use dynamicApiEndpoint
-        console.log('Orders API Response:', response.data);
         if (response.data.success) {
           // Map order_status to type for each item
           const ordersWithTypes = response.data.data.map(order => ({
@@ -153,8 +159,6 @@ const TestOrder = () => {
                 // Construct full URL from new_image path
                 imageUrl = `${import.meta.env.VITE_API_URL}/${item.new_image}`;
               }
-              
-              console.log('Item:', item.title, 'order_status:', status, 'type:', type, 'exchangeType:', exchangeType);
               
               return {
                 ...item,
@@ -1118,10 +1122,6 @@ const handleDelete = async (id) => {
   // Function to open items modal
   const handleShowItems = (items, order, e) => {
     e.stopPropagation();
-    console.log('Items received:', items);
-    console.log('Order received:', order);
-    console.log('First item type:', items?.[0]?.type);
-    console.log('First item order_status:', items?.[0]?.order_status);
     setSelectedItems(items);
     setSelectedOrder(order);
     setIsItemsModalOpen(true);
@@ -2106,110 +2106,125 @@ const handleDelete = async (id) => {
           </td>
 
           {/* ✅ Order Status */}
- <select
-    value={order?.order_type || ""}
-    onChange={async (e) => {
-    const newStatus = e.target.value;
-    const orderId = order?.id;
+          {isSalesman() ? (
+            // Read-only status display for salesman
+            <div
+              onClick={() => {
+                Swal.fire({
+                  icon: "warning",
+                  title: "Access Denied",
+                  text: "Only admin can change the status",
+                  confirmButtonColor: "#003A72"
+                });
+              }}
+              className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medium px-4 py-2 border
+                transition-all duration-300 ease-in-out select-none cursor-not-allowed opacity-60
+                ${
+                  order?.order_type === "completed"
+                    ? "border-green-300 bg-green-50 text-green-700"
+                    : order?.order_type === "hold"
+                    ? "border-yellow-300 bg-yellow-50 text-yellow-700"
+                    : order?.order_type === "cancel"
+                    ? "border-red-300 bg-red-50 text-red-700"
+                    : order?.order_type === "process"
+                    ? "border-blue-300 bg-blue-50 text-blue-700"
+                    : "border-gray-300 bg-gray-50 text-gray-700"
+                }
+              `}
+            >
+              {order?.order_type || "Select Status"}
+            </div>
+          ) : (
+            // Editable select for admin/other roles
+            <select
+              value={order?.order_type || ""}
+              onChange={async (e) => {
+                const newStatus = e.target.value;
+                const orderId = order?.id;
 
-    // keep old value in case of error
-    const prevStatus = order?.order_type;
+                // keep old value in case of error
+                const prevStatus = order?.order_type;
 
-    try {
-      // ✅ Optimistic UI update (instant without refresh)
-     setQuotations((prev) =>
-   prev.map((o) =>
-     o.id === orderId ? { ...o, order_type: newStatus } : o
-  )
- );
+                try {
+                  // ✅ Optimistic UI update (instant without refresh)
+                  setQuotations((prev) =>
+                    prev.map((o) =>
+                      o.id === orderId ? { ...o, order_type: newStatus } : o
+                    )
+                  );
 
+                  // 🛰️ Send update to backend
+                  const res = await api.put(`/orders/${orderId}/status`, {
+                    order_type: newStatus,
+                  });
 
-      // 🛰️ Send update to backend
-      const res = await api.put(`/orders/${orderId}/status`, {
-        order_type: newStatus,
-      });
+                  if (res.data?.success) {
+                    Swal.fire({
+                      icon: "success",
+                      title: "Updated",
+                      text: `Order marked as "${newStatus}"`,
+                      timer: 1000,
+                      showConfirmButton: false,
+                    });
+                  } else {
+                    // ❌ Revert on error
+                    setQuotations((prev) =>
+                      prev.map((o) =>
+                        o.id === orderId ? { ...o, order_type: prevStatus } : o
+                      )
+                    );
 
-      if (res.data?.success) {
-        Swal.fire({
-          icon: "success",
-          title: "Updated",
-          text: `Order marked as "${newStatus}"`,
-          timer: 1000,
-          showConfirmButton: false,
-        });
-      } else {
-        // ❌ Revert on error
-       setQuotations((prev) =>
-  prev.map((o) =>
-    o.id === orderId ? { ...o, order_type: prevStatus } : o
-  )
-);
+                    Swal.fire("Error", res.data?.message || "Failed to update status", "error");
+                  }
+                } catch (error) {
+                  // ❌ Revert on network error
+                  setQuotations((prev) =>
+                    prev.map((o) =>
+                      o.id === orderId ? { ...o, order_type: prevStatus } : o
+                    )
+                  );
 
-        Swal.fire("Error", res.data?.message || "Failed to update status", "error");
-      }
-    } catch (error) {
-      // ❌ Revert on network error
-      setQuotations((prev) =>
-  prev.map((o) =>
-    o.id === orderId ? { ...o, order_type: prevStatus } : o
-  )
-);
-
-      Swal.fire("Error", "Network or server error while updating.", "error");
-      console.error("Status Update Error:", error);
-    }
-  }}
-className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medium px-4 py-2 border
-  transition-all duration-300 ease-in-out cursor-pointer select-none
-  focus:ring-2 focus:ring-offset-2 
-  hover:shadow-md hover:-translate-y-0.5 active:scale-95 outline-none
-  ${
-    order?.order_type === "completed"
-      ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
-      : order?.order_type === "hold"
-      ? "border-yellow-300 bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
-      : order?.order_type === "cancel"
-      ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
-      : order?.order_type === "process"
-      ? "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
-      : "border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
-  }
-`}
-  >
-     <option value="" disabled className="text-black bg-white">
-    Select Status
-  </option>
-  <option
-    value="new"
-    className="text-gray-800 bg-white text-center"
-  >
-    New
-  </option>
-  <option
-    value="hold"
-    className="text-yellow-800 bg-white  text-center"
-  >
-    Hold
-  </option>
-  <option
-    value="process"
-    className="text-blue-800 bg-white  text-center"
-  >
-    Process
-  </option>
-  <option
-    value="completed"
-    className="text-green-800 bg-white  text-center"
-  >
-    Completed
-  </option>
-  <option
-    value="cancel"
-    className="text-red-800 bg-white  text-center"
-  >
-    Cancel
-  </option>
-       </select>
+                  Swal.fire("Error", "Network or server error while updating.", "error");
+                  console.error("Status Update Error:", error);
+                }
+              }}
+              className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medium px-4 py-2 border
+                transition-all duration-300 ease-in-out select-none cursor-pointer
+                focus:ring-2 focus:ring-offset-2 outline-none
+                hover:shadow-md hover:-translate-y-0.5 active:scale-95
+                ${
+                  order?.order_type === "completed"
+                    ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
+                    : order?.order_type === "hold"
+                    ? "border-yellow-300 bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
+                    : order?.order_type === "cancel"
+                    ? "border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
+                    : order?.order_type === "process"
+                    ? "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    : "border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100"
+                }
+              `}
+            >
+              <option value="" disabled className="text-black bg-white">
+                Select Status
+              </option>
+              <option value="new" className="text-gray-800 bg-white text-center">
+                New
+              </option>
+              <option value="hold" className="text-yellow-800 bg-white text-center">
+                Hold
+              </option>
+              <option value="process" className="text-blue-800 bg-white text-center">
+                Process
+              </option>
+              <option value="completed" className="text-green-800 bg-white text-center">
+                Completed
+              </option>
+              <option value="cancel" className="text-red-800 bg-white text-center">
+                Cancel
+              </option>
+            </select>
+          )}
 
           {/* ✅ Order Number */}
           <td className="py-4 px-3 text-sm text-[#4B5563] overflow-hidden truncate">
@@ -2661,7 +2676,31 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
         </div>
         <select
   value={order?.order_type || ""}
+  disabled={isSalesman()}
+  onClick={(e) => {
+    if (isSalesman()) {
+      e.preventDefault();
+      Swal.fire({
+        icon: "warning",
+        title: "Access Denied",
+        text: "Only admin can change the status",
+        confirmButtonColor: "#003A72"
+      });
+    }
+  }}
   onChange={async (e) => {
+    // Check if salesman - prevent any action
+    if (isSalesman()) {
+      e.preventDefault();
+      Swal.fire({
+        icon: "warning",
+        title: "Access Denied",
+        text: "Only admin can change the status",
+        confirmButtonColor: "#003A72"
+      });
+      return;
+    }
+
     const newStatus = e.target.value;
     const orderId = order?.id;
 
@@ -2716,9 +2755,9 @@ className={`block mt-4 mb-4 w-[130px] rounded-full text-center text-sm font-medi
   mb-4 ml-4 w-full
   max-w-[200px] mx-auto    
   rounded-full text-center text-sm font-medium px-4 py-2 border
-  transition-all duration-300 ease-in-out cursor-pointer select-none
-  focus:ring-2 focus:ring-offset-2 
-  hover:shadow-md hover:-translate-y-0.5 active:scale-95 outline-none
+  transition-all duration-300 ease-in-out select-none
+  focus:ring-2 focus:ring-offset-2 outline-none
+  ${isSalesman() ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-95"}
   ${
     order?.order_type === "completed"
       ? "border-green-300 bg-green-50 text-green-700 hover:bg-green-100"
