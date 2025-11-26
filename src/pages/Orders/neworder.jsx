@@ -569,12 +569,24 @@ const NewOrder = () => {
       });
     }
 
-    // Validate images for return/exchange orders before moving to next step
+    // Validate quantity and images before moving to next step
     const currentOrderType = formTypes[currentStep];
-    if ((currentOrderType === 'return' || currentOrderType === 'exchange')) {
-      const itemsWithProducts = items.filter(item => item.product_id);
-      if (itemsWithProducts.length > 0) {
-        // Check for images
+    const itemsWithProducts = items.filter(item => item.product_id);
+    
+    if (itemsWithProducts.length > 0) {
+      // Check for quantity
+      const hasItemsWithoutQuantity = itemsWithProducts.some(item => !item.quantity || parseInt(item.quantity) <= 0);
+      if (hasItemsWithoutQuantity) {
+        return Swal.fire({
+          icon: "error",
+          title: "Quantity Required",
+          text: `Please enter quantity for all products in ${currentOrderType} order before proceeding.`,
+          confirmButtonColor: "#003A72"
+        });
+      }
+      
+      // Check for images (only for return/exchange orders)
+      if ((currentOrderType === 'return' || currentOrderType === 'exchange')) {
         const hasItemsWithoutImages = itemsWithProducts.some(item => !item.images || item.images.length === 0);
         if (hasItemsWithoutImages) {
           return Swal.fire("Error", `Please upload images for all products in ${currentOrderType} order before proceeding.`, "error");
@@ -714,6 +726,15 @@ const NewOrder = () => {
       const itemsWithProducts = orderData.items.filter(item => item.product_id);
       
       if (itemsWithProducts.length > 0) {
+        // Validate quantity for all items
+        const hasItemsWithoutQuantity = itemsWithProducts.some(item => 
+          !item.quantity || parseInt(item.quantity) <= 0
+        );
+        
+        if (hasItemsWithoutQuantity) {
+          throw new Error(`Please enter quantity for all products in ${orderType} order.`);
+        }
+        
         // Validate images for return/exchange orders (order_status 1 or 2)
         const hasItemsWithoutImages = itemsWithProducts.some(item => 
           (item.order_status === 1 || item.order_status === 2) && 
