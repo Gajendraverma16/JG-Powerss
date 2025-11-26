@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import { SidebarContext } from "../../components/Layout";
 import { useAuth } from "../../auth/AuthContext";
 import "../../styles/scrollbar.css";
+import { useNavigate } from "react-router-dom";
 
 const Villagees = () => {
   const [villages, setVillages] = useState([]);
@@ -15,28 +16,41 @@ const Villagees = () => {
   const [itemsPerPage] = useState(10);
   const [selectedVillages, setSelectedVillages] = useState([]);
   const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] = useState(false);
- const { isCollapsed } = useContext(SidebarContext);
-const { user } = useAuth();
-const assigneeDropdownRef = useRef(null);
+  const { isCollapsed } = useContext(SidebarContext);
+  const { user } = useAuth();
+  const assigneeDropdownRef = useRef(null);
 
-const [users, setUsers] = useState([]);
-const [selectedAssignee, setSelectedAssignee] = useState("");
-const [assigneeSearchTerm, setAssigneeSearchTerm] = useState("");
-const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
-// Edit Shop Count Modal States
-const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-const [editingVillage, setEditingVillage] = useState(null);
-const [editTotalShops, setEditTotalShops] = useState(0);
-const [editActiveShops, setEditActiveShops] = useState(0);
-const [editInactiveShops, setEditInactiveShops] = useState(0);
-const [isUpdating, setIsUpdating] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [selectedAssignee, setSelectedAssignee] = useState("");
+  const [assigneeSearchTerm, setAssigneeSearchTerm] = useState("");
+  const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
 
+  // Filters: only Branch, Area, Village (dependent)
+  const [filterBranch, setFilterBranch] = useState("");
+  const [filterArea, setFilterArea] = useState("");
+  const [filterVillage, setFilterVillage] = useState("");
 
+  // Edit Shop Count Modal States
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingVillage, setEditingVillage] = useState(null);
+  const [editTotalShops, setEditTotalShops] = useState(0);
+  const [editActiveShops, setEditActiveShops] = useState(0);
+  const [editInactiveShops, setEditInactiveShops] = useState(0);
+  const [isUpdating, setIsUpdating] = useState(false);
 
+  const handleCellClick = (filterKey, filterValue) => {
+    if (filterValue === undefined || filterValue === null) return;
+    navigate("/leads/all", {
+      state: {
+        filterKey,
+        filterValue,
+      },
+    });
+  };
 
-   
-  // ✅ Fetch Villages
+  // Fetch villages
   const fetchVillages = async () => {
     try {
       setLoading(true);
@@ -54,26 +68,51 @@ const [isUpdating, setIsUpdating] = useState(false);
     }
   };
 
-  // ✅ Fetch Users/Salesman
+  // Fetch users
   const fetchUsers = async () => {
     try {
       const response = await api.get("/userlist");
       const userData = response.data?.result || response.data?.data || response.data;
-      
-      if (userData && Array.isArray(userData)) {
-        setUsers(userData);
-      } else if (Array.isArray(response.data)) {
-        setUsers(response.data);
-      } else {
-        setUsers([]);
-      }
+      if (userData && Array.isArray(userData)) setUsers(userData);
+      else if (Array.isArray(response.data)) setUsers(response.data);
+      else setUsers([]);
     } catch (err) {
       console.error("Error fetching users:", err);
       setUsers([]);
     }
   };
 
-  // ✅ Open Edit Modal
+  useEffect(() => {
+    fetchVillages();
+    fetchUsers();
+  }, []);
+
+  // Responsive handler
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) setIsSearchExpanded(false);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Click outside for assignee dropdown
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        assigneeDropdownRef.current &&
+        !assigneeDropdownRef.current.contains(e.target)
+      ) {
+        setIsAssigneeDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Open edit modal
   const handleOpenEditModal = (village) => {
     setEditingVillage(village);
     setEditTotalShops(village.total_shops || 0);
@@ -82,13 +121,11 @@ const [isUpdating, setIsUpdating] = useState(false);
     setIsEditModalOpen(true);
   };
 
-  // ✅ Update Shop Counts
+  // Update shop counts
   const handleUpdateShopCounts = async () => {
     if (!editingVillage) return;
-
     try {
       setIsUpdating(true);
-
       const response = await api.post("/villages/updateShops", {
         village_id: editingVillage.id,
         total_shops: editTotalShops,
@@ -96,10 +133,7 @@ const [isUpdating, setIsUpdating] = useState(false);
         inactive_shops: editInactiveShops,
       });
 
-      // Close modal first
       setIsEditModalOpen(false);
-
-      // Show success message
       Swal.fire({
         icon: "success",
         title: "Updated!",
@@ -108,7 +142,6 @@ const [isUpdating, setIsUpdating] = useState(false);
         showConfirmButton: false,
       });
 
-      // Refresh villages list from server to get updated data
       await fetchVillages();
     } catch (err) {
       console.error("Error updating shop counts:", err);
@@ -123,60 +156,93 @@ const [isUpdating, setIsUpdating] = useState(false);
     }
   };
 
-  useEffect(() => {
-    fetchVillages();
-    fetchUsers();
-  }, []);
-
-  // ✅ Responsive handler
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth >= 768) setIsSearchExpanded(false);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // ✅ Handle click outside dropdown
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (
-        assigneeDropdownRef.current &&
-        !assigneeDropdownRef.current.contains(e.target)
-      ) {
-        setIsAssigneeDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // ✅ Filter Logic
-  const filteredVillages = useMemo(() => {
-    const search = searchTerm.toLowerCase();
-    return villages.filter(
-      (v) =>
-        v.village_name?.toLowerCase().includes(search) ||
-        v.route?.route_name?.toLowerCase().includes(search) ||
-        v.area?.area_name?.toLowerCase().includes(search) ||
-        v.branch?.branch_name?.toLowerCase().includes(search)
-    );
+  // --- New: search-aware lists for selects (and sorted) ---
+  const villagesMatchingSearch = useMemo(() => {
+    const s = searchTerm.trim().toLowerCase();
+    if (!s) return villages;
+    return villages.filter((v) => {
+      const villageName = (v.village_name || v.village?.village_name || "").toString().toLowerCase();
+      const areaName = (v.area?.area_name || "").toString().toLowerCase();
+      const branchName = (v.branch?.branch_name || "").toString().toLowerCase();
+      return (
+        villageName.includes(s) ||
+        areaName.includes(s) ||
+        branchName.includes(s)
+      );
+    });
   }, [villages, searchTerm]);
 
-  const totalPages = Math.ceil(filteredVillages.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentVillages = filteredVillages.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  const branchOptions = useMemo(() => {
+    const setB = new Set();
+    villagesMatchingSearch.forEach((v) => {
+      if (v.branch?.branch_name) setB.add(v.branch.branch_name);
+    });
+    return Array.from(setB).sort((a, b) => a.localeCompare(b));
+  }, [villagesMatchingSearch]);
+
+  const areaOptions = useMemo(() => {
+    const setA = new Set();
+    villagesMatchingSearch.forEach((v) => {
+      if (filterBranch) {
+        if (v.branch?.branch_name === filterBranch && v.area?.area_name) {
+          setA.add(v.area.area_name);
+        }
+      } else {
+        if (v.area?.area_name) setA.add(v.area.area_name);
+      }
+    });
+    return Array.from(setA).sort((a, b) => a.localeCompare(b));
+  }, [villagesMatchingSearch, filterBranch]);
+
+  const villageOptions = useMemo(() => {
+    const setV = new Set();
+    villagesMatchingSearch.forEach((v) => {
+      const vName = v.village_name || v.village?.village_name;
+      if (!vName) return;
+      if (filterBranch && v.branch?.branch_name !== filterBranch) return;
+      if (filterArea && v.area?.area_name !== filterArea) return;
+      setV.add(vName);
+    });
+    return Array.from(setV).sort((a, b) => a.localeCompare(b));
+  }, [villagesMatchingSearch, filterBranch, filterArea]);
+
+  // Filter logic using only branch/area/village + search
+  const filteredVillages = useMemo(() => {
+    const search = searchTerm.toLowerCase();
+    return villages.filter((v) => {
+      const matchesSearch =
+        (v.village_name || "").toString().toLowerCase().includes(search) ||
+        (v.area?.area_name || "").toLowerCase().includes(search) ||
+        (v.branch?.branch_name || "").toLowerCase().includes(search);
+
+      const matchesBranch = filterBranch ? v.branch?.branch_name === filterBranch : true;
+      const matchesArea = filterArea ? v.area?.area_name === filterArea : true;
+      const matchesVillage = filterVillage ? (v.village_name === filterVillage || v.village?.village_name === filterVillage) : true;
+
+      return matchesSearch && matchesBranch && matchesArea && matchesVillage;
+    });
+  }, [villages, searchTerm, filterBranch, filterArea, filterVillage]);
+
+  // Reset dependent filters when parent changes
+  useEffect(() => {
+    setFilterArea("");
+    setFilterVillage("");
+  }, [filterBranch]);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
+    setFilterVillage("");
+  }, [filterArea]);
 
-  // ✅ Selection Handlers
+  // Pagination
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterBranch, filterArea, filterVillage]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredVillages.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentVillages = filteredVillages.slice(startIndex, startIndex + itemsPerPage);
+
+  // Selection handlers
   const toggleVillageSelection = (id) => {
     setSelectedVillages((prev) =>
       prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
@@ -191,13 +257,9 @@ const [isUpdating, setIsUpdating] = useState(false);
     }
   };
 
-
-
-  // ✅ Pagination controls
   const handlePreviousPage = () => {
     if (currentPage > 1) setCurrentPage((p) => p - 1);
   };
-
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage((p) => p + 1);
   };
@@ -211,26 +273,23 @@ const [isUpdating, setIsUpdating] = useState(false);
       Swal.fire("Select Salesman", "Please choose a salesman.", "warning");
       return;
     }
-
     try {
-      // Find the selected user's ID
-      const selectedUser = users.find(u => u.name === selectedAssignee);
+      const selectedUser = users.find(u => {
+        const display = u.name || u.username || u.full_name;
+        return display === selectedAssignee;
+      });
       if (!selectedUser) {
         Swal.fire("Error", "Selected user not found.", "error");
         return;
       }
 
-      // Show loading
       Swal.fire({
         title: "Assigning Villages...",
         text: "Please wait",
         allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
+        didOpen: () => Swal.showLoading(),
       });
 
-      // Assign multiple villages to the user in single API call
       const response = await api.post("/villages/assign-multiple", {
         user_id: selectedUser.id,
         village_ids: selectedVillages,
@@ -243,7 +302,6 @@ const [isUpdating, setIsUpdating] = useState(false);
         confirmButtonColor: "#003A72",
       });
 
-      // Refresh villages list
       fetchVillages();
 
       setIsBulkAssignModalOpen(false);
@@ -260,8 +318,6 @@ const [isUpdating, setIsUpdating] = useState(false);
       });
     }
   };
-
-
 
   if (loading) {
     return (
@@ -280,7 +336,7 @@ const [isUpdating, setIsUpdating] = useState(false);
       } md:mx-auto`}
     >
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between  mb-8">
+      <div className="flex flex-wrap items-center justify-between mb-4">
         <h1 className="text-[20px] md:text-[22px] font-medium text-[#1F2837] whitespace-nowrap">
           Villages
         </h1>
@@ -323,7 +379,7 @@ const [isUpdating, setIsUpdating] = useState(false);
               </div>
               <input
                 type="search"
-                placeholder="Search by village Name"
+                placeholder="Search by village, area or branch"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onBlur={() => isMobile && setIsSearchExpanded(false)}
@@ -339,12 +395,66 @@ const [isUpdating, setIsUpdating] = useState(false);
             className="bg-[#003A72] hover:bg-[#003A72] text-white h-[44px] px-5 rounded-[8px]"
             onClick={() => setIsBulkAssignModalOpen(true)}
           >
-           Assigned Villages
+            Assigned Villages
           </button>
         )}
       </div>
 
-      {/* Table */}
+      {/* FILTER BAR – Branch / Area / Village  */}
+      <div className="w-full flex flex-wrap gap-3 mt-2 mb-4">
+        <div className="w-full md:w-1/4">
+          <div className="bg-white rounded-lg border border-gray-200 px-4 py-2">
+            <select
+              className="outline-none bg-transparent w-full text-sm"
+              value={filterBranch}
+              onChange={(e) => setFilterBranch(e.target.value)}
+            >
+              <option value="">Select Branch</option>
+              {branchOptions.map((b, i) => (
+                <option key={i} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="w-full md:w-1/4">
+          <div className="bg-white rounded-lg border border-gray-200 px-4 py-2">
+            <select
+              className="outline-none bg-transparent w-full text-sm"
+              value={filterArea}
+              onChange={(e) => setFilterArea(e.target.value)}
+            >
+              <option value="">Select Area</option>
+              {areaOptions.map((a, i) => (
+                <option key={i} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="w-full md:w-1/4">
+          <div className="bg-white rounded-lg border border-gray-200  px-4 py-2">
+            <select
+              className="outline-none bg-transparent w-full text-sm"
+              value={filterVillage}
+              onChange={(e) => setFilterVillage(e.target.value)}
+            >
+              <option value="">Select Village</option>
+              {villageOptions.map((v, i) => (
+                <option key={i} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Table (desktop) */}
       <div className="hidden md:block w-full flex-grow overflow-x-auto overflow-y-hidden relative custom-scrollbar">
         <table className="w-full border-collapse">
           <thead>
@@ -363,6 +473,8 @@ const [isUpdating, setIsUpdating] = useState(false);
                 </th>
               )}
               <th className="py-4 px-6 text-sm font-medium">Village ID</th>
+              <th className="py-4 px-6 text-sm font-medium">Branch Name</th>
+              <th className="py-4 px-6 text-sm font-medium">Area Name</th>
               <th className="py-4 px-6 text-sm font-medium">Village Name</th>
               <th className="py-4 px-6 text-sm font-medium">Assigned Member</th>
               <th className="py-4 px-6 text-sm font-medium">Total Shops</th>
@@ -374,7 +486,7 @@ const [isUpdating, setIsUpdating] = useState(false);
           <tbody>
             {currentVillages.length === 0 ? (
               <tr>
-                <td colSpan={(user?.role === "admin" || user?.role === "superadmin") ? "8" : "7"} className="py-8 px-6 text-center text-[#4B5563]">
+                <td colSpan={(user?.role === "admin" || user?.role === "superadmin") ? "10" : "9"} className="py-8 px-6 text-center text-[#4B5563]">
                   {searchTerm ? "No Villages found." : "No Villages available."}
                 </td>
               </tr>
@@ -391,22 +503,63 @@ const [isUpdating, setIsUpdating] = useState(false);
                       />
                     </td>
                   )}
-                  <td className="py-4 px-6 text-sm text-[#4B5563]">{village.id}</td>
-                  <td className="py-4 px-6 text-sm text-[#4B5563]">
-                    {village.village_name}
+
+                  <td
+                    className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
+                    onClick={() => handleCellClick("village_id", village.id)}
+                  >
+                    {village.id}
                   </td>
-                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+
+                  <td
+                    className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
+                    onClick={() => handleCellClick("village_id", village.id)}
+                  >
+                    {village.branch?.branch_name || "—"}
+                  </td>
+
+                  <td
+                    className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
+                    onClick={() => handleCellClick("village_id", village.id)}
+                  >
+                    {village.area?.area_name || "—"}
+                  </td>
+
+                  <td
+                    className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
+                    onClick={() => handleCellClick("village_id", village.id)}
+                  >
+                    {village?.village_name || village.village?.village_name || "—"}
+                  </td>
+
+                  <td
+                    className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
+                    onClick={() => handleCellClick("village_id", village.id)}
+                  >
                     {village.user?.name || "Not Assigned"}
                   </td>
-                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+
+                  <td
+                    className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
+                    onClick={() => handleCellClick("village_id", village.id)}
+                  >
                     {village.total_shops || 0}
                   </td>
-                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+
+                  <td
+                    className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
+                    onClick={() => handleCellClick("village_id", village.id)}
+                  >
                     {village.active_shops || 0}
                   </td>
-                  <td className="py-4 px-6 text-sm text-[#4B5563]">
+
+                  <td
+                    className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
+                    onClick={() => handleCellClick("village_id", village.id)}
+                  >
                     {village.inactive_shops || 0}
                   </td>
+
                   <td className="py-4 px-6 text-sm">
                     <button
                       onClick={() => handleOpenEditModal(village)}
@@ -421,7 +574,8 @@ const [isUpdating, setIsUpdating] = useState(false);
           </tbody>
         </table>
       </div>
-        {/* Mobile View */}
+
+      {/* Mobile View */}
       <div className="md:hidden w-full space-y-4">
         {currentVillages.map((village) => (
           <div
@@ -431,7 +585,7 @@ const [isUpdating, setIsUpdating] = useState(false);
             <div className="flex justify-between items-center mb-2">
               <div>
                 <h3 className="font-semibold text-[#1F2837]">
-                  {village.village_name}
+                  {village.village_name || village.village?.village_name}
                 </h3>
                 <p className="text-sm text-gray-500">ID: {village.id}</p>
               </div>
@@ -445,6 +599,12 @@ const [isUpdating, setIsUpdating] = useState(false);
               )}
             </div>
             <div className="space-y-1">
+              <p className="text-sm text-gray-600">
+                Branch: <span className="font-medium">{village.branch?.branch_name || "—"}</span>
+              </p>
+              <p className="text-sm text-gray-600">
+                Area: <span className="font-medium">{village.area?.area_name || "—"}</span>
+              </p>
               <p className="text-sm text-gray-600">
                 Total Shops: <span className="font-medium">{village.total_shops || 0}</span>
               </p>
@@ -495,8 +655,6 @@ const [isUpdating, setIsUpdating] = useState(false);
           </div>
         </div>
       )}
-
-
 
       {/* Edit Shop Count Modal */}
       {isEditModalOpen && editingVillage && (
@@ -568,7 +726,7 @@ const [isUpdating, setIsUpdating] = useState(false);
         </div>
       )}
 
-      {/* Bulk Edit Modal */}
+      {/* Bulk Assign Modal */}
       {isBulkAssignModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50 px-3">
           <div
@@ -607,18 +765,15 @@ const [isUpdating, setIsUpdating] = useState(false);
                     if (users.length === 0) {
                       return <div className="px-3 py-2 text-[#545454]">Loading users...</div>;
                     }
-
                     const filteredUsers = users.filter((user) => {
                       const userName = user.name || user.username || user.full_name || "";
                       return userName
                         .toLowerCase()
                         .includes(assigneeSearchTerm.toLowerCase());
                     });
-
                     if (filteredUsers.length === 0) {
                       return <div className="px-3 py-2 text-[#545454]">No matching users</div>;
                     }
-
                     return filteredUsers.map((user) => {
                       const displayName = user.name || user.username || user.full_name || "Unknown";
                       return (

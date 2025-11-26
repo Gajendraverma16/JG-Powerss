@@ -1,24 +1,21 @@
 import React, { useState, useEffect, useRef, useContext, useMemo } from "react";
-import { FiChevronDown, FiEdit, FiUpload, FiDownload } from "react-icons/fi";
+import {  FiEdit, FiUpload, FiDownload } from "react-icons/fi";
 import { TbDotsVertical } from "react-icons/tb";
 import api from "../../api";
 import Swal from "sweetalert2";
 import { FaCheck } from "react-icons/fa6";
 import { FaFileImport } from "react-icons/fa6";
-import { useNavigate } from "react-router-dom";
-
 import { Country, State, City } from "country-state-city";
-
 import { useAuth } from "../../auth/AuthContext";
-import { useLocation } from "react-router-dom";
 import { RxCross2 } from "react-icons/rx";
-  
 import "../../styles/scrollbar.css";
 import { SidebarContext } from "../../components/Layout";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const CreateLeads = () => {
 
-  const navigate = useNavigate();
+ const navigate = useNavigate();
+
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [leads, setLeads] = useState([]);
@@ -53,7 +50,6 @@ const CreateLeads = () => {
     fromDate: new Date(),
     toDate: new Date(),
   });
-
  
   const [createdDateRangeDropdownOpen, setCreatedDateRangeDropdownOpen] =
     useState(false);
@@ -64,26 +60,21 @@ const CreateLeads = () => {
     toDate: new Date(),
   });
   
-
-
   const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] = useState(false);
   const [selectedAssignee, setSelectedAssignee] = useState("");
   const [assigneeSearchTerm, setAssigneeSearchTerm] = useState("");
   const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
   const assigneeDropdownRef = useRef(null);
 
-
   const [isItemsPerPageDropdownOpen, setIsItemsPerPageDropdownOpen] =
     useState(false);
   const itemsPerPageDropdownRef = useRef(null);
-
 
   const formatDateForDisplay = (date) => {
     if (!date) return "";
     const d = new Date(date);
     return d.toLocaleDateString("en-GB");
   };
-
 
   const formatDateForTable = (date) => {
     if (!date) return "";
@@ -251,9 +242,7 @@ const CreateLeads = () => {
           safeAppend(formDataToSend, "source", leadToUpdate.source);
           safeAppend(formDataToSend, "status", leadToUpdate.status_name);
           safeAppend(formDataToSend, "route", leadToUpdate.route);
-
-
-          
+            F          
 
           // Handle assigned_to field
           let assignedToId = leadToUpdate.assigned_to;
@@ -401,8 +390,7 @@ const CreateLeads = () => {
     }
   };
 
-
-  const [branchHierarchy, setBranchHierarchy] = useState([]);
+const [branchHierarchy, setBranchHierarchy] = useState([]);
 const [selectedBranch, setSelectedBranch] = useState(null);
 const [selectedRoute, setSelectedRoute] = useState(null);
 const [selectedArea, setSelectedArea] = useState(null);
@@ -438,6 +426,7 @@ useEffect(() => {
     requirements: "all",
     statusId: "all",
     assignedTo: "all",
+    villageId: "all",
     followUp: "all",
   });
   const [currentPage, setCurrentPage] = useState(1);
@@ -462,15 +451,15 @@ useEffect(() => {
     assigned_to: "",
     route:"",
     near_location: "",
-  branch_code: "",
-  area: "",
-  village: "",
-  customer_relationship:"",
-  source_column:"",
-  latitude: "",
-  longitude: "",
-  Join_date: "",
-  shop_image: null,
+    branch_code: "",
+   area: "",
+    village: "",
+   customer_relationship:"",
+   source_column:"",
+   latitude: "",
+   longitude: "",
+   Join_date: "",
+   shop_image: null,
     follow_up_date_input: "", // Changed from follow_up
     follow_up_time_input: "", // New field for time
     status: "new",
@@ -534,20 +523,25 @@ useEffect(() => {
 
   // Set filters from navigation state (e.g., from Dashboard user card click)
   useEffect(() => {
-    if (location.state && users.length > 0) {
+    if (location.state) {
       // Assigned To
       let assignedToName = filters.assignedTo;
-      if (location.state.assignedTo) {
-        const assignedUser = users.find(
-          (u) => u.id === location.state.assignedTo
-        );
-        if (assignedUser) {
-          assignedToName = assignedUser.name.toLowerCase();
+      if (location.state.assignedTo && users.length > 0) {
+        const assignedUser = users.find((u) => u.id === location.state.assignedTo);
+        if (assignedUser) assignedToName = assignedUser.name.toLowerCase();
+      }
+        let newFilters = { ...filters };
+      if (location.state.filterKey === "village_id" || location.state.village_id) {
+        const vId = location.state.filterValue ?? location.state.village_id ?? location.state.villageId;
+        if (vId !== undefined && vId !== null) {
+          newFilters.villageId = String(vId);
         }
       }
+
       // Only update filters if changed
-      if (filters.assignedTo !== assignedToName) {
-        setFilters({ ...filters, assignedTo: assignedToName });
+ 
+      if (filters.assignedTo !== assignedToName || newFilters.villageId !== filters.villageId) {
+        setFilters({ ...newFilters, assignedTo: assignedToName });
       }
 
       // Only update page if not already 1
@@ -1051,6 +1045,10 @@ useEffect(() => {
           filters.assignedTo === "all" ||
           lead?.assigned_to?.toLowerCase() === filters.assignedTo.toLowerCase();
 
+        const matchesVillage =
+          filters.villageId === "all" ||
+          String(lead?.village) === String(filters.villageId);
+
         const matchesFollowUp =
           filters.followUp === "all" ||
           lead?.follow_up_date
@@ -1188,6 +1186,7 @@ useEffect(() => {
           matchesRequirements &&
           matchesStatus &&
           matchesAssignedTo &&
+          matchesVillage &&
           matchesFollowUp &&
           matchesFollowUpDateRange() &&
           matchesCreatedDateRange() &&
@@ -1556,7 +1555,7 @@ useEffect(() => {
     }
   };
 
-  // New handler for file selection (drag/drop or input)
+  // New handler for file selection 
   const handleFileChange = (e) => {
     const file = e.target.files ? e.target.files[0] : e.dataTransfer.files[0];
     if (!file) {
@@ -7491,3 +7490,5 @@ useEffect(() => {
 };
 
 export default CreateLeads;
+
+
