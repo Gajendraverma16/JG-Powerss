@@ -971,6 +971,9 @@ useEffect(() => {
   const filteredLeads = useMemo(
     () =>
       leads.filter((lead) => {
+        // Skip undefined or null leads
+        if (!lead) return false;
+        
         const searchLower = searchTerm.toLowerCase();
 
         // Parse the address object if it exists and is a string
@@ -999,6 +1002,7 @@ useEffect(() => {
           lead?.customer_name?.toLowerCase()?.includes(searchLower) ||
           lead?.email?.toLowerCase()?.includes(searchLower) ||
           lead?.contact?.toLowerCase()?.includes(searchLower) ||
+          lead?.contact_number?.toLowerCase()?.includes(searchLower) ||
           // Check parsedAddress properties for search
           parsedAddress?.blockUnitStreetName
             ?.toLowerCase()
@@ -1043,7 +1047,7 @@ useEffect(() => {
 
         const matchesAssignedTo =
           filters.assignedTo === "all" ||
-          lead?.assigned_to?.toLowerCase() === filters.assignedTo.toLowerCase();
+          String(lead?.assigned_to)?.toLowerCase() === filters.assignedTo.toLowerCase();
 
         const matchesVillage =
           filters.villageId === "all" ||
@@ -1179,7 +1183,7 @@ useEffect(() => {
           }
         };
 
-        return (
+        const result = (
           matchesSearch &&
           matchesCustomerName &&
           matchesCity &&
@@ -1192,6 +1196,24 @@ useEffect(() => {
           matchesCreatedDateRange() &&
           matchesUpdatedDateRange() // <-- add this
         );
+        
+        if (!result && lead?.contact_number === "9876801261") {
+          console.log("Lead filtered out:", {
+            matchesSearch,
+            matchesCustomerName,
+            matchesCity,
+            matchesRequirements,
+            matchesStatus,
+            matchesAssignedTo,
+            matchesVillage,
+            matchesFollowUp,
+            matchesFollowUpDateRange: matchesFollowUpDateRange(),
+            matchesCreatedDateRange: matchesCreatedDateRange(),
+            matchesUpdatedDateRange: matchesUpdatedDateRange()
+          });
+        }
+        
+        return result;
       }),
     [
       leads,
@@ -1929,19 +1951,44 @@ useEffect(() => {
             title: "Not Found",
             text: response.data.message || "Shop owner not found",
             confirmButtonColor: "#DD6B55",
+          }).then(() => {
+            navigate("/leads/all");
           });
           setLeads([]);
-        } else if (response.data.status === true || (response.data.success && response.data.result)) {
-          Swal.fire({
-            icon: "success",
-            title: "Found",
-            text: response.data.message || "Shop owner found successfully",
-            confirmButtonColor: "#0e4053",
-            timer: 2000,
-            showConfirmButton: false,
-          });
-          // Update leads with search results
-          setLeads(Array.isArray(response.data.result) ? response.data.result : [response.data.result]);
+        } else if (response.data.status === true) {
+          const searchResults = response.data.data;
+          
+          // Check if shop owner is assigned to village
+          const isAssigned = searchResults?.village_assigned_to && searchResults.village_assigned_to > 0;
+          
+          if (!isAssigned) {
+            // Shop owner not assigned
+            Swal.fire({
+              icon: "warning",
+              title: "Not Assigned",
+              text: "Shop owner not assigned yet",
+              confirmButtonColor: "#f39c12",
+              timer: 1000,
+              showConfirmButton: false,
+            }).then(() => {
+              navigate("/leads/all");
+            });
+            setLeads([]);
+          } else {
+            // Shop owner is assigned, fetch all leads from normal API
+            Swal.fire({
+              icon: "success",
+              title: "Found",
+              text: response.data.message || "Shop owner found successfully",
+              confirmButtonColor: "#0e4053",
+              timer: 1000,
+              showConfirmButton: false,
+            });
+            
+            // Fetch all leads from normal API and set search term to filter
+            await fetchLeads();
+            setSearchTerm(value.trim());
+          }
         } else {
           // If no results found, show empty array
           setLeads([]);
@@ -1949,10 +1996,12 @@ useEffect(() => {
       } catch (err) {
         console.error("Error searching by mobile number:", err);
         Swal.fire({
-          icon: "message",
-          title: "Search ",
-          text: "Shop owner not found. Please Create first .",
+          icon: "error",
+          title: "Search",
+          text: "Shop owner not found. Please Create first.",
           confirmButtonColor: "#DD6B55",
+        }).then(() => {
+          navigate("/leads/all");
         });
         // On error, fetch all leads again
         await fetchLeads();
