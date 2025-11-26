@@ -524,55 +524,70 @@ useEffect(() => {
   // Set filters from navigation state (e.g., from Dashboard user card click)
   useEffect(() => {
     if (location.state) {
+      let newFilters = { ...filters };
+      let hasChanges = false;
+
       // Assigned To
-      let assignedToName = filters.assignedTo;
       if (location.state.assignedTo && users.length > 0) {
         const assignedUser = users.find((u) => u.id === location.state.assignedTo);
-        if (assignedUser) assignedToName = assignedUser.name.toLowerCase();
+        if (assignedUser) {
+          const assignedToName = assignedUser.name.toLowerCase();
+          if (filters.assignedTo !== assignedToName) {
+            newFilters.assignedTo = assignedToName;
+            hasChanges = true;
+          }
+        }
       }
-        let newFilters = { ...filters };
-      if (location.state.filterKey === "village_id" || location.state.village_id) {
+
+      // Village ID filter
+      if (location.state.filterKey === "village_id" || location.state.village_id || location.state.villageId) {
         const vId = location.state.filterValue ?? location.state.village_id ?? location.state.villageId;
         if (vId !== undefined && vId !== null) {
-          newFilters.villageId = String(vId);
+          const villageIdStr = String(vId);
+          console.log("🏘️ Setting village filter:", villageIdStr);
+          if (filters.villageId !== villageIdStr) {
+            newFilters.villageId = villageIdStr;
+            hasChanges = true;
+          }
         }
       }
 
       // Only update filters if changed
- 
-      if (filters.assignedTo !== assignedToName || newFilters.villageId !== filters.villageId) {
-        setFilters({ ...newFilters, assignedTo: assignedToName });
+      if (hasChanges) {
+        setFilters(newFilters);
       }
 
       // Only update page if not already 1
       if (currentPage !== 1) setCurrentPage(1);
 
-      // Set updated date filter to today, but only if not already set
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayEnd = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-        23,
-        59,
-        59,
-        999
-      );
-      const fromDate = customUpdatedDateRange?.fromDate;
-      const toDate = customUpdatedDateRange?.toDate;
-      const isAlreadyToday =
-        updatedTimeRange === "custom" &&
-        fromDate &&
-        toDate &&
-        fromDate.getTime() === today.getTime() &&
-        toDate.getTime() === todayEnd.getTime();
-      if (!isAlreadyToday) {
-        setUpdatedTimeRange("custom");
-        setCustomUpdatedDateRange({
-          fromDate: today,
-          toDate: todayEnd,
-        });
+      // Set updated date filter to today ONLY if coming from assignedTo filter (not from village filter)
+      if (location.state.assignedTo && !location.state.villageId) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayEnd = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          23,
+          59,
+          59,
+          999
+        );
+        const fromDate = customUpdatedDateRange?.fromDate;
+        const toDate = customUpdatedDateRange?.toDate;
+        const isAlreadyToday =
+          updatedTimeRange === "custom" &&
+          fromDate &&
+          toDate &&
+          fromDate.getTime() === today.getTime() &&
+          toDate.getTime() === todayEnd.getTime();
+        if (!isAlreadyToday) {
+          setUpdatedTimeRange("custom");
+          setCustomUpdatedDateRange({
+            fromDate: today,
+            toDate: todayEnd,
+          });
+        }
       }
     }
     // eslint-disable-next-line
@@ -1048,6 +1063,16 @@ useEffect(() => {
         const matchesVillage =
           filters.villageId === "all" ||
           String(lead?.village) === String(filters.villageId);
+        
+        // Debug logging for village filter
+        if (filters.villageId !== "all" && lead?.village) {
+          console.log("🔍 Village Filter Check:", {
+            leadVillage: lead?.village,
+            filterVillageId: filters.villageId,
+            matches: matchesVillage,
+            leadName: lead?.customer_name
+          });
+        }
 
         const matchesFollowUp =
           filters.followUp === "all" ||

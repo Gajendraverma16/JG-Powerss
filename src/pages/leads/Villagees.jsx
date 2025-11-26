@@ -40,12 +40,11 @@ const Villagees = () => {
   const [editInactiveShops, setEditInactiveShops] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleCellClick = (filterKey, filterValue) => {
-    if (filterValue === undefined || filterValue === null) return;
+  const handleCellClick = (villageId) => {
+    if (villageId === undefined || villageId === null) return;
     navigate("/leads/all", {
       state: {
-        filterKey,
-        filterValue,
+        villageId: villageId,
       },
     });
   };
@@ -506,57 +505,56 @@ const Villagees = () => {
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
+                    onClick={() => handleCellClick(village.id)}
                   >
                     {village.id}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
+                    onClick={() => handleCellClick(village.id)}
                   >
                     {village.branch?.branch_name || "—"}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
+                    onClick={() => handleCellClick(village.id)}
                   >
                     {village.area?.area_name || "—"}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
+                    onClick={() => handleCellClick(village.id)}
                   >
                     {village?.village_name || village.village?.village_name || "—"}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
+                    onClick={() => handleCellClick(village.id)}
                   >
                     {village.user?.name || "Not Assigned"}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
+                    onClick={() => handleCellClick(village.id)}
                   >
                     {village.total_shops || 0}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
+                    onClick={() => handleCellClick(village.id)}
                   >
                     {village.active_shops || 0}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick(  "village_name",
-    village.village_name || village.village?.village_name)}
+                    onClick={() => handleCellClick(village.id)}
                   >
                     {village.inactive_shops || 0}
                   </td>
@@ -581,7 +579,8 @@ const Villagees = () => {
         {currentVillages.map((village) => (
           <div
             key={village.id}
-            className="p-4 bg-white rounded-xl shadow border border-gray-100"
+            className="p-4 bg-white rounded-xl shadow border border-gray-100 cursor-pointer"
+            onClick={() => handleCellClick(village.id)}
           >
             <div className="flex justify-between items-center mb-2">
               <div>
@@ -594,7 +593,11 @@ const Villagees = () => {
                 <input
                   type="checkbox"
                   checked={selectedVillages.includes(village.id)}
-                  onChange={() => toggleVillageSelection(village.id)}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    toggleVillageSelection(village.id);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
                   className="w-5 h-5 rounded border-gray-300 cursor-pointer"
                 />
               )}
@@ -622,7 +625,10 @@ const Villagees = () => {
                 </span>
               </p>
               <button
-                onClick={() => handleOpenEditModal(village)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenEditModal(village);
+                }}
                 className="mt-2 bg-[#003A72] hover:bg-[#003A72] text-white px-3 py-2 rounded-md text-xs"
               >
                 Edit Count
