@@ -38,6 +38,8 @@ const Villagees = () => {
   const [editTotalShops, setEditTotalShops] = useState(0);
   const [editActiveShops, setEditActiveShops] = useState(0);
   const [editInactiveShops, setEditInactiveShops] = useState(0);
+  const [editOurShop, setEditOurShop] = useState(0);
+  const [editNewShop, setEditNewShop] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleCellClick = (filterKey, filterValue) => {
@@ -118,6 +120,8 @@ const Villagees = () => {
     setEditTotalShops(village.total_shops || 0);
     setEditActiveShops(village.active_shops || 0);
     setEditInactiveShops(village.inactive_shops || 0);
+    setEditOurShop(village.ourshop || 0);
+    setEditNewShop(village.newshop || 0);
     setIsEditModalOpen(true);
   };
 
@@ -131,6 +135,8 @@ const Villagees = () => {
         total_shops: editTotalShops,
         active_shops: editActiveShops,
         inactive_shops: editInactiveShops,
+        ourshop: editOurShop,
+        newshop: editNewShop,
       });
 
       setIsEditModalOpen(false);
@@ -480,13 +486,16 @@ const Villagees = () => {
               <th className="py-4 px-6 text-sm font-medium">Total Shops</th>
               <th className="py-4 px-6 text-sm font-medium">Active Shops</th>
               <th className="py-4 px-6 text-sm font-medium">Inactive Shops</th>
+              <th className="py-4 px-6 text-sm font-medium">Our Shop</th>
+              <th className="py-4 px-6 text-sm font-medium">New Shop</th>
+              
               <th className="py-4 px-6 text-sm font-medium">Action</th>
             </tr>
           </thead>
           <tbody>
             {currentVillages.length === 0 ? (
               <tr>
-                <td colSpan={(user?.role === "admin" || user?.role === "superadmin") ? "10" : "9"} className="py-8 px-6 text-center text-[#4B5563]">
+                <td colSpan={(user?.role === "admin" || user?.role === "superadmin") ? "12" : "11"} className="py-8 px-6 text-center text-[#4B5563]">
                   {searchTerm ? "No Villages found." : "No Villages available."}
                 </td>
               </tr>
@@ -560,6 +569,20 @@ const Villagees = () => {
                     {village.inactive_shops || 0}
                   </td>
 
+                  <td
+                    className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
+                    onClick={() => handleCellClick("village_id", village.id)}
+                  >
+                    {village.ourshop || 0}
+                  </td>
+
+                  <td
+                    className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
+                    onClick={() => handleCellClick("village_id", village.id)}
+                  >
+                    {village.newshop || 0}
+                  </td>
+
                   <td className="py-4 px-6 text-sm">
                     <button
                       onClick={() => handleOpenEditModal(village)}
@@ -613,6 +636,12 @@ const Villagees = () => {
               </p>
               <p className="text-sm text-gray-600">
                 Inactive Shops: <span className="font-medium">{village.inactive_shops || 0}</span>
+              </p>
+              <p className="text-sm text-gray-600">
+                Our Shop: <span className="font-medium">{village.ourshop || 0}</span>
+              </p>
+              <p className="text-sm text-gray-600">
+                New Shop: <span className="font-medium">{village.newshop || 0}</span>
               </p>
               <p className="text-sm text-gray-600">
                 Assigned Member:{" "}
@@ -709,6 +738,32 @@ const Villagees = () => {
                   type="number"
                   value={editInactiveShops}
                   onChange={(e) => setEditInactiveShops(parseInt(e.target.value) || 0)}
+                  className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                  min="0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#4B5563] text-[14px] mb-2">
+                  Our Shop:
+                </label>
+                <input
+                  type="number"
+                  value={editOurShop}
+                  onChange={(e) => setEditOurShop(parseInt(e.target.value) || 0)}
+                  className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
+                  min="0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#4B5563] text-[14px] mb-2">
+                  New Shop:
+                </label>
+                <input
+                  type="number"
+                  value={editNewShop}
+                  onChange={(e) => setEditNewShop(parseInt(e.target.value) || 0)}
                   className="w-full h-[48px] px-3 rounded-[12px] bg-[#E7EFF8] border border-white/20 focus:ring-2 focus:ring-[#0e4053] outline-none text-[#545454]"
                   min="0"
                 />

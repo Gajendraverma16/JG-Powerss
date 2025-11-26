@@ -1183,7 +1183,7 @@ useEffect(() => {
           }
         };
 
-        const result = (
+        return (
           matchesSearch &&
           matchesCustomerName &&
           matchesCity &&
@@ -1194,26 +1194,8 @@ useEffect(() => {
           matchesFollowUp &&
           matchesFollowUpDateRange() &&
           matchesCreatedDateRange() &&
-          matchesUpdatedDateRange() // <-- add this
+          matchesUpdatedDateRange()
         );
-        
-        if (!result && lead?.contact_number === "9876801261") {
-          console.log("Lead filtered out:", {
-            matchesSearch,
-            matchesCustomerName,
-            matchesCity,
-            matchesRequirements,
-            matchesStatus,
-            matchesAssignedTo,
-            matchesVillage,
-            matchesFollowUp,
-            matchesFollowUpDateRange: matchesFollowUpDateRange(),
-            matchesCreatedDateRange: matchesCreatedDateRange(),
-            matchesUpdatedDateRange: matchesUpdatedDateRange()
-          });
-        }
-        
-        return result;
       }),
     [
       leads,
