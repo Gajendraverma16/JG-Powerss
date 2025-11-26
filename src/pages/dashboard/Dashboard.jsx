@@ -131,13 +131,13 @@ const Dashboard = () => {
 
 // Dummy Data (Fallback)
 const [dummy, setDummy] = useState({
-  villageCount: 45,
-  totalOrders: 120,
-  totalPointes: 300,
-  totalAmount: 5000,
-  newOrders: 30,
-  returnOrders: 12,
-  exchangeOrders: 8,
+  villageCount: 0,
+  totalOrders:0,
+  totalPointes: 0,
+  totalAmount: 0,
+  newOrders: 0,
+  returnOrders: 0,
+  exchangeOrders: 0,
 });
 
 const [villageAPI, setVillageAPI] = useState(null);

@@ -1922,7 +1922,25 @@ useEffect(() => {
       try {
         setLoading(true);
         const response = await api.get(`/leads/search?contact_number=${value.trim()}`);
-        if (response.data.success && response.data.result) {
+        
+        // Show SweetAlert based on response status
+        if (response.data.status === false) {
+          Swal.fire({
+            icon: "error",
+            title: "Not Found",
+            text: response.data.message || "Shop owner not found",
+            confirmButtonColor: "#DD6B55",
+          });
+          setLeads([]);
+        } else if (response.data.status === true || (response.data.success && response.data.result)) {
+          Swal.fire({
+            icon: "success",
+            title: "Found",
+            text: response.data.message || "Shop owner found successfully",
+            confirmButtonColor: "#0e4053",
+            timer: 2000,
+            showConfirmButton: false,
+          });
           // Update leads with search results
           setLeads(Array.isArray(response.data.result) ? response.data.result : [response.data.result]);
         } else {
@@ -1931,6 +1949,12 @@ useEffect(() => {
         }
       } catch (err) {
         console.error("Error searching by mobile number:", err);
+        Swal.fire({
+          icon: "message",
+          title: "Search ",
+          text: "Shop owner not found. Please Create first .",
+          confirmButtonColor: "#DD6B55",
+        });
         // On error, fetch all leads again
         await fetchLeads();
       } finally {
