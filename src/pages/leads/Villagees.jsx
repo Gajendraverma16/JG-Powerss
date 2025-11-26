@@ -506,56 +506,57 @@ const Villagees = () => {
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_id", village.id)}
+                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
                   >
                     {village.id}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_id", village.id)}
+                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
                   >
                     {village.branch?.branch_name || "—"}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_id", village.id)}
+                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
                   >
                     {village.area?.area_name || "—"}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_id", village.id)}
+                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
                   >
                     {village?.village_name || village.village?.village_name || "—"}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_id", village.id)}
+                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
                   >
                     {village.user?.name || "Not Assigned"}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_id", village.id)}
+                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
                   >
                     {village.total_shops || 0}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_id", village.id)}
+                    onClick={() => handleCellClick("village_name",  village.village_name || village.village?.village_name)}
                   >
                     {village.active_shops || 0}
                   </td>
 
                   <td
                     className="py-4 px-6 text-sm text-[#4B5563] cursor-pointer"
-                    onClick={() => handleCellClick("village_id", village.id)}
+                    onClick={() => handleCellClick(  "village_name",
+    village.village_name || village.village?.village_name)}
                   >
                     {village.inactive_shops || 0}
                   </td>
